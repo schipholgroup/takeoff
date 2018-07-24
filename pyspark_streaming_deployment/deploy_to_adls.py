@@ -16,7 +16,7 @@ def main():
         if branch == 'master':
             deploy_application_to_adls('SNAPSHOT')
         else:
-            print(f'Not a release (tag not available), nor master branch (branch = "{branch}". Not deploying')
+            print(f'Not a release tag, nor master branch (branch = "{branch}". Not deploying')
 
 
 def upload_to_adls(client, source: str, destination: str):
@@ -48,8 +48,12 @@ def deploy_application_to_adls(version: str):
     egg = glob.glob('/root/dist/*.egg')[0]
     main = '/root/main/main.py'
 
-    upload_to_adls(adls_client, egg, f'/libraries/{build_definitionname}/{build_definitionname}-{version}.egg')
-    upload_to_adls(adls_client, main, f'/libraries/{build_definitionname}/{build_definitionname}-main-{version}.py')
+    upload_to_adls(adls_client,
+                   egg,
+                   f'/libraries/{build_definitionname}/{build_definitionname}-{version}.egg')
+    upload_to_adls(adls_client,
+                   main,
+                   f'/libraries/{build_definitionname}/{build_definitionname}-main-{version}.py')
 
 
 if __name__ == '__main__':

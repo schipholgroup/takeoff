@@ -40,8 +40,9 @@ def deploy_application(version: str, dtap: str):
     """
     The application parameters (cosmos and eventhub) will be removed from this file as they
     will be set as databricks secrets eventually
-    If the job is a streaming job this will directly start the new job_run given the new configuration. If the job is
-    batch this will not start it manually, assuming the schedule has been set correctly.
+    If the job is a streaming job this will directly start the new job_run given the new
+    configuration. If the job is batch this will not start it manually, assuming the schedule
+    has been set correctly.
     """
     application_name = os.environ['BUILD_DEFINITIONNAME']
     app_config = __read_application_config(APPLICATION_CFG)
@@ -91,8 +92,7 @@ def __construct_job_config(fn: str,
                            parameters: List[str]):
     job_config = __read_job_config(fn)
     job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir'] = (
-        job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir']
-            .format(dtap=dtap.lower())
+        job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir'].format(dtap=dtap.lower())
     )
     job_config['name'] = name
     job_config['spark_python_task']['python_file'] = python_file
