@@ -11,7 +11,7 @@ from databricks_cli.sdk import ApiClient
 from git import Repo
 from pprint import pprint
 
-JOB_CFG = '/root/deployment/sample_job_config.json'
+JOB_CFG = '/root/job_config.json'
 ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdhdev/libraries'
 
 
