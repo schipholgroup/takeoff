@@ -18,7 +18,7 @@ def test_find_application_job_id_if_version():
 
 def test_construct_job_config():
     job_config = victim.__construct_job_config(
-        fn='tests_deployment/test_job_config.json',
+        fn='tests/test_job_config.json',
         name='app',
         dtap='whatevs',
         egg='some.egg',

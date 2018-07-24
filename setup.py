@@ -15,7 +15,8 @@ setup(
     extras_require={
         'test': {
             'pytest==3.6.2',
-            'pytest-cov==2.5.1',
+            'databricks-cli==0.7.2',
+            'gitpython==2.1.10',
         },
         'lint': {
             'flake8==3.5.0'
