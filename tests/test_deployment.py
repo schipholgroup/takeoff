@@ -1,4 +1,4 @@
-from deployment import deploy_to_databricks as victim
+from pyspark_streaming_deployment import deploy_to_databricks as victim
 
 jobs = [
     victim.JobConfig('foo-SNAPSHOT', 1),

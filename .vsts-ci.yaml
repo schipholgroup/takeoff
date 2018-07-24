@@ -1,0 +1,11 @@
+steps:
+- task: DockerCompose@0
+  displayName: Run python linting
+  inputs:
+    dockerComposeCommand: |
+      run --rm pyspark bash "pip install -e .[lint] && flake8"
+- task: DockerCompose@0
+  displayName: Run python tests
+  inputs:
+    dockerComposeCommand: |
+      run --rm pyspark bash "pip install -e .[test] && pytest tests"

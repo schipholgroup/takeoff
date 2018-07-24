@@ -1,0 +1,10 @@
+version: "3.3"
+services:
+  python:
+    image: python:3.7.0
+    working_dir: /root/
+    volumes:
+     - type: bind
+       source: ./
+       target: /root
+    tty: true
