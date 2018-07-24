@@ -12,7 +12,7 @@ from git import Repo
 from pprint import pprint
 
 APPLICATION_CFG = '/root/deployment/application.cfg'
-JOB_CFG = '/root/deployment/job_config.json'
+JOB_CFG = '/root/deployment/sample_job_config.json'
 
 
 @dataclass
