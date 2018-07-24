@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
 
 cd /root
-
-pip install -e .[deploy]
 python ${PYTHONPATH}/site-packages/pyspark_streaming_deployment/deploy_to_databricks.py
-
