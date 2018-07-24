@@ -8,3 +8,5 @@ services:
        source: ./
        target: /root
     tty: true
+    environment:
+      - PYTHONPATH='/usr/local/lib/python3.7'

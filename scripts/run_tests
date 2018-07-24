@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
 cd /root
+
 python setup.py develop
 pytest --cov-config .coveragerc --cov=./ tests

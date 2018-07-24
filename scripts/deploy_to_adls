@@ -2,9 +2,5 @@
 
 cd /root
 
-echo 'checking if code compiles and install package'
-python setup.py develop
-
-echo 'deploy to adls'
 pip install -e .[deploy]
-python /root/deployment/deploy_to_adls.py
+python ${PYTHONPATH}/site-packages/pyspark_streaming_deployment/deploy_to_adls.py

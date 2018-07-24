@@ -45,7 +45,6 @@ def deploy_application(version: str, dtap: str):
     has been set correctly.
     """
     application_name = os.environ['BUILD_DEFINITIONNAME']
-    app_config = __read_application_config(APPLICATION_CFG)
 
     job_config = __construct_job_config(
         fn=JOB_CFG,
@@ -53,13 +52,6 @@ def deploy_application(version: str, dtap: str):
         dtap=dtap,
         egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{version}.egg",
         python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{version}.py",
-        parameters=[
-            "--cosmos_endpoint", (os.environ[f'COSMOS_ENDPOINT_{dtap}']),
-            "--cosmos_masterkey", (os.environ[f'COSMOS_MASTERKEY_{dtap}']),
-            "--cosmos_database", (os.environ[f'COSMOS_DATABASE_{dtap}']),
-            "--cosmos_collection", (os.environ[f'COSMOS_COLLECTION_{dtap}']),
-            "--eventhub_connection_string", (os.environ[f'EVENTHUB_CONNECTION_STRING_{dtap}'])
-        ]
     )
     print("Creating databricks client")
 
@@ -87,15 +79,13 @@ def __construct_job_config(fn: str,
                            name: str,
                            dtap: str,
                            egg: str,
-                           python_file: str,
-                           parameters: List[str]):
+                           python_file: str) -> dict:
     job_config = __read_job_config(fn)
     job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir'] = (
         job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir'].format(dtap=dtap.lower())
     )
     job_config['name'] = name
     job_config['spark_python_task']['python_file'] = python_file
-    job_config['spark_python_task']['parameters'] = parameters
     job_config['libraries'].append({"egg": egg})
 
     return job_config
