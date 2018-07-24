@@ -11,8 +11,8 @@ from databricks_cli.sdk import ApiClient
 from git import Repo
 from pprint import pprint
 
-APPLICATION_CFG = '/root/deployment/application.cfg'
 JOB_CFG = '/root/deployment/sample_job_config.json'
+ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdhdev/libraries'
 
 
 @dataclass
@@ -46,14 +46,13 @@ def deploy_application(version: str, dtap: str):
     """
     application_name = os.environ['BUILD_DEFINITIONNAME']
     app_config = __read_application_config(APPLICATION_CFG)
-    root_library_folder = app_config.defaults()['root_library_folder']
 
     job_config = __construct_job_config(
         fn=JOB_CFG,
         name=f"{application_name}-{version}",
         dtap=dtap,
-        egg=f"{root_library_folder}/{application_name}/{application_name}-{version}.egg",
-        python_file=f"{root_library_folder}/{application_name}/{application_name}-main-{version}.py",
+        egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{version}.egg",
+        python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{version}.py",
         parameters=[
             "--cosmos_endpoint", (os.environ[f'COSMOS_ENDPOINT_{dtap}']),
             "--cosmos_masterkey", (os.environ[f'COSMOS_MASTERKEY_{dtap}']),
@@ -68,7 +67,7 @@ def deploy_application(version: str, dtap: str):
     databricks_host = os.environ[f'AZURE_DATABRICKS_HOST_{dtap}']
     client = ApiClient(host=databricks_host, token=databricks_token)
 
-    is_streaming = app_config.getboolean('DEFAULT', 'is_streaming')
+    is_streaming = 'schedule' in job_config.keys()
     print("Removing old job")
     __remove_job(client, application_name, is_streaming=is_streaming)
     print("Submitting new job with configuration:")
