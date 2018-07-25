@@ -45,7 +45,11 @@ def deploy_application_to_adls(version: str):
                                 resource='https://datalake.azure.net/')
     adls_client = core.AzureDLFileSystem(adls_credentials, store_name=azure_adls_name)
 
-    egg = glob.glob('/root/dist/*.egg')[0]
+    eggs = glob.glob('/root/dist/*.egg')
+    if len(eggs) != 1:
+        raise FileNotFoundError(f'Eggs found: {eggs}; There can (and must) be only one!')
+
+    egg = eggs[0]
     main = '/root/main/main.py'
 
     upload_to_adls(adls_client,
