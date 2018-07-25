@@ -1,0 +1,20 @@
+{
+  "new_cluster": {
+    "spark_version": "4.1.x-scala2.11",
+    "spark_conf": {
+      "spark.sql.warehouse.dir": "/some_{dtap}",
+      "some.setting": "true"
+    }
+  },
+  "some_int": 5,
+  "name": "__generated_value__",
+  "libraries": [
+    {
+      "jar": "some.jar"
+    }
+  ],
+  "spark_python_task": {
+    "python_file": "__generated_value__",
+    "parameters": "__generated_list__"
+  }
+}

@@ -1,0 +1,7 @@
+#!/usr/bin/python3
+
+import os
+from pyspark_streaming_deployment import deploy_to_databricks
+
+os.chdir('/root')
+deploy_to_databricks.main()

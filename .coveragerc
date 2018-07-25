@@ -1,0 +1,10 @@
+[report]
+fail_under = 0
+
+[run]
+omit =
+    ./main/*.py
+    **__init__.py
+    **__pycache__,
+    setup.py
+    tests/*

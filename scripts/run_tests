@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd /root
+pytest --cov-config .coveragerc --cov=./ tests
