@@ -10,7 +10,7 @@ setup(
     author='Schiphol Data Hub',
     long_description=long_description,
     author_email='SDH-Support@schiphol.nl',
-    packages=['pyspark_streaming_deployment'],
+    packages=[],
     install_requires=[
         'gitpython==2.1.10',
         'databricks-cli==0.7.2',
