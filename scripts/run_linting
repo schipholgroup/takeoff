@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 cd /root
-flake8
+flake8 ./
