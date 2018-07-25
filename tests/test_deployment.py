@@ -23,7 +23,6 @@ def test_construct_job_config():
         dtap='whatevs',
         egg='some.egg',
         python_file='some.py',
-        parameters=['--name', 'dave']
     )
 
     assert {"name": "app",
