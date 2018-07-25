@@ -17,6 +17,7 @@ setup(
         'azure-mgmt-datalake-store==0.3.0',
         'azure-mgmt-resource==1.2.2',
         'azure-datalake-store==0.0.24',
+        'azure-keyvault==0.3.7'
         'pytest==3.6.2',
         'pytest-cov==2.5.1',
         'flake8==3.5.0'
