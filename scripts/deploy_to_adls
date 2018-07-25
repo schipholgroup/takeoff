@@ -1,4 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/python3
 
-cd /root
-python ${PYTHONPATH}/site-packages/pyspark_streaming_deployment/deploy_to_adls.py
+import os
+from pyspark_streaming_deployment import deploy_to_adls
+
+os.chdir('/root')
+deploy_to_adls.main()
