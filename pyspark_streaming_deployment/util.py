@@ -20,9 +20,14 @@ def get_application_name() -> str:
 
 
 def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
-    azure_sp_username = os.environ['AZURE_SP_USERNAME']
-    azure_sp_password = os.environ['AZURE_SP_PASSWORD']
-    azure_sp_tenantid = os.environ['AZURE_SP_TENANTID']
+    if dtap.lower() == 'dev':
+        azure_sp_username = os.environ['AZURE_SP_USERNAME']
+        azure_sp_password = os.environ['AZURE_SP_PASSWORD']
+        azure_sp_tenantid = os.environ['AZURE_SP_TENANTID']
+    elif dtap.lower() == 'prd':  # Prematurely include logic for multiple service principles
+        azure_sp_username = os.environ['AZURE_SP_USERNAME']
+        azure_sp_password = os.environ['AZURE_SP_PASSWORD']
+        azure_sp_tenantid = os.environ['AZURE_SP_TENANTID']
 
     return ServicePrincipalCredentials(client_id=azure_sp_username,
                                        secret=azure_sp_password,
