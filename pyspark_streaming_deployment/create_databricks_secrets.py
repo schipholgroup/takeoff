@@ -42,14 +42,26 @@ def __list_secrets(client, scope_name):
 
 
 def __parse_secret_bundle(malformed_json: str) -> List[dict]:
+    """Azure KeyVault python sdk returns a malformed json which has:
+    - Uppercase booleans
+    - single quotation marks
+
+    This function cleans the string and parses it.
+    """
     return json.loads(malformed_json.replace("'", '"').lower())
 
 
 def __extract_ids_from_keys(keys: List[dict]) -> List[str]:
+    """The returned json from Azure KeyVault contains the ids for each secrets, prepended with
+    the vault url.
+
+    This functions extracts only the actual key from the url/id
+    """
     return [key['id'].split('/')[-1] for key in keys]
 
 
 def __filter_ids(ids: List[str], application_name) -> List[str]:
+    """Extracts the actual keys from the prefixed ids"""
     regex = re.compile(rf'^({application_name})-([-A-z0-9]+)*')
 
     def get_match(key_name, idx):
@@ -101,7 +113,7 @@ def create_secrets(dtap: str):
     __create_scope(databricks_client, application_name)
     __add_secrets(databricks_client, application_name, secrets)
 
-    print(f'------  secrets created in "{application_name}"')
+    print(f'------  {len(secrets)} secrets created in "{application_name}"')
     pprint(__list_secrets(databricks_client, application_name))
 
 
