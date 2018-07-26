@@ -17,9 +17,10 @@ setup(
         'azure-mgmt-datalake-store==0.3.0',
         'azure-mgmt-resource==1.2.2',
         'azure-datalake-store==0.0.24',
+        'azure-keyvault==0.3.7',
         'pytest==3.6.2',
         'pytest-cov==2.5.1',
-        'flake8==3.5.0'
+        'flake8==3.5.0',
     ],
     extras_require={
         'test': {
@@ -33,6 +34,7 @@ setup(
     },
     scripts=['scripts/deploy_to_adls',
              'scripts/deploy_to_databricks',
+             'scripts/create_databricks_secrets',
              'scripts/run_linting',
              'scripts/run_tests'],
 )

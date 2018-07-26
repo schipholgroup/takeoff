@@ -1,15 +1,15 @@
 import configparser
 import json
-import os
 import re
 from dataclasses import dataclass
+from pprint import pprint
 from typing import List
 
 from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
-from git import Repo
-from pprint import pprint
+
+from pyspark_streaming_deployment.util import get_tag, get_branch, get_application_name, get_databricks_client
 
 JOB_CFG = '/root/job_config.json'
 ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdhdev/libraries'
@@ -22,9 +22,8 @@ class JobConfig(object):
 
 
 def main():
-    repo = Repo(search_parent_directories=True)
-    tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
-    branch = os.environ['BUILD_SOURCEBRANCHNAME']
+    tag = get_tag()
+    branch = get_branch()
 
     if tag:
         deploy_application(tag, dtap='PRD')
@@ -44,7 +43,7 @@ def deploy_application(version: str, dtap: str):
     configuration. If the job is batch this will not start it manually, assuming the schedule
     has been set correctly.
     """
-    application_name = os.environ['BUILD_DEFINITIONNAME']
+    application_name = get_application_name()
 
     job_config = __construct_job_config(
         fn=JOB_CFG,
@@ -53,19 +52,16 @@ def deploy_application(version: str, dtap: str):
         egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{version}.egg",
         python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{version}.py",
     )
-    print("Creating databricks client")
 
-    databricks_token = os.environ[f'AZURE_DATABRICKS_TOKEN_{dtap}']
-    databricks_host = os.environ[f'AZURE_DATABRICKS_HOST_{dtap}']
-    client = ApiClient(host=databricks_host, token=databricks_token)
+    databricks_client = get_databricks_client(dtap)
 
     is_streaming = 'schedule' in job_config.keys()
     print("Removing old job")
-    __remove_job(client, application_name, is_streaming=is_streaming)
+    __remove_job(databricks_client, application_name, is_streaming=is_streaming)
     print("Submitting new job with configuration:")
     pprint(job_config)
 
-    __submit_job(client, job_config, is_streaming)
+    __submit_job(databricks_client, job_config, is_streaming)
 
 
 def __read_application_config(fn: str):

@@ -21,7 +21,7 @@ To finish setting up CI/CD VSTS must have a `GITHUB_TOKEN` passed to the docker-
 2. Hit `Variable groups` and `Link variable group`
 3. Choose `github` and save your definition
 
-In your `.vsts-ci.yaml` you can use these steps and docker commands to:
+In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose any of the following that are applicable to your application):
 
 * Run linting
 
@@ -76,7 +76,24 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to:
         AZURE_DATABRICKS_HOST_PRD: ${azure_databricks_host_prd}
     ```
     
-The VSTS variables for uploading and deploying are, just like the `github` variable available as `Variable groups`. Follow the above steps to get them in your build.
+* Create databricks secrets
+    
+    The secrets are pulled from Azure Key Vault. The keys in the vault should be prefixed with you application name (which is the repo name) so that the script can find the relevant keys for your application.
+    The secrets in databricks are created without the prefix, but in a separate `scope` (which is the repo name again).
+    ```
+    - task: DockerCompose@0
+      displayName: Create databricks secrets
+      inputs:
+        dockerComposeCommand: |
+          run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_databricks_secrets"
+      env:
+        AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
+        AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
+        AZURE_DATABRICKS_TOKEN_PRD: ${azure_databricks_token_prd}
+        AZURE_DATABRICKS_HOST_PRD: ${azure_databricks_host_prd}
+    ```
+    
+The VSTS variables for uploading, deploying and secrets are, just like the `github` variable, available as `Variable groups`. Follow the above steps to get them in your build.
 
 # Local development
 
