@@ -4,11 +4,12 @@ import os
 from azure.datalake.store import core, lib, multithread
 from git import Repo
 
+from pyspark_streaming_deployment.util import get_tag, get_branch
+
 
 def main():
-    repo = Repo(search_parent_directories=True)
-    tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
-    branch = os.environ['BUILD_SOURCEBRANCHNAME']
+    tag = get_tag()
+    branch = get_branch()
 
     if tag:
         deploy_application_to_adls(tag)
