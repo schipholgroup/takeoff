@@ -1,15 +1,13 @@
 import configparser
 import json
-import os
 import re
 from dataclasses import dataclass
+from pprint import pprint
 from typing import List
 
 from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
-from git import Repo
-from pprint import pprint
 
 from pyspark_streaming_deployment.util import get_tag, get_branch, get_application_name, get_databricks_client
 

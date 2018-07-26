@@ -6,7 +6,6 @@ from pprint import pprint
 from typing import List
 
 from azure.keyvault import KeyVaultClient
-from azure.keyvault.models import SecretBundle
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
 
@@ -102,7 +101,7 @@ def create_secrets(dtap: str):
     __create_scope(databricks_client, application_name)
     __add_secrets(databricks_client, application_name, secrets)
 
-    print(f'------  secrets created in "{scope_name}"')
+    print(f'------  secrets created in "{application_name}"')
     pprint(__list_secrets(databricks_client, application_name))
 
 

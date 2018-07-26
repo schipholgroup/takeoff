@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass
 
 from databricks_cli.sdk import ApiClient
 from git import Repo
