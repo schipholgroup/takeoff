@@ -15,6 +15,5 @@
   ],
   "spark_python_task": {
     "python_file": "__generated_value__",
-    "parameters": "__generated_list__"
   }
 }
