@@ -35,6 +35,16 @@ def main():
             nor master branch (branch = "{branch}". Not deploying''')
 
 
+def _job_is_streaming(job_config):
+    """
+    If there is no schedule, the job would not run periodically, therefore we assume that is a
+    streaming job
+    :param job_config: the configuration of the Databricks job
+    :return: (bool) if it is a streaming job
+    """
+    return 'schedule' not in job_config.keys()
+
+
 def deploy_application(version: str, dtap: str):
     """
     The application parameters (cosmos and eventhub) will be removed from this file as they
@@ -55,7 +65,7 @@ def deploy_application(version: str, dtap: str):
 
     databricks_client = get_databricks_client(dtap)
 
-    is_streaming = 'schedule' in job_config.keys()
+    is_streaming = _job_is_streaming(job_config)
     print("Removing old job")
     __remove_job(databricks_client, application_name, is_streaming=is_streaming)
     print("Submitting new job with configuration:")
