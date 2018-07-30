@@ -27,6 +27,7 @@ setup(
             'pytest==3.6.2',
             'databricks-cli==0.7.2',
             'gitpython==2.1.10',
+            'py4j==0.10.7',
         },
         'lint': {
             'flake8==3.5.0'
