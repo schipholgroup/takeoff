@@ -14,10 +14,10 @@ def test_scope_exists():
 
 def test_filter_ids():
     ids = [
-        IdAndKey('1', 'app-foo-key1'),
-        IdAndKey('2', 'appfoo-key2'),
-        IdAndKey('3', 'app-bar-key3'),
-        IdAndKey('4', 'app-key4')
+        'app-foo-key1',
+        'appfoo-key2',
+        'app-bar-key3',
+        'app-key4'
     ]
 
     filtered = [_.databricks_secret_key for _ in victim.__filter_keyvault_ids(ids, 'app')]
