@@ -37,6 +37,7 @@ setup(
     scripts=['scripts/deploy_to_adls',
              'scripts/deploy_to_databricks',
              'scripts/create_databricks_secrets',
+             'scripts/create_application_insights',
              'scripts/run_linting',
              'scripts/run_tests'],
 )
