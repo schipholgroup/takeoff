@@ -1,5 +1,10 @@
 # Pyspark streaming deployment
 
+What does it do?
+
+![deployment](img/deployment_flow.png)
+
+# Setting it up
 This package is used as dependency in other project to consolidate deployment and testing in pyspark streaming applications (though batch applications are also supported)
 
 To use this package for deployment simply add the following to your `setup.py`
