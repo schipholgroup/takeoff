@@ -1,5 +1,4 @@
 from pyspark_streaming_deployment import create_databricks_secrets as victim
-from pyspark_streaming_deployment.create_databricks_secrets import IdAndKey
 
 
 def test_scope_exists():
