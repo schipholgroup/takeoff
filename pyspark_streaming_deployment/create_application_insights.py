@@ -20,8 +20,8 @@ def main():
             nor master branch (branch = "{branch}". Not deploying''')
 
 
-def __create_client():
-    return ApplicationInsightsManagementClient(get_azure_credentials(), get_subscription_id())
+def __create_client(dtap: str) -> ApplicationInsightsManagementClient:
+    return ApplicationInsightsManagementClient(get_azure_credentials(dtap), get_subscription_id())
 
 
 def __find(client: ApplicationInsightsManagementClient, name: str):
@@ -33,7 +33,7 @@ def __find(client: ApplicationInsightsManagementClient, name: str):
 
 def create_application_insights(dtap: str):
     application_name = get_application_name()
-    client = __create_client()
+    client = __create_client(dtap)
 
     insight = __find(client, application_name)
     if not insight:
