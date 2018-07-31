@@ -43,11 +43,13 @@ def create_application_insights(dtap: str):
             kind='other',
             application_type='other'
         )
-        insight = client.components.create_or_update(f'sdh{dtap}', application_name, comp)
+        insight = client.components.create_or_update(f'sdh{dtap.lower()}', application_name, comp)
 
     instrumentation_secret = Secret('instrumentation-key', insight.instrumentation_key)
 
     databricks_client = get_databricks_client(dtap)
+
+    print(instrumentation_secret)
 
     __create_scope(databricks_client, application_name)
     __add_secrets(databricks_client, application_name, [instrumentation_secret])
