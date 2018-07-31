@@ -6,6 +6,7 @@ from pprint import pprint
 from typing import List
 
 from azure.keyvault import KeyVaultClient
+from azure.keyvault.models import SecretBundle
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
 
@@ -17,6 +18,12 @@ from pyspark_streaming_deployment.util import get_application_name, get_branch, 
 class Secret:
     key: str
     val: str
+
+
+@dataclass
+class IdAndKey:
+    id: str
+    key: str
 
 
 def __scope_exists(scopes: dict, scope_name: str):
@@ -41,26 +48,18 @@ def __list_secrets(client, scope_name):
     return api.list_secrets(scope_name)
 
 
-def __parse_secret_bundle(malformed_json: str) -> List[dict]:
-    """Azure KeyVault python sdk returns a malformed json which has:
-    - Uppercase booleans
-    - single quotation marks
-
-    This function cleans the string and parses it.
-    """
-    return json.loads(malformed_json.replace("'", '"').lower())
-
-
-def __extract_ids_from_keys(keys: List[dict]) -> List[str]:
+def __extract_ids_from_keys(keys: List[SecretBundle]) -> List[IdAndKey]:
     """The returned json from Azure KeyVault contains the ids for each secrets, prepended with
     the vault url.
 
     This functions extracts only the actual key from the url/id
     """
-    return [key['id'].split('/')[-1] for key in keys]
+    return [IdAndKey(key.id,
+                     key.id.split('/')[-1])
+            for key in keys]
 
 
-def __filter_ids(ids: List[str], application_name) -> List[str]:
+def __filter_ids(ids: List[IdAndKey], application_name) -> List[IdAndKey]:
     """Extracts the actual keys from the prefixed ids"""
     regex = re.compile(rf'^({application_name})-([-A-z0-9]+)*')
 
@@ -72,17 +71,15 @@ def __filter_ids(ids: List[str], application_name) -> List[str]:
         match = regex.search(key_name)
         return match and match.groups()[0] == application_name
 
-    return [get_match(_, 1) for _ in ids if has_match(_)]
+    return [IdAndKey(_.id, get_match(_.key, 1)) for _ in ids if has_match(_.key)]
 
 
 def __get_keyvault_secrets(client: KeyVaultClient, vault: str, application_name: str) -> List[Secret]:
-    secret_bundle = client.get_secret(vault, '', '')  # this gets ALL secrets in the vault
-    ChainMap()
-    secrets_keys = __parse_secret_bundle(secret_bundle.value)
-    secrets_ids = __extract_ids_from_keys(secrets_keys)
+    secrets = list(client.get_secrets(vault))
+    secrets_ids = __extract_ids_from_keys(secrets)
     secrets_filtered = __filter_ids(secrets_ids, application_name)
 
-    app_secrets = [Secret(key, client.get_secret(vault, key, '').value) for key in secrets_filtered]
+    app_secrets = [Secret(key.key, client.get_secret(vault, key.id, '').value) for key in secrets_filtered]
 
     return app_secrets
 
