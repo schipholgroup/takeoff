@@ -3,6 +3,7 @@ import os
 from databricks_cli.sdk import ApiClient
 from git import Repo
 from msrestazure.azure_active_directory import ServicePrincipalCredentials
+from azure.common.credentials import UserPassCredentials
 
 
 def get_branch() -> str:
@@ -16,6 +17,10 @@ def get_tag() -> str:
 
 def get_application_name() -> str:
     return os.environ['BUILD_DEFINITIONNAME']
+
+
+def get_subscription_id() -> str:
+    return os.environ['SUBSCRIPTION_ID']
 
 
 def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
@@ -37,3 +42,10 @@ def get_databricks_client(dtap: str) -> ApiClient:
     databricks_token = os.environ[f'AZURE_DATABRICKS_TOKEN_{dtap.upper()}']
     databricks_host = os.environ[f'AZURE_DATABRICKS_HOST_{dtap.upper()}']
     return ApiClient(host=databricks_host, token=databricks_token)
+
+
+def get_azure_credentials(dtap: str) -> UserPassCredentials:
+    return UserPassCredentials(
+        os.environ[f'AZURE_USERNAME_{dtap.upper()}'],
+        os.environ[f'AZURE_PASSWORD_{dtap.upper()}']
+    )

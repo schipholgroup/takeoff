@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+
+from create_application_insights import create_application_insights
+
+create_application_insights.main()

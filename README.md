@@ -98,6 +98,25 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         AZURE_DATABRICKS_HOST_PRD: ${azure_databricks_host_prd}
     ```
     
+* Create an application insights
+
+    Add the following task to the .vsts-ci.yaml to create an application insights automagically.
+    ```
+    - task: DockerCompose@0
+      displayName: Create application insights
+      inputs:
+        dockerComposeCommand: |
+          run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_application_insights"
+      env:
+        AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
+        AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
+        AZURE_USERNAME_DEV: ${azure_username_dev}
+        AZURE_PASSWORD_DEV: ${azure_password_dev}
+        SUBSCRIPTION_ID: ${SUBSCRIPTION_ID}
+        GITHUB_TOKEN: ${github_token}
+    ```
+    This will inject a databricks secret called `instrumentation-key` which you can use to set up a [streaming query listener](https://github.com/Schiphol-Hub/streaming-query-listener).
+    
 The VSTS variables for uploading, deploying and secrets are, just like the `github` variable, available as `Variable groups`. Follow the above steps to get them in your build.
 
 # Local development

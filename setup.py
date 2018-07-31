@@ -15,6 +15,7 @@ setup(
         'gitpython==2.1.10',
         'databricks-cli==0.7.2',
         'azure-mgmt-datalake-store==0.3.0',
+        'azure-mgmt-applicationinsights==0.1.1',
         'azure-mgmt-resource==1.2.2',
         'azure-datalake-store==0.0.24',
         'azure-keyvault==0.3.7',
