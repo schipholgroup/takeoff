@@ -27,7 +27,7 @@ def __create_client():
 def __find(client: ApplicationInsightsManagementClient, name: str):
     for insight in client.components.list():
         if insight.name == name:
-            return insight.as_dict()
+            return insight
     return None
 
 
@@ -43,9 +43,9 @@ def create_application_insights(dtap: str):
             kind='other',
             application_type='other'
         )
-        insight = client.components.create_or_update('sdhdev', application_name, comp).as_dict()
+        insight = client.components.create_or_update(f'sdh{dtap}', application_name, comp)
 
-    instrumentation_secret = Secret('instrumentation-key', insight['instrumentation_key'])
+    instrumentation_secret = Secret('instrumentation-key', insight.instrumentation_key)
 
     databricks_client = get_databricks_client(dtap)
 
