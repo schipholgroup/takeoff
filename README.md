@@ -103,7 +103,7 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
     Add the following task to the .vsts-ci.yaml to create an application insights automagically.
     ```
     - task: DockerCompose@0
-      displayName: Run python tests
+      displayName: Create application insights
       inputs:
         dockerComposeCommand: |
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_application_insights"
@@ -113,6 +113,7 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         AZURE_USERNAME_DEV: ${azure_username_dev}
         AZURE_PASSWORD_DEV: ${azure_password_dev}
         SUBSCRIPTION_ID: ${SUBSCRIPTION_ID}
+        GITHUB_TOKEN: ${github_token}
     ```
     This will inject a databricks secret called `instrumentation-key` which you can use to set up a [streaming query listener](https://github.com/Schiphol-Hub/streaming-query-listener).
     
