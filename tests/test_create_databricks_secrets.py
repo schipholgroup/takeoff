@@ -20,10 +20,10 @@ def test_filter_ids():
         IdAndKey('4', 'app-key4')
     ]
 
-    filtered = [_.key for _ in victim.__filter_ids(ids, 'app')]
+    filtered = [_.databricks_secret_key for _ in victim.__filter_keyvault_ids(ids, 'app')]
     assert len(filtered) == 3
     assert all(_ in filtered for _ in ('foo-key1', 'bar-key3', 'key4'))
 
-    filtered = [_.key for _ in victim.__filter_ids(ids, 'app-foo')]
+    filtered = [_.databricks_secret_key for _ in victim.__filter_keyvault_ids(ids, 'app-foo')]
     assert len(filtered) == 1
     assert 'key1' in filtered

@@ -20,8 +20,8 @@ class Secret:
 
 @dataclass
 class IdAndKey:
-    id: str
-    key: str
+    keyvault_id: str
+    databricks_secret_key: str
 
 
 def __scope_exists(scopes: dict, scope_name: str):
@@ -46,19 +46,26 @@ def __list_secrets(client, scope_name):
     return api.list_secrets(scope_name)
 
 
-def __extract_ids_from_keys(keys: List[SecretBundle]) -> List[IdAndKey]:
+def __extract_keyvault_ids_from(secrets: List[SecretBundle]) -> List[str]:
     """The returned json from Azure KeyVault contains the ids for each secrets, prepended with
     the vault url.
 
     This functions extracts only the actual key from the url/id
+
+    https://sdhkeyvaultdev.vault.azure.net/secrets/flights-arrivals-cosmos-collection
+    to
+    flights-arrivals-cosmos-collection
     """
-    return [IdAndKey(key.id,
-                     key.id.split('/')[-1])
-            for key in keys]
+    return [_.id.split('/')[-1] for _ in secrets]
 
 
-def __filter_ids(ids: List[IdAndKey], application_name) -> List[IdAndKey]:
-    """Extracts the actual keys from the prefixed ids"""
+def __filter_keyvault_ids(keyvault_ids: List[str], application_name) -> List[IdAndKey]:
+    """Extracts the actual keys from the prefixed ids
+
+    flights-arrivals-cosmos-collection
+    to
+    (flights-arrivals-cosmos-collection, cosmos-collection)
+    """
     regex = re.compile(rf'^({application_name})-([-A-z0-9]+)*')
 
     def get_match(key_name, idx):
@@ -69,15 +76,16 @@ def __filter_ids(ids: List[IdAndKey], application_name) -> List[IdAndKey]:
         match = regex.search(key_name)
         return match and match.groups()[0] == application_name
 
-    return [IdAndKey(_.id, get_match(_.key, 1)) for _ in ids if has_match(_.key)]
+    return [IdAndKey(_, get_match(_, 1)) for _ in keyvault_ids if has_match(_)]
 
 
 def __get_keyvault_secrets(client: KeyVaultClient, vault: str, application_name: str) -> List[Secret]:
     secrets = list(client.get_secrets(vault))
-    secrets_ids = __extract_ids_from_keys(secrets)
-    secrets_filtered = __filter_ids(secrets_ids, application_name)
+    secrets_ids = __extract_keyvault_ids_from(secrets)
+    secrets_filtered = __filter_keyvault_ids(secrets_ids, application_name)
 
-    app_secrets = [Secret(key.key, client.get_secret(vault, key.id, '').value) for key in secrets_filtered]
+    app_secrets = [Secret(_.databricks_secret_key, client.get_secret(vault, _.keyvault_id, '').value)
+                   for _ in secrets_filtered]
 
     return app_secrets
 
