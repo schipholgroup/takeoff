@@ -2,8 +2,9 @@ import os
 
 from databricks_cli.sdk import ApiClient
 from git import Repo
-from msrestazure.azure_active_directory import ServicePrincipalCredentials
-from azure.common.credentials import UserPassCredentials
+from azure.common.credentials import UserPassCredentials, ServicePrincipalCredentials
+
+RESOURCE_GROUP = 'sdh{dtap}'
 
 
 def get_branch() -> str:
@@ -38,14 +39,19 @@ def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
                                        tenant=azure_sp_tenantid)
 
 
+def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
+    if dtap.lower() == 'dev':
+        azure_username = os.environ['AZURE_USERNAME']
+        azure_password = os.environ['AZURE_PASSWORD']
+    elif dtap.lower() == 'prd':  # Prematurely include logic for multiple service principles
+        azure_username = os.environ['AZURE_SP_USERNAME']
+        azure_password = os.environ['AZURE_SP_PASSWORD']
+
+    return UserPassCredentials(username=azure_username,
+                               password=azure_password)
+
+
 def get_databricks_client(dtap: str) -> ApiClient:
     databricks_token = os.environ[f'AZURE_DATABRICKS_TOKEN_{dtap.upper()}']
     databricks_host = os.environ[f'AZURE_DATABRICKS_HOST_{dtap.upper()}']
     return ApiClient(host=databricks_host, token=databricks_token)
-
-
-def get_azure_credentials(dtap: str) -> UserPassCredentials:
-    return UserPassCredentials(
-        os.environ[f'AZURE_USERNAME_{dtap.upper()}'],
-        os.environ[f'AZURE_PASSWORD_{dtap.upper()}']
-    )

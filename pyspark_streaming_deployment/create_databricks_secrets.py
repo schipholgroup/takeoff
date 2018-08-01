@@ -8,8 +8,7 @@ from azure.keyvault.models import SecretBundle
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
 
-from pyspark_streaming_deployment.util import get_application_name, get_branch, get_azure_sp_credentials, get_tag, \
-    get_databricks_client
+from pyspark_streaming_deployment.util import get_application_name, get_azure_sp_credentials, get_databricks_client
 
 
 @dataclass
@@ -90,21 +89,7 @@ def __get_keyvault_secrets(client: KeyVaultClient, vault: str, application_name:
     return app_secrets
 
 
-def main():
-    branch = get_branch()
-    tag = get_tag()
-
-    if tag:
-        create_secrets(dtap='PRD')
-    else:
-        if branch == 'master':
-            create_secrets(dtap='DEV')
-        else:
-            print(f'''Not a release (tag not available),
-            nor master branch (branch = "{branch}". Not deploying''')
-
-
-def create_secrets(dtap: str):
+def create_secrets(_: str, dtap: str):
     application_name = get_application_name()
     azure_credentials = get_azure_sp_credentials(dtap)
     keyvault_client = KeyVaultClient(azure_credentials)
@@ -118,7 +103,3 @@ def create_secrets(dtap: str):
 
     print(f'------  {len(secrets)} secrets created in "{application_name}"')
     pprint(__list_secrets(databricks_client, application_name))
-
-
-if __name__ == '__main__':
-    main()

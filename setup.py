@@ -15,6 +15,7 @@ setup(
         'gitpython==2.1.10',
         'databricks-cli==0.7.2',
         'azure-mgmt-datalake-store==0.3.0',
+        'azure-mgmt-eventhub==1.2.0',
         'azure-mgmt-applicationinsights==0.1.1',
         'azure-mgmt-resource==1.2.2',
         'azure-datalake-store==0.0.24',
@@ -38,6 +39,7 @@ setup(
              'scripts/deploy_to_databricks',
              'scripts/create_databricks_secrets',
              'scripts/create_application_insights',
+             'scripts/create_eventhub_consumer_groups',
              'scripts/run_linting',
              'scripts/run_tests'],
 )

@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 import os
-from pyspark_streaming_deployment import deploy_to_databricks
+from pyspark_streaming_deployment import main
+from pyspark_streaming_deployment.deploy_to_databricks import deploy_application
 
 os.chdir('/root')
-deploy_to_databricks.main()
+main.main(deploy_application)

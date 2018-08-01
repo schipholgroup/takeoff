@@ -3,20 +3,7 @@ import os
 
 from azure.datalake.store import core, lib, multithread
 
-from pyspark_streaming_deployment.util import get_tag, get_branch, get_application_name
-
-
-def main():
-    tag = get_tag()
-    branch = get_branch()
-
-    if tag:
-        deploy_application_to_adls(tag)
-    else:
-        if branch == 'master':
-            deploy_application_to_adls('SNAPSHOT')
-        else:
-            print(f'Not a release tag, nor master branch (branch = "{branch}". Not deploying')
+from pyspark_streaming_deployment.util import get_application_name
 
 
 def upload_to_adls(client, source: str, destination: str):
@@ -30,7 +17,7 @@ def upload_to_adls(client, source: str, destination: str):
                             overwrite=True)
 
 
-def deploy_application_to_adls(version: str):
+def deploy_application_to_adls(version: str, _: str):
     print("Submitting job to databricks")
 
     azure_adls_name = os.environ['AZURE_ADLS_NAME']
@@ -58,7 +45,3 @@ def deploy_application_to_adls(version: str):
     upload_to_adls(adls_client,
                    main,
                    f'/libraries/{build_definitionname}/{build_definitionname}-main-{version}.py')
-
-
-if __name__ == '__main__':
-    main()

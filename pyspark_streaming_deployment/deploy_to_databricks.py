@@ -9,7 +9,7 @@ from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
 
-from pyspark_streaming_deployment.util import get_tag, get_branch, get_application_name, get_databricks_client
+from pyspark_streaming_deployment.util import get_application_name, get_databricks_client
 
 JOB_CFG = '/root/job_config.json'
 ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdhdev/libraries'
@@ -19,20 +19,6 @@ ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdhdev/libraries'
 class JobConfig(object):
     name: str
     job_id: int
-
-
-def main():
-    tag = get_tag()
-    branch = get_branch()
-
-    if tag:
-        deploy_application(tag, dtap='PRD')
-    else:
-        if branch == 'master':
-            deploy_application('SNAPSHOT', dtap='DEV')
-        else:
-            print(f'''Not a release (tag not available),
-            nor master branch (branch = "{branch}". Not deploying''')
 
 
 def _job_is_streaming(job_config):
@@ -151,7 +137,3 @@ def __submit_job(client: ApiClient, job_config: dict, is_streaming: bool):
 
     if is_streaming:
         jobs_api.run_now(job_resp['job_id'], None, None, None, None)
-
-
-if __name__ == '__main__':
-    main()

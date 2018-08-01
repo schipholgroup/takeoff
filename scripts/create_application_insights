@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
-from pyspark_streaming_deployment import create_application_insights
+import os
+from pyspark_streaming_deployment import main
+from pyspark_streaming_deployment.create_application_insights import create_application_insights
 
-create_application_insights.main()
+os.chdir('/root')
+main.main(create_application_insights)

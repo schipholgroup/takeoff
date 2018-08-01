@@ -1,0 +1,8 @@
+#!/usr/bin/python3
+
+import os
+from pyspark_streaming_deployment import main
+from pyspark_streaming_deployment.create_eventhub_consumer_groups import create_consumer_groups
+
+os.chdir('/root')
+main.main(create_consumer_groups)

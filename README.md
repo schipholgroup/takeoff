@@ -119,6 +119,24 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
     
 The VSTS variables for uploading, deploying and secrets are, just like the `github` variable, available as `Variable groups`. Follow the above steps to get them in your build.
 
+* Create consumer groups in eventhub
+    You must specify which eventhubs to create which consumer groups in. Make sure you prefix them correctly with the application name.
+    
+    ```
+    - task: DockerCompose@0
+      displayName: Create Eventhub consumer groups
+      inputs:
+        dockerComposeCommand: |
+          run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_eventhub_consumer_groups"
+      env:
+        EVENTHUB_ENTITIES: 'hub1,hub2'
+        EVENTHUB_CONSUMER_GROUPS: 'hub1_yourappname_group1,hub1_yourappname_group2,hub2_yourappname_group1'
+        AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
+        AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
+        SUBSCRIPTION_ID: ${SUBSCRIPTION_ID}
+        GITHUB_TOKEN: ${github_token}
+    ```
+
 # Local development
 
 Make sure you have installed and updated docker
