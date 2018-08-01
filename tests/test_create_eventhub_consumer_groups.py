@@ -14,3 +14,16 @@ def test_get_consumer_groups_from_os_variables():
                         ]
 
     assert all(_ in consumer_groups for _ in asserting_groups)
+
+
+def test_get_unique_eventhubs():
+    groups = [ConsumerGroup('hub1', 'your-app-name-group1', 'sdheventhubdev', 'sdhdev'),
+              ConsumerGroup('hub1', 'your-app-name-group2', 'sdheventhubdev', 'sdhdev'),
+              ConsumerGroup('hub2', 'your-app-name-group1', 'sdheventhubdev', 'sdhdev')
+              ]
+
+    uniques = victim._get_unique_eventhubs(groups)
+
+    print(uniques)
+    assert len(uniques) == 2
+    assert all(_ in map(lambda x: x.eventhub_entity, uniques) for _ in ('hub1', 'hub2'))

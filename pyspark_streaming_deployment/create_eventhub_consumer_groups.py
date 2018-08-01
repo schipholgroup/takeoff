@@ -1,10 +1,9 @@
 import os
 import re
 from dataclasses import dataclass
-from typing import List
+from typing import List, Set
 
 from azure.mgmt.eventhub import EventHubManagementClient
-from azure.mgmt.eventhub.models import AccessKeys
 from azure.mgmt.relay.models import AccessRights
 
 from pyspark_streaming_deployment.create_databricks_secrets import __create_scope, __add_secrets, Secret
@@ -20,6 +19,13 @@ class ConsumerGroup(object):
     consumer_group: str
     eventhub_namespace: str
     resource_group: str
+
+
+@dataclass(frozen=True)
+class EventHub(object):
+    resource_group: str
+    eventhub_namespace: str
+    eventhub_entity: str
 
 
 @dataclass
@@ -79,7 +85,7 @@ def _get_requested_consumer_groups(eventhub_names, consumer_group_names, dtap) -
             if hub_in_group_name(hub, group)]
 
 
-def _authorization_rules_exists(client: EventHubManagementClient, group: ConsumerGroup, name: str) -> bool:
+def _authorization_rules_exists(client: EventHubManagementClient, group: EventHub, name: str) -> bool:
     existing_policies = list(client.event_hubs.list_authorization_rules(group.resource_group,
                                                                         group.eventhub_namespace,
                                                                         group.eventhub_entity
@@ -91,27 +97,36 @@ def _authorization_rules_exists(client: EventHubManagementClient, group: Consume
     return False
 
 
-def _create_consumer_group(client: EventHubManagementClient, group: ConsumerGroup) -> ConnectingString:
-    policy_name = f"{get_application_name()}-policy"
-
-    if not _authorization_rules_exists(client, group, policy_name):
-        client.event_hubs.create_or_update_authorization_rule(group.resource_group,
-                                                              group.eventhub_namespace,
-                                                              group.eventhub_entity,
-                                                              policy_name,
-                                                              [AccessRights.listen])
-
+def _create_consumer_group(client: EventHubManagementClient, group: ConsumerGroup):
     client.consumer_groups.create_or_update(group.resource_group,
                                             group.eventhub_namespace,
                                             group.eventhub_entity,
                                             group.consumer_group)
 
-    key: AccessKeys = client.event_hubs.list_keys(group.resource_group,
-                                                  group.eventhub_namespace,
-                                                  group.eventhub_entity,
-                                                  policy_name)
 
-    return ConnectingString(group.eventhub_entity, key.primary_connection_string)
+def _create_connection_strings(client: EventHubManagementClient,
+                               eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
+    policy_name = f"{get_application_name()}-policy"
+
+    for group in eventhub_entities:
+        if not _authorization_rules_exists(client, group, policy_name):
+            client.event_hubs.create_or_update_authorization_rule(group.resource_group,
+                                                                  group.eventhub_namespace,
+                                                                  group.eventhub_entity,
+                                                                  policy_name,
+                                                                  [AccessRights.listen])
+
+    connection_strings = [client.event_hubs.list_keys(group.resource_group,
+                                                      group.eventhub_namespace,
+                                                      group.eventhub_entity,
+                                                      policy_name).primary_connection_string
+                          for group in eventhub_entities]
+
+    return [ConnectingString(hub.eventhub_entity, conn) for hub, conn in zip(eventhub_entities, connection_strings)]
+
+
+def _get_unique_eventhubs(consumer_groups_to_create: List[ConsumerGroup]) -> Set[EventHub]:
+    return set(EventHub(_.resource_group, _.eventhub_namespace, _.eventhub_entity) for _ in consumer_groups_to_create)
 
 
 def create_consumer_groups(_: str, dtap: str):
@@ -121,13 +136,14 @@ def create_consumer_groups(_: str, dtap: str):
     eventhub_names, consumer_group_names = _read_os_variables()
     consumer_groups_to_create = _get_requested_consumer_groups(eventhub_names, consumer_group_names, dtap)
 
-    connection_strings = set(
-        _create_consumer_group(eventhub_client, group)
-        for group in consumer_groups_to_create
-        if _eventhub_exists(eventhub_client, group) and not _group_exists(eventhub_client, group))
+    connection_strings = _create_connection_strings(eventhub_client,
+                                                    _get_unique_eventhubs(consumer_groups_to_create))
+
+    for group in consumer_groups_to_create:
+        if _eventhub_exists(eventhub_client, group) and not _group_exists(eventhub_client, group):
+            _create_consumer_group(eventhub_client, group)
 
     databricks_client = get_databricks_client(dtap)
-
     application_name = get_application_name()
 
     secrets = [Secret(f'{_.eventhub_entity}-connection-string',
