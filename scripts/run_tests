@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 cd /root
-pytest --cov-config .coveragerc --cov=./ tests
+pytest --cov-config .coveragerc --cov=./ --cov-report xml tests

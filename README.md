@@ -48,6 +48,16 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         dockerComposeCommand: |
           run --rm pyspark bash -c "pip install --process-dependency-links .[deploy] && run_tests"
     ```
+* Publish code coverage
+    In order to get your coverage picked up by VSTS, you need to 'publish' the results. This task should only be run after the tests have been (successfully) run and the coverage results are available.
+    ```
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish coverage results'
+      inputs:
+        codeCoverageTool: 'cobertura'
+        summaryFileLocation: $(System.DefaultWorkingDirectory)/coverage.xml
+        failIfCoverageEmpty: true
+    ```
 * Upload artifact to ADLS
     ```
     - task: DockerCompose@0
