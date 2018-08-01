@@ -41,15 +41,10 @@ def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
 
 
 def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
-    if dtap.lower() == 'dev':
-        azure_username = os.environ['AZURE_USERNAME']
-        azure_password = os.environ['AZURE_PASSWORD']
-    elif dtap.lower() == 'prd':  # Prematurely include logic for multiple service principles
-        azure_username = os.environ['AZURE_SP_USERNAME']
-        azure_password = os.environ['AZURE_SP_PASSWORD']
-
-    return UserPassCredentials(username=azure_username,
-                               password=azure_password)
+    return UserPassCredentials(
+        os.environ[f'AZURE_USERNAME_{dtap.upper()}'],
+        os.environ[f'AZURE_PASSWORD_{dtap.upper()}']
+    )
 
 
 def get_databricks_client(dtap: str) -> ApiClient:
