@@ -1,4 +1,5 @@
 import os
+import re
 from dataclasses import dataclass
 from typing import List
 
@@ -8,7 +9,7 @@ from azure.mgmt.relay.models import AccessRights
 
 from pyspark_streaming_deployment.create_databricks_secrets import __create_scope, __add_secrets, Secret
 from pyspark_streaming_deployment.util import get_azure_user_credentials, RESOURCE_GROUP, \
-    get_application_name, get_databricks_client, get_subscription_id
+    get_application_name, get_databricks_client, get_subscription_id, get_matching_group, has_prefix_match
 
 EVENTHUB_NAMESPACE = 'sdheventhub{dtap}'
 
@@ -48,19 +49,34 @@ def _group_exists(client: EventHubManagementClient, group: ConsumerGroup) -> boo
     return False
 
 
-def _get_requested_consumer_groups(dtap) -> List[ConsumerGroup]:
-    eventhub_names: List[str] = os.environ['EVENTHUB_ENTITIES']
-    consumer_group_names: List[str] = os.environ['EVENTHUB_CONSUMER_GROUPS']
+def _read_os_variables() -> tuple:
+    eventhub_names: List[str] = os.environ['EVENTHUB_ENTITIES'].split(',')
+    consumer_group_names: List[str] = os.environ['EVENTHUB_CONSUMER_GROUPS'].split(',')
 
-    eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=dtap)
-    resource_group = RESOURCE_GROUP.format(dtap=dtap)
+    return eventhub_names, consumer_group_names
+
+
+def _get_requested_consumer_groups(eventhub_names, consumer_group_names, dtap) -> List[ConsumerGroup]:
+    def _get_group_name(hub, full_group_name):
+        pattern = re.compile(rf'(^{hub})-(.*$)')
+
+        return get_matching_group(full_group_name, pattern, 1)
+
+    def hub_in_group_name(hub, full_group_name):
+        pattern = re.compile(rf'(^{hub})-(.*$)')
+
+        return has_prefix_match(full_group_name, hub, pattern)
+
+    eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=dtap.lower())
+    resource_group = RESOURCE_GROUP.format(dtap=dtap.lower())
 
     return [ConsumerGroup(hub,
-                          group.replace(hub, '', 1),
+                          _get_group_name(hub, group),
                           eventhub_namespace,
                           resource_group)
             for hub in eventhub_names
-            for group in consumer_group_names]
+            for group in consumer_group_names
+            if hub_in_group_name(hub, group)]
 
 
 def _authorization_rules_exists(client: EventHubManagementClient, group: ConsumerGroup, name: str) -> bool:
@@ -76,7 +92,7 @@ def _authorization_rules_exists(client: EventHubManagementClient, group: Consume
 
 
 def _create_consumer_group(client: EventHubManagementClient, group: ConsumerGroup) -> ConnectingString:
-    policy_name = f"{get_application_name().replace('-','')}-policy"
+    policy_name = f"{get_application_name()}-policy"
 
     if not _authorization_rules_exists(client, group, policy_name):
         client.event_hubs.create_or_update_authorization_rule(group.resource_group,
@@ -102,7 +118,8 @@ def create_consumer_groups(_: str, dtap: str):
     credentials = get_azure_user_credentials(dtap)
     eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
 
-    consumer_groups_to_create = _get_requested_consumer_groups(dtap)
+    eventhub_names, consumer_group_names = _read_os_variables()
+    consumer_groups_to_create = _get_requested_consumer_groups(eventhub_names, consumer_group_names, dtap)
 
     connection_strings = set(
         _create_consumer_group(eventhub_client, group)

@@ -121,7 +121,6 @@ The VSTS variables for uploading, deploying and secrets are, just like the `gith
 
 * Create consumer groups in eventhub
     You must specify which eventhubs to create which consumer groups in. Make sure you prefix them correctly with the application name.
-    
     ```
     - task: DockerCompose@0
       displayName: Create Eventhub consumer groups
@@ -130,12 +129,15 @@ The VSTS variables for uploading, deploying and secrets are, just like the `gith
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_eventhub_consumer_groups"
       env:
         EVENTHUB_ENTITIES: 'hub1,hub2'
-        EVENTHUB_CONSUMER_GROUPS: 'hub1_yourappname_group1,hub1_yourappname_group2,hub2_yourappname_group1'
+        EVENTHUB_CONSUMER_GROUPS: 'hub1-your-app-name-group1,hub1-your-app-name-group2,hub2-your-app-name-group1'
         AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
         AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
-        SUBSCRIPTION_ID: ${SUBSCRIPTION_ID}
+        AZURE_USERNAME_DEV: ${azure_username_dev}
+        AZURE_PASSWORD_DEV: ${azure_password_dev}
+        SUBSCRIPTION_ID: ${subscription_id}
         GITHUB_TOKEN: ${github_token}
     ```
+    The above settings will create databricks secrets in scope `your-app-name` with name `hub1-connection-string` and `hub2-connection-string`
 
 # Local development
 

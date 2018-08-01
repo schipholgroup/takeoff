@@ -8,7 +8,8 @@ from azure.keyvault.models import SecretBundle
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
 
-from pyspark_streaming_deployment.util import get_application_name, get_azure_sp_credentials, get_databricks_client
+from pyspark_streaming_deployment.util import get_application_name, get_azure_sp_credentials, get_databricks_client, \
+    has_prefix_match, get_matching_group
 
 
 @dataclass
@@ -65,17 +66,11 @@ def __filter_keyvault_ids(keyvault_ids: List[str], application_name) -> List[IdA
     to
     (flights-arrivals-cosmos-collection, cosmos-collection)
     """
-    regex = re.compile(rf'^({application_name})-([-A-z0-9]+)*')
+    pattern = re.compile(rf'^({application_name})-([-A-z0-9]+)*')
 
-    def get_match(key_name, idx):
-        match = regex.search(key_name)
-        return match.groups()[idx]
-
-    def has_match(key_name: str):
-        match = regex.search(key_name)
-        return match and match.groups()[0] == application_name
-
-    return [IdAndKey(_, get_match(_, 1)) for _ in keyvault_ids if has_match(_)]
+    return [IdAndKey(_, get_matching_group(_, pattern, 1))
+            for _ in keyvault_ids
+            if has_prefix_match(_, application_name, pattern)]
 
 
 def __get_keyvault_secrets(client: KeyVaultClient, vault: str, application_name: str) -> List[Secret]:

@@ -18,6 +18,7 @@ setup(
         'azure-mgmt-eventhub==1.2.0',
         'azure-mgmt-applicationinsights==0.1.1',
         'azure-mgmt-resource==1.2.2',
+        'azure-mgmt-relay==0.1.0',
         'azure-datalake-store==0.0.24',
         'azure-keyvault==0.3.7',
         'pytest==3.6.2',

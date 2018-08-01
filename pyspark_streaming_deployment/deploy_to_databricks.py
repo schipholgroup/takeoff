@@ -9,7 +9,7 @@ from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
 
-from pyspark_streaming_deployment.util import get_application_name, get_databricks_client
+from pyspark_streaming_deployment.util import get_application_name, get_databricks_client, has_prefix_match
 
 JOB_CFG = '/root/job_config.json'
 ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdhdev/libraries'
@@ -109,13 +109,9 @@ def __remove_job(client, application_name: str, is_streaming: bool):
 
 
 def __application_job_id(application_name: str, jobs: List[JobConfig]) -> int:
-    regex = re.compile(rf'^({application_name})-(SNAPSHOT|\d+\.\d+\.\d+)$')
+    pattern = re.compile(rf'^({application_name})-(SNAPSHOT|\d+\.\d+\.\d+)$')
 
-    def has_match(job_name: str):
-        match = regex.search(job_name)
-        return match and match.groups()[0] == application_name
-
-    return next((_.job_id for _ in jobs if has_match(_.name)), None)
+    return next((_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)), None)
 
 
 def __kill_it_with_fire(runs_api, job_id):
