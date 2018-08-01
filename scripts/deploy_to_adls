@@ -5,5 +5,5 @@ from pyspark_streaming_deployment import main
 from pyspark_streaming_deployment.deploy_to_adls import deploy_application_to_adls
 
 os.chdir('/root')
-main.main(deploy_application_to_adls())
+main.main(deploy_application_to_adls)
 
