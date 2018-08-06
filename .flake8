@@ -6,6 +6,7 @@ exclude =
     .git,
     __pycache__,
     build,
-    dist
+    dist,
+    venv/
 max-complexity = 10
 max-line-length = 110
