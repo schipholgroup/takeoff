@@ -3,9 +3,9 @@ from pyspark_streaming_deployment.create_eventhub_consumer_groups import Consume
 
 
 def test_get_consumer_groups_from_os_variables():
-    eventhubs = 'hub1,hub2'.split(',')
-    groups = 'hub1-your-app-name-group1,hub1-your-app-name-group2,hub2-your-app-name-group1'.split(',')
-    consumer_groups = victim._get_requested_consumer_groups(eventhubs, groups, 'DEV')
+    eventhub_names = 'hub1,hub2'.split(',')
+    consumer_group_names = 'hub1-your-app-name-group1,hub1-your-app-name-group2,hub2-your-app-name-group1'.split(',')
+    consumer_groups = victim._get_requested_consumer_groups(eventhub_names, consumer_group_names, 'DEV')
 
     assert len(consumer_groups) == 3
     asserting_groups = [ConsumerGroup('hub1', 'your-app-name-group1', 'sdheventhubdev', 'sdhdev'),

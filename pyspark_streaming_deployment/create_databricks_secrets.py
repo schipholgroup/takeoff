@@ -1,15 +1,18 @@
+import logging
 import re
-from dataclasses import dataclass
-from pprint import pprint
-from typing import List
-
 from azure.keyvault import KeyVaultClient
 from azure.keyvault.models import SecretBundle
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
+from dataclasses import dataclass
+from pprint import pprint
+from typing import List
 
 from pyspark_streaming_deployment.util import get_application_name, get_azure_sp_credentials, get_databricks_client, \
     has_prefix_match, get_matching_group
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 @dataclass
@@ -38,6 +41,7 @@ def __create_scope(client: ApiClient, scope_name: str):
 def __add_secrets(client: ApiClient, scope_name: str, secrets: List[Secret]):
     api = SecretApi(client)
     for secret in secrets:
+        logger.info(f'Set secret {scope_name}: {secret.key}')
         api.put_secret(scope_name, secret.key, secret.val, None)
 
 

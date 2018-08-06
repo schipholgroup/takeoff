@@ -1,15 +1,18 @@
+import logging
 import os
 import re
-from dataclasses import dataclass
-from typing import List, Set
-
 from azure.mgmt.eventhub import EventHubManagementClient
 from azure.mgmt.relay.models import AccessRights
+from dataclasses import dataclass
+from typing import List, Set
 
 from pyspark_streaming_deployment.create_databricks_secrets import __create_scope, __add_secrets, Secret
 from pyspark_streaming_deployment.util import get_azure_user_credentials, RESOURCE_GROUP, \
     EVENTHUB_NAMESPACE, get_application_name, get_databricks_client, get_subscription_id, \
     get_matching_group, has_prefix_match
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 @dataclass
@@ -69,7 +72,6 @@ def _get_requested_consumer_groups(eventhub_names, consumer_group_names, dtap) -
 
     def hub_in_group_name(hub, full_group_name):
         pattern = re.compile(rf'(^{hub})-(.*$)')
-
         return has_prefix_match(full_group_name, hub, pattern)
 
     eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=dtap.lower())
@@ -85,6 +87,8 @@ def _get_requested_consumer_groups(eventhub_names, consumer_group_names, dtap) -
 
 
 def _authorization_rules_exists(client: EventHubManagementClient, group: EventHub, name: str) -> bool:
+    logging.info(f"Retrieving rules, Resource Group {group.resource_group}, "
+                 f"Eventhub Namespace {group.eventhub_namespace}, Eventhub Entity: {group.eventhub_entity}")
     existing_policies = list(client.event_hubs.list_authorization_rules(group.resource_group,
                                                                         group.eventhub_namespace,
                                                                         group.eventhub_entity
@@ -129,6 +133,9 @@ def _get_unique_eventhubs(consumer_groups_to_create: List[ConsumerGroup]) -> Set
 
 
 def create_consumer_groups(_: str, dtap: str):
+    logger.info(f'Using Azure resource group: {RESOURCE_GROUP}')
+    logger.info(f'Using Azure namespace: {EVENTHUB_NAMESPACE}')
+
     credentials = get_azure_user_credentials(dtap)
     eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
 
