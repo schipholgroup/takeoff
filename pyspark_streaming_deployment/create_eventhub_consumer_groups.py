@@ -8,12 +8,8 @@ from azure.mgmt.relay.models import AccessRights
 
 from pyspark_streaming_deployment.create_databricks_secrets import __create_scope, __add_secrets, Secret
 from pyspark_streaming_deployment.util import get_azure_user_credentials, RESOURCE_GROUP, \
-    get_application_name, get_databricks_client, get_subscription_id, get_matching_group, has_prefix_match
-
-if 'EVENTHUB_NAMESPACE' in os.environ:
-    EVENTHUB_NAMESPACE = os.environ['EVENTHUB_NAMESPACE'] + '{dtap}'
-else:
-    EVENTHUB_NAMESPACE = 'sdheventhub{dtap}'
+    EVENTHUB_NAMESPACE, get_application_name, get_databricks_client, get_subscription_id, \
+    get_matching_group, has_prefix_match
 
 
 @dataclass

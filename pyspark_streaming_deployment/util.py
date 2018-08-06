@@ -1,11 +1,16 @@
 import os
-from typing import Pattern
-
 from azure.common.credentials import UserPassCredentials, ServicePrincipalCredentials
 from databricks_cli.sdk import ApiClient
 from git import Repo
+from typing import Pattern
 
 RESOURCE_GROUP = 'sdh{dtap}'
+if 'EVENTHUB_RESOURCE_GROUP' in os.environ:
+    RESOURCE_GROUP = os.environ['EVENTHUB_RESOURCE_GROUP']
+
+EVENTHUB_NAMESPACE = 'sdheventhub{dtap}'
+if 'EVENTHUB_NAMESPACE' in os.environ:
+    EVENTHUB_NAMESPACE = os.environ['EVENTHUB_NAMESPACE'] + '{dtap}'
 
 
 def get_branch() -> str:
