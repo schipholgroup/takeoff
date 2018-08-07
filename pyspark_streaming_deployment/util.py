@@ -5,8 +5,8 @@ from git import Repo
 from typing import Pattern
 
 RESOURCE_GROUP = 'sdh{dtap}'
-if 'EVENTHUB_RESOURCE_GROUP' in os.environ:
-    RESOURCE_GROUP = os.environ['EVENTHUB_RESOURCE_GROUP']
+if 'RESOURCE_GROUP' in os.environ:
+    RESOURCE_GROUP = os.environ['RESOURCE_GROUP']
 
 EVENTHUB_NAMESPACE = 'sdheventhub{dtap}'
 if 'EVENTHUB_NAMESPACE' in os.environ:

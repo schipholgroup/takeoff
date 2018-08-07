@@ -13,39 +13,34 @@ class TestPatternMatching(object):
                     'foo-12-snapshot',
                     'foo-1234-snapshot',
                     'foobar-309-snapshot',
-                    'foo-20-snap',
-                    ]
+                    'foo-20-snap']
 
     def test_has_prefix_match(self):
         values = [True,
                   True,
                   False,
                   False,
-                  False
-                  ]
+                  False]
         for string, value in zip(self.test_strings, values):
             assert victim.has_prefix_match(string, 'foo', self.pattern) == value
 
     def test_get_matching_group(self):
         values = [(1, '031'),
-                  (0, 'foo'),
-                  ]
+                  (0, 'foo')]
         for string, (idx, value) in zip(self.test_strings[:2], values):
             assert victim.get_matching_group(string, self.pattern, idx) == value
 
     def test_get_matches_no_group_found(self):
         values = [(1, '031'),
                   (0, 'foo'),
-                  (3, 'snap'),
-                  ]
+                  (3, 'snap')]
         for string, (idx, value) in zip(self.test_strings[2:], values):
             with pytest.raises(ValueError):
                 assert victim.get_matching_group(string, self.pattern, idx) == value
 
     def test_get_matching_group_not_enough_groups(self):
         values = [(3, '031'),
-                  (7, 'foo'),
-                  ]
+                  (7, 'foo')]
         for string, (idx, value) in zip(self.test_strings[:2], values):
             with pytest.raises(IndexError):
                 assert victim.get_matching_group(string, self.pattern, idx) == value
@@ -66,7 +61,7 @@ def test_get_eventhub_namespace():
     assert EVENTHUB_NAMESPACE == 'sdheventhub{dtap}'
 
 
-@mock.patch.dict(os.environ, {'EVENTHUB_RESOURCE_GROUP': 'sdhdev_manual'})
+@mock.patch.dict(os.environ, {'RESOURCE_GROUP': 'sdhdev_manual'})
 def test_get_custom_eventhub_resource_group():
     # Make sure that the python module cache is flushed
     importlib.reload(victim)
