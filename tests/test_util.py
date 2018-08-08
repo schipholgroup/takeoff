@@ -1,8 +1,6 @@
 import importlib
-import os
 import pytest
 import re
-from unittest import mock
 
 from pyspark_streaming_deployment import util as victim
 
@@ -46,27 +44,11 @@ class TestPatternMatching(object):
                 assert victim.get_matching_group(string, self.pattern, idx) == value
 
 
-@mock.patch.dict(os.environ, {'EVENTHUB_NAMESPACE': 'sdhcisseventhubnamespace'})
-def test_get_custom_eventhub_namespace():
-    # Make sure that the python module cache is flushed
-    importlib.reload(victim)
-    from pyspark_streaming_deployment.util import EVENTHUB_NAMESPACE
-    assert EVENTHUB_NAMESPACE == 'sdhcisseventhubnamespace{dtap}'
-
-
 def test_get_eventhub_namespace():
     # Make sure that the python module cache is flushed
     importlib.reload(victim)
     from pyspark_streaming_deployment.util import EVENTHUB_NAMESPACE
     assert EVENTHUB_NAMESPACE == 'sdheventhub{dtap}'
-
-
-@mock.patch.dict(os.environ, {'RESOURCE_GROUP': 'sdhdev_manual'})
-def test_get_custom_eventhub_resource_group():
-    # Make sure that the python module cache is flushed
-    importlib.reload(victim)
-    from pyspark_streaming_deployment.util import RESOURCE_GROUP
-    assert RESOURCE_GROUP == 'sdhdev_manual'
 
 
 def test_get_eventhub_resource_group():

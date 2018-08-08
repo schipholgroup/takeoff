@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 from azure.mgmt.eventhub import EventHubManagementClient
 from azure.mgmt.relay.models import AccessRights
 from dataclasses import dataclass
@@ -8,8 +7,7 @@ from typing import List, Set
 
 from pyspark_streaming_deployment.create_databricks_secrets import __create_scope, __add_secrets, Secret
 from pyspark_streaming_deployment.util import get_azure_user_credentials, RESOURCE_GROUP, \
-    EVENTHUB_NAMESPACE, get_application_name, get_databricks_client, get_subscription_id, \
-    get_matching_group, has_prefix_match
+    EVENTHUB_NAMESPACE, get_application_name, get_databricks_client, get_subscription_id
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +34,12 @@ class ConnectingString(object):
     connection_string: str
 
 
+@dataclass(frozen=True)
+class EventHubConsumerGroup(object):
+    eventhub_entity_name: str
+    consumer_group: str
+
+
 def _eventhub_exists(client: EventHubManagementClient, group: ConsumerGroup) -> bool:
     hubs = list(client.event_hubs.list_by_namespace(group.resource_group,
                                                     group.eventhub_namespace))
@@ -57,33 +61,23 @@ def _group_exists(client: EventHubManagementClient, group: ConsumerGroup) -> boo
     return False
 
 
-def _read_os_variables() -> tuple:
-    eventhub_names: List[str] = os.environ['EVENTHUB_ENTITIES'].split(',')
-    consumer_group_names: List[str] = os.environ['EVENTHUB_CONSUMER_GROUPS'].split(',')
+def _parse_consumer_groups() -> List[EventHubConsumerGroup]:
+    consumer_group_input = os.environ['EVENTHUB_CONSUMER_GROUPS']
+    # colon (:) is used as separator between hub and consumer group. Any additional :'s after the first one will be
+    # treated as part of the consumer group name.
+    return [EventHubConsumerGroup(*[part for part in hub_group_pair.split(':', 1)]) for hub_group_pair in consumer_group_input.split(',')]
 
-    return eventhub_names, consumer_group_names
 
-
-def _get_requested_consumer_groups(eventhub_names, consumer_group_names, dtap) -> List[ConsumerGroup]:
-    def _get_group_name(hub, full_group_name):
-        pattern = re.compile(rf'(^{hub})-(.*$)')
-
-        return get_matching_group(full_group_name, pattern, 1)
-
-    def hub_in_group_name(hub, full_group_name):
-        pattern = re.compile(rf'(^{hub})-(.*$)')
-        return has_prefix_match(full_group_name, hub, pattern)
-
+def _get_requested_consumer_groups(parsed_groups: List[EventHubConsumerGroup], dtap: str) -> List[ConsumerGroup]:
     eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=dtap.lower())
     resource_group = RESOURCE_GROUP.format(dtap=dtap.lower())
 
-    return [ConsumerGroup(hub,
-                          _get_group_name(hub, group),
+    return [ConsumerGroup(group.eventhub_entity_name + dtap.lower(),
+                          group.consumer_group,
                           eventhub_namespace,
                           resource_group)
-            for hub in eventhub_names
-            for group in consumer_group_names
-            if hub_in_group_name(hub, group)]
+            for group in parsed_groups
+            ]
 
 
 def _authorization_rules_exists(client: EventHubManagementClient, group: EventHub, name: str) -> bool:
@@ -136,11 +130,11 @@ def create_consumer_groups(_: str, dtap: str):
     logger.info(f'Using Azure resource group: {RESOURCE_GROUP}')
     logger.info(f'Using Azure namespace: {EVENTHUB_NAMESPACE}')
 
-    credentials = get_azure_user_credentials(dtap)
+    credentials = get_azure_user_credentials()
     eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
 
-    eventhub_names, consumer_group_names = _read_os_variables()
-    consumer_groups_to_create = _get_requested_consumer_groups(eventhub_names, consumer_group_names, dtap)
+    parsed_consumer_groups = _parse_consumer_groups(dtap)
+    consumer_groups_to_create = _get_requested_consumer_groups(parsed_consumer_groups, dtap)
 
     connection_strings = _create_connection_strings(eventhub_client,
                                                     _get_unique_eventhubs(consumer_groups_to_create))

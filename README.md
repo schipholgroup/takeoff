@@ -146,8 +146,7 @@ The VSTS variables for uploading, deploying and secrets are, just like the `gith
         dockerComposeCommand: |
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_eventhub_consumer_groups"
       env:
-        EVENTHUB_ENTITIES: 'hub1,hub2'
-        EVENTHUB_CONSUMER_GROUPS: 'hub1-your-app-name-group1,hub1-your-app-name-group2,hub2-your-app-name-group1'
+        EVENTHUB_CONSUMER_GROUPS: 'hub1:your-app-name-group1,hub1:your-app-name-group2,hub2:your-app-name-group1'
         AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
         AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
         AZURE_USERNAME_DEV: ${azure_username_dev}
