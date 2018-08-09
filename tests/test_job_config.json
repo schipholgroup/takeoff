@@ -4,6 +4,11 @@
     "spark_conf": {
       "spark.sql.warehouse.dir": "/some_{dtap}",
       "some.setting": "true"
+    },
+    "cluster_log_conf": {
+      "dbfs": {
+        "destination": "dbfs:/mnt/sdh{dtap}/logs/{name}"
+      }
     }
   },
   "some_int": 5,

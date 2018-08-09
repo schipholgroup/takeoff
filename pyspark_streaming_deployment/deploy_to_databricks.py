@@ -43,7 +43,8 @@ def deploy_application(version: str, dtap: str):
 
     job_config = __construct_job_config(
         fn=JOB_CFG,
-        name=f"{application_name}-{version}",
+        name=application_name,
+        version=version,
         dtap=dtap,
         egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{version}.egg",
         python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{version}.py",
@@ -69,6 +70,7 @@ def __read_application_config(fn: str):
 
 def __construct_job_config(fn: str,
                            name: str,
+                           version: str,
                            dtap: str,
                            egg: str,
                            python_file: str) -> dict:
@@ -76,7 +78,10 @@ def __construct_job_config(fn: str,
     job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir'] = (
         job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir'].format(dtap=dtap.lower())
     )
-    job_config['name'] = name
+    job_config['new_cluster']['cluster_log_conf']['dbfs']['destination'] = (
+        job_config['new_cluster']['cluster_log_conf']['dbfs']['destination'].format(dtap=dtap.lower(), name=name)
+    )
+    job_config['name'] = f"{name}-{version}"
     job_config['spark_python_task']['python_file'] = python_file
     job_config['libraries'].append({"egg": egg})
 
