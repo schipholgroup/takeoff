@@ -130,10 +130,10 @@ def create_consumer_groups(_: str, dtap: str):
     logger.info(f'Using Azure resource group: {RESOURCE_GROUP}')
     logger.info(f'Using Azure namespace: {EVENTHUB_NAMESPACE}')
 
-    credentials = get_azure_user_credentials()
+    credentials = get_azure_user_credentials(dtap)
     eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
 
-    parsed_consumer_groups = _parse_consumer_groups(dtap)
+    parsed_consumer_groups = _parse_consumer_groups()
     consumer_groups_to_create = _get_requested_consumer_groups(parsed_consumer_groups, dtap)
 
     connection_strings = _create_connection_strings(eventhub_client,
