@@ -20,6 +20,7 @@ def test_is_streaming_job():
     job_config = victim.__construct_job_config(
         fn='tests/test_job_config.json',
         name='app',
+        version='42',
         dtap='whatevs',
         egg='some.egg',
         python_file='some.py',
@@ -29,6 +30,7 @@ def test_is_streaming_job():
     job_config = victim.__construct_job_config(
         fn='tests/test_job_config_scheduled.json',
         name='app',
+        version='42',
         dtap='whatevs',
         egg='some.egg',
         python_file='some.py',
@@ -40,12 +42,13 @@ def test_construct_job_config():
     job_config = victim.__construct_job_config(
         fn="tests/test_job_config.json",
         name="app",
+        version="42",
         dtap="whatevs",
         egg="some.egg",
         python_file="some.py",
     )
 
-    assert {"name": "app",
+    assert {"name": "app-42",
             "libraries": [
                 {'jar': 'some.jar'},
                 {'egg': 'some.egg'},
@@ -55,6 +58,11 @@ def test_construct_job_config():
                 "spark_conf": {
                     "spark.sql.warehouse.dir": '/some_whatevs',
                     "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdhwhatevs/logs/app"
+                    }
                 }
             },
             "some_int": 5,
