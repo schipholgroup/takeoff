@@ -156,6 +156,31 @@ The VSTS variables for uploading, deploying and secrets are, just like the `gith
     ```
     The above settings will create databricks secrets in scope `your-app-name` with name `hub1-connection-string` and `hub2-connection-string`
 
+* Create appservice and webapp in Azure.
+   For automatically deploying api's to Azure, you can use the code below. This will create/update both the appservice and the webapp entities in Azure
+   ```- task: DockerCompose@0
+        displayName: 'Create app service and web app'
+        inputs:
+          dockerComposeCommand: run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_appservice_and_webapp"
+        env:
+          GITHUB_TOKEN: ${github_token}
+          AZURE_USERNAME_DEV: $(azure_username_dev)
+          AZURE_PASSWORD_DEV: $(azure_password_dev)
+          AZURE_USERNAME_ACP: $(azure_username_acp)
+          AZURE_PASSWORD_ACP: $(azure_password_acp)
+          AZURE_USERNAME_PRD: $(azure_username_prd)
+          AZURE_PASSWORD_PRD: $(azure_password_prd)
+          APPSERVICE_NAME: 'your-appservice-name-here'
+          APPSERVICE_SKU_NAME: 'B1' [OPTIONAL, default: B1 for DTA, S1 for PRD]
+          APPSERVICE_SKU_CAPACITY: 1 [OPTIONAL, default: 1]
+          APPSERVICE_SKU_TIER: 'Basic' [OPTIONAL, default: Basic for DTA, Standard for PRD]
+          DOCKER_REGISTRY_URL: $(registry_login_server)
+          DOCKER_REGISTRY_USERNAME: $(registry_username)
+          DOCKER_REGISTRY_PASSWORD: $(registry_password)
+          WEBAPP_NAME: 'your-webapp-name' [OPTIONAL]
+   ```
+   Documentation for the SKU settings on Azure is available [here](https://azure.microsoft.com/en-us/pricing/details/app-service/linux/)
+
 # Local development
 
 Make sure you have installed and updated docker

@@ -6,6 +6,7 @@ from typing import Pattern
 
 RESOURCE_GROUP = 'sdh{dtap}'
 EVENTHUB_NAMESPACE = 'sdheventhub{dtap}'
+AZURE_LOCATION = 'west europe'  # default to this Azure location
 
 
 def get_branch() -> str:
