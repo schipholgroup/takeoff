@@ -4,7 +4,7 @@
     "spark_version": "4.2.x-scala2.11",
     "node_type_id": "Standard_DS3_v2",
     "spark_conf": {
-      "spark.sql.warehouse.dir": "dbfs:/mnt/sdh{dtap}/data/raw/managedtables",
+      "spark.sql.warehouse.dir": "dbfs:/mnt/sdh/data/raw/managedtables",
       "spark.databricks.delta.preview.enabled": "true",
       "spark.sql.hive.metastore.jars": "builtin",
       "spark.sql.execution.arrow.enabled": "true",
@@ -16,7 +16,7 @@
     "num_workers": 2,
     "cluster_log_conf": {
       "dbfs": {
-        "destination": "dbfs:/mnt/sdh{dtap}/logs/{name}"
+        "destination": "dbfs:/mnt/sdh/logs/{name}"
       }
     }
   },
@@ -28,7 +28,7 @@
   "max_retries": 5,
   "libraries": [
     {
-      "jar": "dbfs:/mnt/sdhdev/libraries/spark-cosmos-sink/spark-cosmos-sink-0.2.5.jar"
+      "jar": "dbfs:/mnt/sdh/libraries/spark-cosmos-sink/spark-cosmos-sink-0.2.5.jar"
     },
     {
       "jar": "dbfs:/FileStore/jars/08b488fa_3fff_46f9_ba99_177a5c7eb0b2-spark_flights_eventhub_source_assembly_0_0_3_5-f2e4b.jar"

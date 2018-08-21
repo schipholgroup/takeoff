@@ -2,12 +2,12 @@
   "new_cluster": {
     "spark_version": "4.1.x-scala2.11",
     "spark_conf": {
-      "spark.sql.warehouse.dir": "/some_{dtap}",
+      "spark.sql.warehouse.dir": "/some_",
       "some.setting": "true"
     },
     "cluster_log_conf": {
       "dbfs": {
-        "destination": "dbfs:/mnt/sdh{dtap}/logs/{name}"
+        "destination": "dbfs:/mnt/sdh/logs/{name}"
       }
     }
   },

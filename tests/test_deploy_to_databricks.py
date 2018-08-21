@@ -21,7 +21,6 @@ def test_is_streaming_job():
         fn='tests/test_job_config.json',
         name='app',
         version='42',
-        dtap='whatevs',
         egg='some.egg',
         python_file='some.py',
     )
@@ -31,7 +30,6 @@ def test_is_streaming_job():
         fn='tests/test_job_config_scheduled.json',
         name='app',
         version='42',
-        dtap='whatevs',
         egg='some.egg',
         python_file='some.py',
     )
@@ -43,7 +41,6 @@ def test_construct_job_config():
         fn="tests/test_job_config.json",
         name="app",
         version="42",
-        dtap="whatevs",
         egg="some.egg",
         python_file="some.py",
     )
@@ -56,12 +53,12 @@ def test_construct_job_config():
             "new_cluster": {
                 "spark_version": "4.1.x-scala2.11",
                 "spark_conf": {
-                    "spark.sql.warehouse.dir": '/some_whatevs',
+                    "spark.sql.warehouse.dir": '/some_',
                     "some.setting": "true"
                 },
                 "cluster_log_conf": {
                     "dbfs": {
-                        "destination": "dbfs:/mnt/sdhwhatevs/logs/app"
+                        "destination": "dbfs:/mnt/sdh/logs/app"
                     }
                 }
             },

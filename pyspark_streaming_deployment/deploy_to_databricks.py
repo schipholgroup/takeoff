@@ -12,7 +12,7 @@ from databricks_cli.sdk import ApiClient
 from pyspark_streaming_deployment.util import get_application_name, get_databricks_client, has_prefix_match
 
 JOB_CFG = '/root/job_config.json'
-ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdhdev/libraries'
+ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdh/libraries'
 
 
 @dataclass
@@ -45,7 +45,6 @@ def deploy_application(version: str, dtap: str):
         fn=JOB_CFG,
         name=application_name,
         version=version,
-        dtap=dtap,
         egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{version}.egg",
         python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{version}.py",
     )
@@ -71,15 +70,11 @@ def __read_application_config(fn: str):
 def __construct_job_config(fn: str,
                            name: str,
                            version: str,
-                           dtap: str,
                            egg: str,
                            python_file: str) -> dict:
     job_config = __read_job_config(fn)
-    job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir'] = (
-        job_config['new_cluster']['spark_conf']['spark.sql.warehouse.dir'].format(dtap=dtap.lower())
-    )
     job_config['new_cluster']['cluster_log_conf']['dbfs']['destination'] = (
-        job_config['new_cluster']['cluster_log_conf']['dbfs']['destination'].format(dtap=dtap.lower(), name=name)
+        job_config['new_cluster']['cluster_log_conf']['dbfs']['destination'].format(name=name)
     )
     job_config['name'] = f"{name}-{version}"
     job_config['spark_python_task']['python_file'] = python_file
