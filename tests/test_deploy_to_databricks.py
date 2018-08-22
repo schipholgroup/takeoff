@@ -5,6 +5,7 @@ jobs = [
     victim.JobConfig('bar-0.3.1', 2),
     victim.JobConfig('foobar-0.0.2', 3),
     victim.JobConfig('barfoo-0.0.2', 4),
+    victim.JobConfig('baz-0e12f6d', 5),
 ]
 
 
@@ -14,6 +15,10 @@ def test_find_application_job_id_if_snapshot():
 
 def test_find_application_job_id_if_version():
     assert victim.__application_job_id('bar', jobs) == 2
+
+
+def test_find_application_job_id_if_hash():
+    assert victim.__application_job_id('baz', jobs) == 5
 
 
 def test_is_streaming_job():

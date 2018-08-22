@@ -109,7 +109,10 @@ def __remove_job(client, application_name: str, is_streaming: bool):
 
 
 def __application_job_id(application_name: str, jobs: List[JobConfig]) -> int:
-    pattern = re.compile(rf'^({application_name})-(SNAPSHOT|\d+\.\d+\.\d+)$')
+    snapshot = 'SNAPSHOT'
+    tag = '\d+\.\d+\.\d+|'
+    git_hash = '[a-f0-9]{7}'
+    pattern = re.compile(rf'^({application_name})-({snapshot}|{tag}|{git_hash})$')
 
     return next((_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)), None)
 
