@@ -17,10 +17,10 @@ def get_tag() -> str:
     return next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 
 
-def get_hash() -> str:
+def get_short_hash(n: int = 7) -> str:
     repo = Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
-    return repo.git.rev_parse(sha, short=7)
+    return repo.git.rev_parse(sha, short=n)
 
 
 def get_application_name() -> str:
