@@ -48,6 +48,7 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         dockerComposeCommand: |
           run --rm pyspark bash -c "pip install --process-dependency-links .[deploy] && run_tests"
     ```
+
 * Publish test results
     In order for VSTS to nicely display your test results, you need to publish the results of the tests (which is different than the results of the coverage). Obviously, your tests need to have run before you can publish the results.
     ```
@@ -55,6 +56,7 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
       inputs:
         testResultsFiles: $(System.DefaultWorkingDirectory)/testresults.xml
     ```
+
 * Publish code coverage
     In order to get your coverage picked up by VSTS, you need to 'publish' the results. This task should only be run after the tests have been (successfully) run and the coverage results are available.
     ```
@@ -66,6 +68,7 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         reportDirectory: $(System.DefaultWorkingDirectory)/htmlcov
         failIfCoverageEmpty: true
     ```
+
 * Upload artifact to ADLS
     ```
     - task: DockerCompose@0
@@ -93,10 +96,10 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         dockerComposeCommand: |
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && deploy_to_databricks"
       env:
+        AZURE_DATABRICKS_HOST: ${azure_databricks_host}
         AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
-        AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
+        AZURE_DATABRICKS_TOKEN_ACP: ${azure_databricks_token_acp}
         AZURE_DATABRICKS_TOKEN_PRD: ${azure_databricks_token_prd}
-        AZURE_DATABRICKS_HOST_PRD: ${azure_databricks_host_prd}
     ```
     
 * Create databricks secrets
@@ -110,10 +113,10 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         dockerComposeCommand: |
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_databricks_secrets"
       env:
+        AZURE_DATABRICKS_HOST: ${azure_databricks_host}
         AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
-        AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
+        AZURE_DATABRICKS_TOKEN_ACP: ${azure_databricks_token_acp}
         AZURE_DATABRICKS_TOKEN_PRD: ${azure_databricks_token_prd}
-        AZURE_DATABRICKS_HOST_PRD: ${azure_databricks_host_prd}
     ```
     
 * Create an application insights
@@ -126,10 +129,16 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         dockerComposeCommand: |
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_application_insights"
       env:
+        AZURE_DATABRICKS_HOST: ${azure_databricks_host}
         AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
-        AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
+        AZURE_DATABRICKS_TOKEN_ACP: ${azure_databricks_token_acp}
+        AZURE_DATABRICKS_TOKEN_PRD: ${azure_databricks_token_prd}
         AZURE_USERNAME_DEV: ${azure_username_dev}
         AZURE_PASSWORD_DEV: ${azure_password_dev}
+        AZURE_USERNAME_ACP: ${azure_username_acp}
+        AZURE_PASSWORD_ACP: ${azure_password_acp}
+        AZURE_USERNAME_PRD: ${azure_username_prd}
+        AZURE_PASSWORD_PRD: ${azure_password_prd}
         SUBSCRIPTION_ID: ${SUBSCRIPTION_ID}
         GITHUB_TOKEN: ${github_token}
     ```
@@ -147,10 +156,16 @@ The VSTS variables for uploading, deploying and secrets are, just like the `gith
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_eventhub_consumer_groups"
       env:
         EVENTHUB_CONSUMER_GROUPS: 'hub1:your-app-name-group1,hub1:your-app-name-group2,hub2:your-app-name-group1'
+        AZURE_DATABRICKS_HOST: ${azure_databricks_host}
         AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
-        AZURE_DATABRICKS_HOST_DEV: ${azure_databricks_host_dev}
+        AZURE_DATABRICKS_TOKEN_ACP: ${azure_databricks_token_acp}
+        AZURE_DATABRICKS_TOKEN_PRD: ${azure_databricks_token_prd}
         AZURE_USERNAME_DEV: ${azure_username_dev}
         AZURE_PASSWORD_DEV: ${azure_password_dev}
+        AZURE_USERNAME_ACP: ${azure_username_acp}
+        AZURE_PASSWORD_ACP: ${azure_password_acp}
+        AZURE_USERNAME_PRD: ${azure_username_prd}
+        AZURE_PASSWORD_PRD: ${azure_password_prd}
         SUBSCRIPTION_ID: ${subscription_id}
         GITHUB_TOKEN: ${github_token}
     ```

@@ -17,10 +17,10 @@ def get_tag() -> str:
     return next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 
 
-def get_hash() -> str:
+def get_short_hash(n: int = 7) -> str:
     repo = Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
-    return repo.git.rev_parse(sha, short=7)
+    return repo.git.rev_parse(sha, short=n)
 
 
 def get_application_name() -> str:
@@ -55,7 +55,7 @@ def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
 
 def get_databricks_client(dtap: str) -> ApiClient:
     databricks_token = os.environ[f'AZURE_DATABRICKS_TOKEN_{dtap.upper()}']
-    databricks_host = os.environ[f'AZURE_DATABRICKS_HOST_{dtap.upper()}']
+    databricks_host = os.environ[f'AZURE_DATABRICKS_HOST']
     return ApiClient(host=databricks_host, token=databricks_token)
 
 
