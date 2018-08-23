@@ -19,6 +19,7 @@ setup(
         'azure-mgmt-applicationinsights==0.1.1',
         'azure-mgmt-resource==1.2.2',
         'azure-mgmt-relay==0.1.0',
+        'azure-mgmt-web==0.35.0',
         'azure-datalake-store==0.0.24',
         'azure-keyvault==0.3.7',
         'pytest==3.6.2',
@@ -42,5 +43,6 @@ setup(
              'scripts/create_application_insights',
              'scripts/create_eventhub_consumer_groups',
              'scripts/run_linting',
-             'scripts/run_tests'],
+             'scripts/run_tests',
+             'scripts/create_appservice_and_webapp'],
 )

@@ -3,7 +3,7 @@ from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
 from pyspark_streaming_deployment.create_databricks_secrets import __create_scope, __add_secrets, Secret
 from pyspark_streaming_deployment.util import get_application_name, get_subscription_id, \
-    get_databricks_client, get_azure_user_credentials
+    get_databricks_client, get_azure_user_credentials, AZURE_LOCATION
 
 
 def __create_client(dtap: str) -> ApplicationInsightsManagementClient:
@@ -25,7 +25,7 @@ def create_application_insights(_: str, dtap: str):
     if not insight:
         # Create a new Application Insights
         comp = ApplicationInsightsComponent(
-            location='West Europe',
+            location=AZURE_LOCATION,
             kind='other',
             application_type='other'
         )

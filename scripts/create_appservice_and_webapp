@@ -1,0 +1,6 @@
+#!/usr/bin/python3
+
+from pyspark_streaming_deployment import main
+from pyspark_streaming_deployment.create_appservice_and_webapp import create_web_app_and_service
+
+main.main(create_web_app_and_service)
