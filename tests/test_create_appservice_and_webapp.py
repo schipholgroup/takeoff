@@ -57,7 +57,7 @@ def test_get_webapp_to_create(get_site_config_mock):
 
     expected_result = WebApp(
         resource_group=RESOURCE_GROUP.format(dtap='dev'),
-        name='my-app',
+        name='my-app-dev',
         site=Site(
             location='west europe',
             site_config=VALID_SITE_CONFIG,

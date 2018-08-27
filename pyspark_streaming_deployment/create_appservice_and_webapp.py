@@ -87,7 +87,10 @@ def _get_site_config(build_definition_name: str) -> SiteConfig:
 def _get_webapp_to_create(appservice_id: str, dtap: str) -> WebApp:
     # use build definition name as default web app name
     build_definition_name = get_application_name()
-    webapp_name = os.getenv('WEBAPP_NAME', build_definition_name)
+    webapp_name = "{name}-{env}".format(
+        name=os.getenv('WEBAPP_NAME', build_definition_name).lower(),
+        env=dtap.lower()
+    )
     return WebApp(
         resource_group=RESOURCE_GROUP.format(dtap=dtap.lower()),
         name=webapp_name,
