@@ -1,9 +1,10 @@
 import glob
-import os
 
 from azure.datalake.store import core, lib, multithread
 
-from pyspark_streaming_deployment.util import get_application_name
+from pyspark_streaming_deployment.util import get_application_name, read_azure_sp
+
+ADLS_STORE_NAME = 'sdhdatalakestore{dtap}'
 
 
 def upload_to_adls(client, source: str, destination: str):
@@ -17,18 +18,16 @@ def upload_to_adls(client, source: str, destination: str):
                             overwrite=True)
 
 
-def deploy_application_to_adls(version: str, _: str):
+def deploy_application_to_adls(version: str, dtap: str):
     print("Submitting job to databricks")
 
-    azure_adls_name = os.environ['AZURE_ADLS_NAME']
-    azure_sp_username = os.environ['AZURE_SP_USERNAME']
-    azure_sp_password = os.environ['AZURE_SP_PASSWORD']
-    azure_sp_tenantid = os.environ['AZURE_SP_TENANTID']
+    azure_sp = read_azure_sp(dtap)
+    azure_adls_name = ADLS_STORE_NAME.format(dtap=dtap.lower())
     build_definitionname = get_application_name()
 
-    adls_credentials = lib.auth(tenant_id=azure_sp_tenantid,
-                                client_secret=azure_sp_password,
-                                client_id=azure_sp_username,
+    adls_credentials = lib.auth(tenant_id=azure_sp.tenant,
+                                client_secret=azure_sp.password,
+                                client_id=azure_sp.username,
                                 resource='https://datalake.azure.net/')
     adls_client = core.AzureDLFileSystem(adls_credentials, store_name=azure_adls_name)
 

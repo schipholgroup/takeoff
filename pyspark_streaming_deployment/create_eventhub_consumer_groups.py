@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ConsumerGroup(object):
     eventhub_entity: str
     consumer_group: str
@@ -28,7 +28,7 @@ class EventHub(object):
     eventhub_entity: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class ConnectingString(object):
     eventhub_entity: str
     connection_string: str

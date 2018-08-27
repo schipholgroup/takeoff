@@ -15,7 +15,7 @@ JOB_CFG = '/root/job_config.json'
 ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdh/libraries'
 
 
-@dataclass
+@dataclass(frozen=True)
 class JobConfig(object):
     name: str
     job_id: int

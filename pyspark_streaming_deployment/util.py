@@ -1,4 +1,6 @@
 import os
+from dataclasses import dataclass
+
 from azure.common.credentials import UserPassCredentials, ServicePrincipalCredentials
 from databricks_cli.sdk import ApiClient
 from git import Repo
@@ -7,6 +9,13 @@ from typing import Pattern
 RESOURCE_GROUP = 'sdh{dtap}'
 EVENTHUB_NAMESPACE = 'sdheventhub{dtap}'
 AZURE_LOCATION = 'west europe'  # default to this Azure location
+
+
+@dataclass(frozen=True)
+class AzureSp(object):
+    tenant: str
+    username: str
+    password: str
 
 
 def get_branch() -> str:
@@ -33,18 +42,19 @@ def get_subscription_id() -> str:
 
 
 def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
-    if dtap.lower() == 'dev':
-        azure_sp_username = os.environ['AZURE_SP_USERNAME']
-        azure_sp_password = os.environ['AZURE_SP_PASSWORD']
-        azure_sp_tenantid = os.environ['AZURE_SP_TENANTID']
-    elif dtap.lower() == 'prd':  # Prematurely include logic for multiple service principles
-        azure_sp_username = os.environ['AZURE_SP_USERNAME']
-        azure_sp_password = os.environ['AZURE_SP_PASSWORD']
-        azure_sp_tenantid = os.environ['AZURE_SP_TENANTID']
+    azure_sp = read_azure_sp(dtap)
 
-    return ServicePrincipalCredentials(client_id=azure_sp_username,
-                                       secret=azure_sp_password,
-                                       tenant=azure_sp_tenantid)
+    return ServicePrincipalCredentials(client_id=azure_sp.username,
+                                       secret=azure_sp.password,
+                                       tenant=azure_sp.tenant)
+
+
+def read_azure_sp(dtap: str) -> AzureSp:
+    azure_sp_tenantid = os.environ['AZURE_SP_TENANTID']
+    azure_sp_username = os.environ[f'AZURE_SP_USERNAME_{dtap.upper()}']
+    azure_sp_password = os.environ[f'AZURE_SP_PASSWORD_{dtap.upper()}']
+
+    return AzureSp(azure_sp_tenantid, azure_sp_username, azure_sp_password)
 
 
 def get_azure_user_credentials(dtap: str) -> UserPassCredentials:

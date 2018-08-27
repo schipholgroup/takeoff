@@ -82,10 +82,13 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         dockerComposeCommand: |
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && deploy_to_adls"
       env:
-        AZURE_SP_USERNAME: $(azure_sp_username)
-        AZURE_SP_PASSWORD: $(azure_sp_password)
+        AZURE_SP_USERNAME_DEV: $(azure_sp_username_dev)
+        AZURE_SP_PASSWORD_DEV: $(azure_sp_password_dev)
+        AZURE_SP_USERNAME_ACP: $(azure_sp_username_acp)
+        AZURE_SP_PASSWORD_ACP: $(azure_sp_password_acp)
+        AZURE_SP_USERNAME_PRD: $(azure_sp_username_prd)
+        AZURE_SP_PASSWORD_PRD: $(azure_sp_password_prd)
         AZURE_SP_TENANTID: $(azure_sp_tenantid)
-        AZURE_ADLS_NAME: $(azure_adls_name)
     ```
     
 * Deploy the application to databricks
@@ -113,6 +116,13 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         dockerComposeCommand: |
           run --rm python bash -c "pip install --process-dependency-links .[deploy] && create_databricks_secrets"
       env:
+        AZURE_SP_USERNAME_DEV: $(azure_sp_username_dev)
+        AZURE_SP_PASSWORD_DEV: $(azure_sp_password_dev)
+        AZURE_SP_USERNAME_ACP: $(azure_sp_username_acp)
+        AZURE_SP_PASSWORD_ACP: $(azure_sp_password_acp)
+        AZURE_SP_USERNAME_PRD: $(azure_sp_username_prd)
+        AZURE_SP_PASSWORD_PRD: $(azure_sp_password_prd)
+        AZURE_SP_TENANTID: $(azure_sp_tenantid)
         AZURE_DATABRICKS_HOST: ${azure_databricks_host}
         AZURE_DATABRICKS_TOKEN_DEV: ${azure_databricks_token_dev}
         AZURE_DATABRICKS_TOKEN_ACP: ${azure_databricks_token_acp}

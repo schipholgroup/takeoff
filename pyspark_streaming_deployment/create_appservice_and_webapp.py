@@ -5,7 +5,7 @@ import os
 from pyspark_streaming_deployment.util import get_subscription_id, get_azure_user_credentials, RESOURCE_GROUP, AZURE_LOCATION, get_application_name
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppService(object):
     name: str
     sku_name: str
@@ -13,7 +13,7 @@ class AppService(object):
     sku_tier: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class WebApp(object):
     resource_group: str
     name: str

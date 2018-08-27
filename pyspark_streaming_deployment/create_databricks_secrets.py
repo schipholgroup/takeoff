@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Secret:
     key: str
     val: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class IdAndKey:
     keyvault_id: str
     databricks_secret_key: str
