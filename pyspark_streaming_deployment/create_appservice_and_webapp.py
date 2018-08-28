@@ -6,11 +6,35 @@ from pyspark_streaming_deployment.util import get_subscription_id, get_azure_use
 
 
 @dataclass(frozen=True)
+class AppServiceSKU(object):
+    name: str
+    capacity: int
+    tier: str
+
+
+appservice_sku_defaults = {
+    "prd": AppServiceSKU(
+        name="S1",
+        capacity=2,
+        tier="Standard"
+    ),
+    "acp": AppServiceSKU(
+        name="S1",
+        capacity=1,
+        tier="Standard"
+    ),
+    "dev": AppServiceSKU(
+        name="B1",
+        capacity=1,
+        tier="Basic"
+    )
+}
+
+
+@dataclass(frozen=True)
 class AppService(object):
     name: str
-    sku_name: str
-    sku_capacity: int
-    sku_tier: str
+    sku: AppServiceSKU
 
 
 @dataclass(frozen=True)
@@ -45,11 +69,14 @@ def _parse_appservice_parameters(dtap: str) -> AppService:
     for the location
     :return: AppService object created based on env parameters
     """
+    default_sku = appservice_sku_defaults[dtap]
     return AppService(
         name=os.getenv('APPSERVICE_NAME'),
-        sku_name=os.getenv('APPSERVICE_SKU_NAME', 'S1' if dtap == 'prd' else 'B1'),
-        sku_capacity=os.getenv('APPSERVICE_SKU_CAPACITY', 1),
-        sku_tier=os.getenv('APPSERVICE_SKU_TIER', 'Standard' if dtap == 'prd' else 'Basic')
+        sku=AppServiceSKU(
+            name=os.getenv('APPSERVICE_SKU_NAME_{0}'.format(dtap.upper()), default_sku.name),
+            capacity=os.getenv('APPSERVICE_SKU_CAPACITY_{0}'.format(dtap.upper()), default_sku.capacity),
+            tier=os.getenv('APPSERVICE_SKU_TIER_{0}'.format(dtap.upper()), default_sku.tier)
+        )
     )
 
 

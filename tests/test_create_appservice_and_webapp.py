@@ -1,7 +1,7 @@
 from unittest import mock
 import os
 from pyspark_streaming_deployment import create_appservice_and_webapp as victim
-from pyspark_streaming_deployment.create_appservice_and_webapp import SiteConfig, AppService, WebApp, Site, RESOURCE_GROUP
+from pyspark_streaming_deployment.create_appservice_and_webapp import SiteConfig, AppService, AppServiceSKU, WebApp, Site, RESOURCE_GROUP
 
 
 VALID_SITE_CONFIG = SiteConfig(
@@ -44,9 +44,11 @@ def test_get_site_config():
 def test_parse_appservice_parameters():
     expected_appservice_config = AppService(
         name="my_epic_app",
-        sku_name="S1",
-        sku_capacity=1,
-        sku_tier="Standard"
+        sku=AppServiceSKU(
+            name="S1",
+            capacity=2,
+            tier="Standard"
+        )
     )
 
     result = victim._parse_appservice_parameters('prd')
