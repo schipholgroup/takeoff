@@ -7,9 +7,9 @@ from databricks_cli.sdk import ApiClient
 from git import Repo
 from typing import Pattern
 
-RESOURCE_GROUP = 'sdh{dtap}'
-EVENTHUB_NAMESPACE = 'sdheventhub{dtap}'
-AZURE_LOCATION = 'west europe'  # default to this Azure location
+RESOURCE_GROUP = "sdh{dtap}"
+EVENTHUB_NAMESPACE = "sdheventhub{dtap}"
+AZURE_LOCATION = "west europe"  # default to this Azure location
 
 
 @dataclass(frozen=True)
@@ -20,7 +20,7 @@ class AzureSp(object):
 
 
 def get_branch() -> str:
-    return os.environ['BUILD_SOURCEBRANCHNAME']
+    return os.environ["BUILD_SOURCEBRANCHNAME"]
 
 
 def get_tag() -> str:
@@ -35,25 +35,25 @@ def get_short_hash(n: int = 7) -> str:
 
 
 def get_application_name() -> str:
-    return os.environ['BUILD_DEFINITIONNAME']
+    return os.environ["BUILD_DEFINITIONNAME"]
 
 
 def get_subscription_id() -> str:
-    return os.environ['SUBSCRIPTION_ID']
+    return os.environ["SUBSCRIPTION_ID"]
 
 
 def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
     azure_sp = read_azure_sp(dtap)
 
-    return ServicePrincipalCredentials(client_id=azure_sp.username,
-                                       secret=azure_sp.password,
-                                       tenant=azure_sp.tenant)
+    return ServicePrincipalCredentials(
+        client_id=azure_sp.username, secret=azure_sp.password, tenant=azure_sp.tenant
+    )
 
 
 def read_azure_sp(dtap: str) -> AzureSp:
-    azure_sp_tenantid = os.environ['AZURE_SP_TENANTID']
-    azure_sp_username = os.environ[f'AZURE_SP_USERNAME_{dtap.upper()}']
-    azure_sp_password = os.environ[f'AZURE_SP_PASSWORD_{dtap.upper()}']
+    azure_sp_tenantid = os.environ["AZURE_SP_TENANTID"]
+    azure_sp_username = os.environ[f"AZURE_SP_USERNAME_{dtap.upper()}"]
+    azure_sp_password = os.environ[f"AZURE_SP_PASSWORD_{dtap.upper()}"]
 
     return AzureSp(azure_sp_tenantid, azure_sp_username, azure_sp_password)
 
@@ -67,14 +67,14 @@ def get_shared_blob_service() -> BlockBlobService:
 
 def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
     return UserPassCredentials(
-        os.environ[f'AZURE_USERNAME_{dtap.upper()}'],
-        os.environ[f'AZURE_PASSWORD_{dtap.upper()}']
+        os.environ[f"AZURE_USERNAME_{dtap.upper()}"],
+        os.environ[f"AZURE_PASSWORD_{dtap.upper()}"],
     )
 
 
 def get_databricks_client(dtap: str) -> ApiClient:
-    databricks_token = os.environ[f'AZURE_DATABRICKS_TOKEN_{dtap.upper()}']
-    databricks_host = os.environ[f'AZURE_DATABRICKS_HOST']
+    databricks_token = os.environ[f"AZURE_DATABRICKS_TOKEN_{dtap.upper()}"]
+    databricks_host = os.environ[f"AZURE_DATABRICKS_HOST"]
     return ApiClient(host=databricks_host, token=databricks_token)
 
 
@@ -86,7 +86,9 @@ def get_matching_group(find_in: str, pattern: Pattern[str], group: int):
 
     found_groups = len(match.groups())
     if found_groups < group:
-        raise IndexError(f"Couldn't find that many groups, the number of groups found is: {found_groups}")
+        raise IndexError(
+            f"Couldn't find that many groups, the number of groups found is: {found_groups}"
+        )
     return match.groups()[group]
 
 

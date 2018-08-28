@@ -1,10 +1,6 @@
 steps:
 - task: deployToAdls
-- task: deployWebApp
-  docker:
-    docker_registry_url: https://abc.frl
-    docker_registry_username: user123
-    docker_registry_password: supersecret123
+- task: deployWebAppService
   appServiceName: name
   appServiceSkuName: S1
   appServiceSkuCapacity: 1
@@ -20,8 +16,8 @@ steps:
     {
       "name": "__generated_value__",
       "new_cluster": {
-        "spark_version": "4.3.x-scala2.11",
-        "node_type_id": "Standard_DS4_v2",
+        "spark_version": "4.2.x-scala2.11",
+        "node_type_id": "Standard_DS3_v2",
         "spark_conf": {
           "spark.sql.warehouse.dir": "dbfs:/mnt/sdh/data/raw/managedtables",
           "spark.databricks.delta.preview.enabled": "true",
@@ -32,7 +28,7 @@ steps:
         "spark_env_vars": {
           "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
         },
-        "num_workers": 1,
+        "num_workers": 2,
         "cluster_log_conf": {
           "dbfs": {
             "destination": "dbfs:/mnt/sdh/logs/{name}"
@@ -47,33 +43,11 @@ steps:
       "max_retries": 5,
       "libraries": [
         {
-          "pypi" :
-          {
-            "package": "sklearn-pandas==1.6.0"
-          }
-        },
-        {
-          "pypi" :
-          {
-            "package": "xgboost==0.72.1"
-          }
-        },
-        {
           "jar": "dbfs:/mnt/sdh/libraries/spark-cosmos-sink/spark-cosmos-sink-0.2.5.jar"
-        },
-        {
-          "jar": "dbfs:/mnt/sdh/libraries/spark-flights-eventhub-source/spark-flights-eventhub-source-0.0.6.jar"
-        },
-        {
-          "jar": "dbfs:/mnt/sdh/libraries/streaming-query-listener/streaming-query-listener-0.0.2.jar"
-        },
-        {
-          "maven": {
-            "coordinates": "com.microsoft.azure:azure-cosmosdb-spark_2.3.0_2.11:1.2.0"
-          }
         }
       ],
       "spark_python_task": {
-        "python_file": "__generated_value__"
+        "python_file": "__generated_value__",
+        "parameters": "__generated_list__"
       }
     }
