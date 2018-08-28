@@ -5,8 +5,12 @@ from pyspark_streaming_deployment.create_appservice_and_webapp import SiteConfig
 
 
 VALID_SITE_CONFIG = SiteConfig(
-    linux_fx_version=f"DOCKER|https://my_registry.stuff.com/my-app:latest",
+    linux_fx_version=f"DOCKER|my_registry.stuff.com/my-app:latest",
     app_settings=[
+        {
+            "name": "DOCKER_ENABLE_CI",
+            "value": True
+        },
         {
             "name": "DOCKER_REGISTRY_SERVER_URL",
             "value": "https://my_registry.stuff.com"
@@ -27,7 +31,7 @@ VALID_SITE_CONFIG = SiteConfig(
 )
 
 
-@mock.patch.dict(os.environ, {'DOCKER_REGISTRY_URL': 'https://my_registry.stuff.com',
+@mock.patch.dict(os.environ, {'DOCKER_REGISTRY_URL': 'my_registry.stuff.com',
                               'DOCKER_REGISTRY_USERNAME': 'awesomeperson',
                               'DOCKER_REGISTRY_PASSWORD': 'supersecret42'})
 def test_get_site_config():

@@ -66,8 +66,12 @@ def _get_site_config(build_definition_name: str) -> SiteConfig:
         ),
         app_settings=[
             {
+                "name": "DOCKER_ENABLE_CI",  # we always want this to be enabled
+                "value": True
+            },
+            {
                 "name": "DOCKER_REGISTRY_SERVER_URL",
-                "value": docker_registry_url
+                "value": "https://" + docker_registry_url  # This MUST start with https://
             },
             {
                 "name": "DOCKER_REGISTRY_SERVER_USERNAME",
