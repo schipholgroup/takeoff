@@ -126,15 +126,14 @@ def _get_unique_eventhubs(consumer_groups_to_create: List[ConsumerGroup]) -> Set
     return set(EventHub(_.resource_group, _.eventhub_namespace, _.eventhub_entity) for _ in consumer_groups_to_create)
 
 
-def create_consumer_groups(_: str, dtap: str):
+def create_eventhub_consumer_groups(dtap: str, consumer_groups: List[EventHubConsumerGroup]):
     logger.info(f'Using Azure resource group: {RESOURCE_GROUP}')
     logger.info(f'Using Azure namespace: {EVENTHUB_NAMESPACE}')
 
     credentials = get_azure_user_credentials(dtap)
     eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
 
-    parsed_consumer_groups = _parse_consumer_groups()
-    consumer_groups_to_create = _get_requested_consumer_groups(parsed_consumer_groups, dtap)
+    consumer_groups_to_create = _get_requested_consumer_groups(consumer_groups, dtap)
 
     connection_strings = _create_connection_strings(eventhub_client,
                                                     _get_unique_eventhubs(consumer_groups_to_create))

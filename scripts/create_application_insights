@@ -1,7 +1,0 @@
-#!/usr/bin/python3
-
-import os
-from pyspark_streaming_deployment import main
-from pyspark_streaming_deployment.create_application_insights import create_application_insights
-
-main.main(create_application_insights)

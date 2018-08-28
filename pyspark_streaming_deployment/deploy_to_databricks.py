@@ -1,8 +1,8 @@
 import configparser
 import json
 import re
+import logging
 from dataclasses import dataclass
-from pprint import pprint
 from typing import List
 
 from databricks_cli.jobs.api import JobsApi
@@ -11,7 +11,8 @@ from databricks_cli.sdk import ApiClient
 
 from pyspark_streaming_deployment.util import get_application_name, get_databricks_client, has_prefix_match
 
-JOB_CFG = '/root/job_config.json'
+logger = logging.getLogger(__name__)
+
 ROOT_LIBRARY_FOLDER = 'dbfs:/mnt/sdh/libraries'
 
 
@@ -31,7 +32,7 @@ def _job_is_streaming(job_config):
     return 'schedule' not in job_config.keys()
 
 
-def deploy_application(version: str, dtap: str):
+def deploy_to_databricks(version: str, dtap: str, job_config: str):
     """
     The application parameters (cosmos and eventhub) will be removed from this file as they
     will be set as databricks secrets eventually
@@ -42,7 +43,7 @@ def deploy_application(version: str, dtap: str):
     application_name = get_application_name()
 
     job_config = __construct_job_config(
-        fn=JOB_CFG,
+        json_job_config=job_config,
         name=application_name,
         version=version,
         egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{version}.egg",
@@ -52,10 +53,10 @@ def deploy_application(version: str, dtap: str):
     databricks_client = get_databricks_client(dtap)
 
     is_streaming = _job_is_streaming(job_config)
-    print("Removing old job")
+    logger.info("Removing old job")
     __remove_job(databricks_client, application_name, is_streaming=is_streaming)
-    print("Submitting new job with configuration:")
-    pprint(job_config)
+    logger.info("Submitting new job with configuration:")
+    logger.info(str(job_config))
 
     __submit_job(databricks_client, job_config, is_streaming)
 
@@ -67,12 +68,12 @@ def __read_application_config(fn: str):
     return config
 
 
-def __construct_job_config(fn: str,
+def __construct_job_config(json_job_config: str,
                            name: str,
                            version: str,
                            egg: str,
                            python_file: str) -> dict:
-    job_config = __read_job_config(fn)
+    job_config = json.load(json_job_config)
     job_config['new_cluster']['cluster_log_conf']['dbfs']['destination'] = (
         job_config['new_cluster']['cluster_log_conf']['dbfs']['destination'].format(name=name)
     )
@@ -81,12 +82,6 @@ def __construct_job_config(fn: str,
     job_config['libraries'].append({"egg": egg})
 
     return job_config
-
-
-def __read_job_config(fn: str):
-    with open(fn) as f:
-        config: dict = json.load(f)
-    return config
 
 
 def __remove_job(client, application_name: str, is_streaming: bool):

@@ -17,6 +17,7 @@ setup(
         'pytest==3.6.2',
         'pytest-cov==2.5.1',
         'flake8==3.5.0',
+        'PyYAML==3.13'
     ],
     extras_require={
         'test': {
@@ -30,12 +31,7 @@ setup(
             'flake8==3.5.0'
         },
     },
-    scripts=['scripts/upload_to_blob',
-             'scripts/deploy_to_databricks',
-             'scripts/create_databricks_secrets',
-             'scripts/create_application_insights',
-             'scripts/create_eventhub_consumer_groups',
+    scripts=['scripts/run_deployment',
              'scripts/run_linting',
-             'scripts/run_tests',
-             'scripts/create_appservice_and_webapp'],
+             'scripts/run_tests'],
 )

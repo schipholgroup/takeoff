@@ -88,7 +88,7 @@ def __get_keyvault_secrets(client: KeyVaultClient, vault: str, application_name:
     return app_secrets
 
 
-def create_secrets(_: str, dtap: str):
+def create_databricks_secrets(dtap: str):
     application_name = get_application_name()
     azure_credentials = get_azure_sp_credentials(dtap)
     keyvault_client = KeyVaultClient(azure_credentials)
