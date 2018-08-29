@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest import mock
 
-from pyspark_streaming_deployment.create_eventhub_consumer_groups import (
+from sdh_deployment.create_eventhub_consumer_groups import (
     ConsumerGroup,
     EventHubConsumerGroup,
     CreateEventhubConsumerGroups as victim,

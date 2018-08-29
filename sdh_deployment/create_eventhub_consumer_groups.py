@@ -5,11 +5,11 @@ from azure.mgmt.relay.models import AccessRights
 from dataclasses import dataclass
 from typing import List, Set
 
-from pyspark_streaming_deployment.create_databricks_secrets import (
+from sdh_deployment.create_databricks_secrets import (
     Secret,
     CreateDatabricksSecrets,
 )
-from pyspark_streaming_deployment.util import (
+from sdh_deployment.util import (
     get_azure_user_credentials,
     RESOURCE_GROUP,
     EVENTHUB_NAMESPACE,
@@ -17,7 +17,7 @@ from pyspark_streaming_deployment.util import (
     get_databricks_client,
     get_subscription_id,
 )
-from pyspark_streaming_deployment.run_deployment import ApplicationVersion
+from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

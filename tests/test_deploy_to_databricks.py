@@ -1,4 +1,4 @@
-from pyspark_streaming_deployment.deploy_to_databricks import (
+from sdh_deployment.deploy_to_databricks import (
     JobConfig,
     DeployToDatabricks as victim,
 )

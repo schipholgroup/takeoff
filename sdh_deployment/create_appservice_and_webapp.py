@@ -2,14 +2,14 @@ from azure.mgmt.web import WebSiteManagementClient
 import os
 from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConfig
 from dataclasses import dataclass
-from pyspark_streaming_deployment.util import (
+from sdh_deployment.util import (
     get_subscription_id,
     get_azure_user_credentials,
     RESOURCE_GROUP,
     AZURE_LOCATION,
     get_application_name,
 )
-from pyspark_streaming_deployment.run_deployment import ApplicationVersion
+from sdh_deployment.run_deployment import ApplicationVersion
 
 
 @dataclass(frozen=True)

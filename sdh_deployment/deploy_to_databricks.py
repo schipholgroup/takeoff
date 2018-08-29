@@ -9,12 +9,12 @@ from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
 
-from pyspark_streaming_deployment.util import (
+from sdh_deployment.util import (
     get_application_name,
     get_databricks_client,
     has_prefix_match,
 )
-from pyspark_streaming_deployment.run_deployment import ApplicationVersion
+from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 

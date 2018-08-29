@@ -1,10 +1,10 @@
 from unittest import mock
 import os
 import unittest
-from pyspark_streaming_deployment.create_appservice_and_webapp import (
+from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp as victim
 )
-from pyspark_streaming_deployment.create_appservice_and_webapp import (
+from sdh_deployment.create_appservice_and_webapp import (
     SiteConfig,
     AppService,
     AppServiceSKU,
@@ -58,7 +58,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         assert expected_appservice_config == result
 
     @mock.patch(
-        "pyspark_streaming_deployment.create_appservice_and_webapp.CreateAppserviceAndWebapp._get_site_config"
+        "sdh_deployment.create_appservice_and_webapp.CreateAppserviceAndWebapp._get_site_config"
     )
     @mock.patch.dict(
         os.environ,

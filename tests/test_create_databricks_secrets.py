@@ -1,5 +1,5 @@
 import unittest
-from pyspark_streaming_deployment.create_databricks_secrets import (
+from sdh_deployment.create_databricks_secrets import (
     CreateDatabricksSecrets as victim
 )
 

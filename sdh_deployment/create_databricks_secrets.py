@@ -7,9 +7,9 @@ from databricks_cli.secrets.api import SecretApi
 from dataclasses import dataclass
 from pprint import pprint
 from typing import List
-from pyspark_streaming_deployment.run_deployment import ApplicationVersion
+from sdh_deployment.run_deployment import ApplicationVersion
 
-from pyspark_streaming_deployment.util import (
+from sdh_deployment.util import (
     get_application_name,
     get_azure_sp_credentials,
     get_databricks_client,

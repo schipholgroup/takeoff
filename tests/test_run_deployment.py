@@ -3,20 +3,20 @@ from unittest import mock
 
 from yaml import load
 
-from pyspark_streaming_deployment.deploy_to_adls import DeployToAdls
-from pyspark_streaming_deployment.create_appservice_and_webapp import (
+from sdh_deployment.deploy_to_adls import DeployToAdls
+from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp
 )
-from pyspark_streaming_deployment.create_eventhub_consumer_groups import (
+from sdh_deployment.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
     EventHubConsumerGroup,
 )
-from pyspark_streaming_deployment.create_databricks_secrets import (
+from sdh_deployment.create_databricks_secrets import (
     CreateDatabricksSecrets
 )
-from pyspark_streaming_deployment.deploy_to_databricks import DeployToDatabricks
+from sdh_deployment.deploy_to_databricks import DeployToDatabricks
 
-from pyspark_streaming_deployment.run_deployment import ApplicationVersion
+from sdh_deployment.run_deployment import ApplicationVersion
 
 environment_variables = {
     "WEBAPP_NAME": "my-app",
@@ -32,8 +32,8 @@ env = ApplicationVersion("DEV", "abc123githash")
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("pyspark_streaming_deployment.run_deployment.get_environment")
-@mock.patch("pyspark_streaming_deployment.run_deployment.load_yaml")
+@mock.patch("sdh_deployment.run_deployment.get_environment")
+@mock.patch("sdh_deployment.run_deployment.load_yaml")
 def test_deploy_to_adls(mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
@@ -43,7 +43,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from pyspark_streaming_deployment.run_deployment import main
+    from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
         DeployToAdls, "deploy_to_adls", return_value=None
@@ -53,8 +53,8 @@ steps:
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("pyspark_streaming_deployment.run_deployment.get_environment")
-@mock.patch("pyspark_streaming_deployment.run_deployment.load_yaml")
+@mock.patch("sdh_deployment.run_deployment.get_environment")
+@mock.patch("sdh_deployment.run_deployment.load_yaml")
 def test_deploy_web_app_service(mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
@@ -68,7 +68,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from pyspark_streaming_deployment.run_deployment import main
+    from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
         CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
@@ -87,8 +87,8 @@ steps:
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("pyspark_streaming_deployment.run_deployment.get_environment")
-@mock.patch("pyspark_streaming_deployment.run_deployment.load_yaml")
+@mock.patch("sdh_deployment.run_deployment.get_environment")
+@mock.patch("sdh_deployment.run_deployment.load_yaml")
 def test_create_eventhub_consumer_groups(mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
@@ -103,7 +103,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from pyspark_streaming_deployment.run_deployment import main
+    from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
         CreateEventhubConsumerGroups,
@@ -126,8 +126,8 @@ steps:
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("pyspark_streaming_deployment.run_deployment.get_environment")
-@mock.patch("pyspark_streaming_deployment.run_deployment.load_yaml")
+@mock.patch("sdh_deployment.run_deployment.get_environment")
+@mock.patch("sdh_deployment.run_deployment.load_yaml")
 def test_create_databricks_secret(mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
@@ -137,7 +137,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from pyspark_streaming_deployment.run_deployment import main
+    from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
         CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
@@ -147,8 +147,8 @@ steps:
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("pyspark_streaming_deployment.run_deployment.get_environment")
-@mock.patch("pyspark_streaming_deployment.run_deployment.load_yaml")
+@mock.patch("sdh_deployment.run_deployment.get_environment")
+@mock.patch("sdh_deployment.run_deployment.load_yaml")
 def test_deploy_to_databricks(mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
@@ -200,7 +200,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from pyspark_streaming_deployment.run_deployment import main
+    from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
         DeployToDatabricks, "deploy_to_databricks", return_value=None

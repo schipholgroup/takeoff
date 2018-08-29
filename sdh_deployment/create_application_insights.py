@@ -3,18 +3,18 @@ import logging
 from azure.mgmt.applicationinsights import ApplicationInsightsManagementClient
 from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
-from pyspark_streaming_deployment.create_databricks_secrets import (
+from sdh_deployment.create_databricks_secrets import (
     Secret,
     CreateDatabricksSecrets,
 )
-from pyspark_streaming_deployment.util import (
+from sdh_deployment.util import (
     get_application_name,
     get_subscription_id,
     get_databricks_client,
     get_azure_user_credentials,
     AZURE_LOCATION,
 )
-from pyspark_streaming_deployment.run_deployment import ApplicationVersion
+from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 

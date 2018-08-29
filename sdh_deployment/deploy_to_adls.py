@@ -2,8 +2,8 @@ import glob
 
 from azure.datalake.store import core, lib, multithread
 
-from pyspark_streaming_deployment.util import get_application_name, read_azure_sp
-from pyspark_streaming_deployment.run_deployment import ApplicationVersion
+from sdh_deployment.util import get_application_name, read_azure_sp
+from sdh_deployment.run_deployment import ApplicationVersion
 
 ADLS_STORE_NAME = "sdhdatalakestore{dtap}"
 
