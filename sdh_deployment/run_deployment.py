@@ -47,7 +47,7 @@ def main():
 
             DeployToAdls.deploy_to_adls(env)
 
-        if task == "uploadToBlob":
+        elif task == "uploadToBlob":
             from sdh_deployment.upload_to_blob import UploadToBlob
 
             UploadToBlob.upload_application_to_blob(env, step)
