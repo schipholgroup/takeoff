@@ -37,10 +37,10 @@ class UploadToBlob:
         UploadToBlob._upload_file_to_blob(
             blob_service,
             egg,
-            f'/libraries/{build_definitionname}/{build_definitionname}-{version}.egg'
+            f'{build_definitionname}/{build_definitionname}-{version}.egg'
         )
         UploadToBlob._upload_file_to_blob(
             blob_service,
             main,
-            f'/libraries/{build_definitionname}/{build_definitionname}-main-{version}.py'
+            f'{build_definitionname}/{build_definitionname}-main-{version}.py'
         )

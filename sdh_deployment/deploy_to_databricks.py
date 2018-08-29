@@ -18,7 +18,7 @@ from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 
-ROOT_LIBRARY_FOLDER = "dbfs:/mnt/sdh/libraries"
+ROOT_LIBRARY_FOLDER = "dbfs:/mnt/libraries"
 
 
 @dataclass(frozen=True)
