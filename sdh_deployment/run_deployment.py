@@ -12,8 +12,8 @@ class ApplicationVersion(object):
 
 
 def load_yaml() -> dict:
-    file = open("deployment.yml", "r")
-    config_file = file.readlines()
+    with open("deployment.yml", "r") as f:
+        config_file = f.read()
     return load(config_file)
 
 

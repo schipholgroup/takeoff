@@ -17,6 +17,7 @@ steps:
 - task: PublishTestResults@2
   inputs:
     testResultsFiles: $(System.DefaultWorkingDirectory)/testresults.xml
+
 - task: PublishCodeCoverageResults@1
   displayName: 'Publish coverage results'
   inputs:
