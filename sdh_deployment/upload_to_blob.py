@@ -3,6 +3,7 @@ import logging
 from azure.storage.blob import BlockBlobService
 
 from sdh_deployment.util import get_application_name, get_shared_blob_service
+from sdh_deployment.run_deployment import ApplicationVersion
 
 BLOB_CONTAINER_NAME = 'libraries'
 
@@ -23,24 +24,50 @@ class UploadToBlob:
             file_path=source)
 
     @staticmethod
-    def upload_application_to_blob(version: str, _: str):
-        build_definitionname = get_application_name()
-        blob_service = get_shared_blob_service()
+    def _get_jar(lang: str) -> str:
+        if lang == 'sbt':
+            jars = glob.glob('target/*-assembly-*.jar')
+        elif lang == 'maven':
+            jars = glob.glob('target/*-uber.jar')
+        else:
+            raise ValueError(f"Unknown language {lang}")
 
+        if len(jars) != 1:
+            raise FileNotFoundError(f'jars found: {jars}; There can (and must) be only one!')
+
+        return jars[0]
+
+    @staticmethod
+    def _get_egg():
         eggs = glob.glob('/root/dist/*.egg')
         if len(eggs) != 1:
             raise FileNotFoundError(f'Eggs found: {eggs}; There can (and must) be only one!')
+        return eggs[0]
 
-        egg = eggs[0]
-        main = '/root/main/main.py'
+    @staticmethod
+    def upload_application_to_blob(env: ApplicationVersion, config: dict):
+        build_definition_name = get_application_name()
+        blob_service = get_shared_blob_service()
 
-        UploadToBlob._upload_file_to_blob(
-            blob_service,
-            egg,
-            f'{build_definitionname}/{build_definitionname}-{version}.egg'
-        )
-        UploadToBlob._upload_file_to_blob(
-            blob_service,
-            main,
-            f'{build_definitionname}/{build_definitionname}-main-{version}.py'
-        )
+        filename_library = f'{build_definition_name}/{build_definition_name}-{env.version}.jar'
+        filename_main = f'{build_definition_name}/{build_definition_name}-main-{env.version}.py'
+
+        if 'lang' in config.keys() and config['lang'] in {'maven', 'sbt'}:
+            jar = UploadToBlob._get_jar(config['lang'])
+            UploadToBlob._upload_file_to_blob(
+                blob_service,
+                jar,
+                filename_library
+            )
+        else:
+            egg = UploadToBlob._get_egg()
+            UploadToBlob._upload_file_to_blob(
+                blob_service,
+                egg,
+                filename_library
+            )
+            UploadToBlob._upload_file_to_blob(
+                blob_service,
+                '/root/main/main.py',
+                filename_main
+            )
