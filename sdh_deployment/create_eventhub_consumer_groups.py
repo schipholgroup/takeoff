@@ -78,7 +78,7 @@ class CreateEventhubConsumerGroups:
         if group.consumer_group in set(_.name for _ in consumer_groups):
             print(
                 f"Consumer group with name {group.consumer_group} in hub {group.eventhub_entity}"
-                "already exists, not creating."
+                " already exists, not creating."
             )
             return True
         return False
@@ -127,7 +127,7 @@ class CreateEventhubConsumerGroups:
         if name in set(_.name for _ in existing_policies):
             print(
                 f"Authorization rule with name {name} in hub {group.eventhub_entity}"
-                "already exists, not creating."
+                " already exists, not creating."
             )
             return True
         return False
