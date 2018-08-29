@@ -12,6 +12,8 @@ steps:
     - eventhubEntity: sdhdevciss
       consumerGroup: consumerGroupName2
 - task: createDatabricksSecrets
+- task: uploadToBlob
+  lang: sbt
 - task: deployToDatabricks
   config:  >
     {
