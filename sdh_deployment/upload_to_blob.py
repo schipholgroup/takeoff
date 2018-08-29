@@ -26,7 +26,7 @@ class UploadToBlob:
     @staticmethod
     def _get_jar(lang: str) -> str:
         if lang == 'sbt':
-            jars = glob.glob('/root/target/*-assembly-*.jar')
+            jars = glob.glob('/root/target/scala-2.*/*-assembly-*.jar')
         elif lang == 'maven':
             jars = glob.glob('/root/target/*-uber.jar')
         else:
