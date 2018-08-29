@@ -49,10 +49,11 @@ class UploadToBlob:
         build_definition_name = get_application_name()
         blob_service = get_shared_blob_service()
 
-        filename_library = f'{build_definition_name}/{build_definition_name}-{env.version}.jar'
-        filename_main = f'{build_definition_name}/{build_definition_name}-main-{env.version}.py'
+        filename_library = f'{build_definition_name}/{build_definition_name}-{env.version}'
 
         if 'lang' in config.keys() and config['lang'] in {'maven', 'sbt'}:
+            # it's a jar!
+            filename_library += '.jar'
             jar = UploadToBlob._get_jar(config['lang'])
             UploadToBlob._upload_file_to_blob(
                 blob_service,
@@ -60,6 +61,10 @@ class UploadToBlob:
                 filename_library
             )
         else:
+            # it's an egg!
+            filename_library += '.egg'
+            filename_main = f'{build_definition_name}/{build_definition_name}-main-{env.version}.py'
+
             egg = UploadToBlob._get_egg()
             UploadToBlob._upload_file_to_blob(
                 blob_service,
