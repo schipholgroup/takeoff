@@ -68,8 +68,8 @@ def main():
             )
 
             groups = [
-                EventHubConsumerGroup(entity, group)
-                for entity, group in step["groups"].items()
+                EventHubConsumerGroup(group["eventhubEntity"], group["consumerGroup"])
+                for group in step["groups"]
             ]
             CreateEventhubConsumerGroups.create_eventhub_consumer_groups(env, groups)
 

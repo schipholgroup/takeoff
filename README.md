@@ -110,9 +110,10 @@ steps:
   appServiceSkuTier: Basic
 - task: createEventhubConsumerGroups
   groups:
-    sdhdevciss: consumerGroupName1
-    eventHub: consumerGroupName2
-    eventHub2: consumerGroupName3
+    - eventhubEntity: sdhdevciss
+      consumerGroup: consumerGroupName1
+    - eventhubEntity: sdhdevciss
+      consumerGroup: consumerGroupName2
 - task: createDatabricksSecrets
 - task: deployToDatabricks
   config:  >

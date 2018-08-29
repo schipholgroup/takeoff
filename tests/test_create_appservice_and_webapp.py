@@ -41,7 +41,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         },
     )
     def test_get_site_config(self):
-        result = victim._get_site_config("my-app", {})
+        result = victim._get_site_config("my-app")
         assert result == VALID_SITE_CONFIG
 
     @mock.patch.dict(os.environ, {"APPSERVICE_NAME": "my_epic_app"})
@@ -84,7 +84,7 @@ class TestDeployToDatabricks(unittest.TestCase):
             ),
         )
 
-        result = victim._get_webapp_to_create("appservice_id", "dev", {})
+        result = victim._get_webapp_to_create("appservice_id", "dev")
 
         assert result == expected_result
 

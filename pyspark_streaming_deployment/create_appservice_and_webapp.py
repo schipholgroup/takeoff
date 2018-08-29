@@ -79,7 +79,7 @@ class CreateAppserviceAndWebapp:
         )
 
     @staticmethod
-    def _get_site_config(build_definition_name: str, docker_config: dict) -> SiteConfig:
+    def _get_site_config(build_definition_name: str) -> SiteConfig:
         docker_registry_url = os.environ["DOCKER_REGISTRY_URL"]
         docker_registry_username = os.environ["DOCKER_REGISTRY_USERNAME"]
         docker_registry_password = os.environ["DOCKER_REGISTRY_PASSWORD"]
@@ -112,7 +112,7 @@ class CreateAppserviceAndWebapp:
         )
 
     @staticmethod
-    def _get_webapp_to_create(appservice_id: str, dtap: str, config: dict) -> WebApp:
+    def _get_webapp_to_create(appservice_id: str, dtap: str) -> WebApp:
         # use build definition name as default web app name
         build_definition_name = get_application_name()
         webapp_name = "{name}-{env}".format(
@@ -124,7 +124,7 @@ class CreateAppserviceAndWebapp:
             site=Site(
                 location=AZURE_LOCATION,
                 site_config=CreateAppserviceAndWebapp._get_site_config(
-                    build_definition_name, config.get("docker")
+                    build_definition_name
                 ),
                 server_farm_id=appservice_id,
             ),

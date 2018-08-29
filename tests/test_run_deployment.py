@@ -95,9 +95,10 @@ def test_create_eventhub_consumer_groups(mock_load_yaml, mock_get_version):
 steps:
 - task: createEventhubConsumerGroups
   groups:
-    sdhdevciss: consumerGroupName1
-    eventHub: consumerGroupName2
-    eventHub2: consumerGroupName3
+    - eventhubEntity: sdhdevciss
+      consumerGroup: consumerGroupName1
+    - eventhubEntity: sdhdevciss
+      consumerGroup: consumerGroupName2
     """
     )
     mock_get_version.return_value = env
@@ -118,11 +119,7 @@ steps:
                     consumer_group="consumerGroupName1",
                 ),
                 EventHubConsumerGroup(
-                    eventhub_entity_name="eventHub", consumer_group="consumerGroupName2"
-                ),
-                EventHubConsumerGroup(
-                    eventhub_entity_name="eventHub2",
-                    consumer_group="consumerGroupName3",
+                    eventhub_entity_name="sdhdevciss", consumer_group="consumerGroupName2"
                 ),
             ],
         )
