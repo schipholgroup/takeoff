@@ -39,7 +39,7 @@ def main():
     config = load_yaml()
 
     for step in config["steps"]:
-        task = config["steps"]
+        task = step["task"]
         logger.info(f"*** RUNNING STEP: {task}")
 
         if task == "deployToAdls":
