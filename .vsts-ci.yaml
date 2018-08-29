@@ -9,7 +9,7 @@ steps:
   inputs:
     dockerComposeCommand: |
       run --rm python bash -c "pip install -e .[test] && pytest \
-                                                         --cov=pyspark_streaming_deployment \
+                                                         --cov=sdh_deployment \
                                                          --cov-report xml \
                                                          --cov-report html \
                                                          --junitxml /root/testresults.xml \
