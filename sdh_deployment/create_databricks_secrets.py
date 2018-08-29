@@ -113,7 +113,7 @@ class CreateDatabricksSecrets:
         application_name = get_application_name()
         azure_credentials = get_azure_sp_credentials(env.environment)
         keyvault_client = KeyVaultClient(azure_credentials)
-        vault = f"https://sdhkeyvault{env.version.lower()}.vault.azure.net/"
+        vault = f"https://sdhkeyvault{env.environment.lower()}.vault.azure.net/"
 
         secrets = CreateDatabricksSecrets._get_keyvault_secrets(
             keyvault_client, vault, application_name
