@@ -10,7 +10,7 @@ ADLS_STORE_NAME = "sdhdatalakestore{dtap}"
 
 class DeployToAdls:
     @staticmethod
-    def __upload_to_adls(client, source: str, destination: str):
+    def _upload_to_adls(client, source: str, destination: str):
         print(
             f"""uploading artifact from
          | from ${source}
@@ -46,12 +46,12 @@ class DeployToAdls:
         egg = eggs[0]
         main = "/root/main/main.py"
 
-        DeployToAdls.__upload_to_adls(
+        DeployToAdls._upload_to_adls(
             adls_client,
             egg,
             f"/libraries/{build_definitionname}/{build_definitionname}-{env.version}.egg",
         )
-        DeployToAdls.__upload_to_adls(
+        DeployToAdls._upload_to_adls(
             adls_client,
             main,
             f"/libraries/{build_definitionname}/{build_definitionname}-main-{env.version}.py",

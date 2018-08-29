@@ -27,9 +27,6 @@ setup(
             'py4j==0.10.7',
             'azure==4.0.0'
         },
-        'lint': {
-            'flake8==3.5.0'
-        },
         "lint": {"flake8==3.5.0"},
     },
     scripts=["scripts/run_deployment", "scripts/run_linting", "scripts/run_tests"],
