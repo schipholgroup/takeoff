@@ -52,7 +52,7 @@ def main():
 
             UploadToBlob.upload_application_to_blob(env, step)
 
-        elif task == "applicationInsights":
+        elif task == "createApplicationInsights":
             from sdh_deployment.create_application_insights import (
                 CreateApplicationInsights
             )
