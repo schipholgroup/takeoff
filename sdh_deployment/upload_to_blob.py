@@ -24,35 +24,40 @@ class UploadToBlob:
             file_path=source)
 
     @staticmethod
+    def _get_jar(lang: str) -> str:
+        if lang == 'sbt':
+            jars = glob.glob('target/*-assembly-*.jar')
+        elif lang == 'maven':
+            jars = glob.glob('target/*-uber.jar')
+        else:
+            raise ValueError(f"Unknown language {lang}")
+
+        if len(jars) != 1:
+            raise FileNotFoundError(f'jars found: {jars}; There can (and must) be only one!')
+
+        return jars[0]
+
+    @staticmethod
+    def _get_egg():
+        eggs = glob.glob('/root/dist/*.egg')
+        if len(eggs) != 1:
+            raise FileNotFoundError(f'Eggs found: {eggs}; There can (and must) be only one!')
+        return eggs[0]
+
+    @staticmethod
     def upload_application_to_blob(env: ApplicationVersion, config: dict):
         build_definition_name = get_application_name()
         blob_service = get_shared_blob_service()
 
         if 'lang' in config.keys() and config['lang'] in {'maven', 'sbt'}:
-            lang = config['lang']
-            if lang == 'sbt':
-                jars = glob.glob('target/*-assembly-*.jar')
-            elif lang == 'maven':
-                jars = glob.glob('target/*-uber.jar')
-            else:
-                raise ValueError(f"Unknown language {lang}")
-
-            if len(jars) != 1:
-                raise FileNotFoundError(f'jars found: {jars}; There can (and must) be only one!')
-            jar = jars[0]
-
+            jar = UploadToBlob._get_jar(config['lang'])
             UploadToBlob._upload_file_to_blob(
                 blob_service,
                 jar,
                 f'{build_definition_name}/{build_definition_name}-{env.version}.jar'
             )
         else:
-            eggs = glob.glob('/root/dist/*.egg')
-            if len(eggs) != 1:
-                raise FileNotFoundError(f'Eggs found: {eggs}; There can (and must) be only one!')
-            egg = eggs[0]
-            main = '/root/main/main.py'
-
+            egg = UploadToBlob._get_egg()
             UploadToBlob._upload_file_to_blob(
                 blob_service,
                 egg,
@@ -60,6 +65,6 @@ class UploadToBlob:
             )
             UploadToBlob._upload_file_to_blob(
                 blob_service,
-                main,
+                '/root/main/main.py',
                 f'{build_definition_name}/{build_definition_name}-main-{env.version}.py'
             )
