@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-echo "Checking if commit is release tag"
-
+echo "Checking if commit is release tag or master branch"
 
 tag=`git describe --exact-match --tags HEAD`
 branch=$(git rev-parse --abbrev-ref HEAD)
