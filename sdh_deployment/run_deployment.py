@@ -62,9 +62,7 @@ def main():
             CreateAppserviceAndWebapp.create_appservice_and_webapp(env, step)
 
         elif task == "createDatabricksSecrets":
-            from sdh_deployment.create_databricks_secrets import (
-                CreateDatabricksSecrets
-            )
+            from sdh_deployment.create_databricks_secrets import CreateDatabricksSecrets
 
             CreateDatabricksSecrets.create_databricks_secrets(env)
 
@@ -81,9 +79,7 @@ def main():
             CreateEventhubConsumerGroups.create_eventhub_consumer_groups(env, groups)
 
         elif task == "deployToDatabricks":
-            from sdh_deployment.deploy_to_databricks import (
-                DeployToDatabricks
-            )
+            from sdh_deployment.deploy_to_databricks import DeployToDatabricks
 
             DeployToDatabricks.deploy_to_databricks(env, json.loads(step["config"]))
 

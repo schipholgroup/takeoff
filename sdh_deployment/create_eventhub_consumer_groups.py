@@ -5,10 +5,7 @@ from azure.mgmt.relay.models import AccessRights
 from dataclasses import dataclass
 from typing import List, Set
 
-from sdh_deployment.create_databricks_secrets import (
-    Secret,
-    CreateDatabricksSecrets,
-)
+from sdh_deployment.create_databricks_secrets import Secret, CreateDatabricksSecrets
 from sdh_deployment.util import (
     get_azure_user_credentials,
     RESOURCE_GROUP,
@@ -217,6 +214,8 @@ class CreateEventhubConsumerGroups:
         databricks_client = get_databricks_client(env.environment)
         application_name = get_application_name()
 
+        # For each Eventhub we have a separate connection string which is set by a shared access policy
+        # The different consumer groups can use this same shared access policy
         secrets = [
             Secret(f"{_.eventhub_entity}-connection-string", _.connection_string)
             for _ in connection_strings

@@ -3,10 +3,7 @@ import logging
 from azure.mgmt.applicationinsights import ApplicationInsightsManagementClient
 from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
-from sdh_deployment.create_databricks_secrets import (
-    Secret,
-    CreateDatabricksSecrets,
-)
+from sdh_deployment.create_databricks_secrets import Secret, CreateDatabricksSecrets
 from sdh_deployment.util import (
     get_application_name,
     get_subscription_id,
