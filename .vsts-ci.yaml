@@ -9,7 +9,7 @@ steps:
   inputs:
     dockerComposeCommand: |
       run --rm python bash -c "pip install -e .[test] && pytest \
-                                                         --cov=pyspark_streaming_deployment \
+                                                         --cov=sdh_deployment \
                                                          --cov-report xml \
                                                          --cov-report html \
                                                          --junitxml /root/testresults.xml \
@@ -17,6 +17,7 @@ steps:
 - task: PublishTestResults@2
   inputs:
     testResultsFiles: $(System.DefaultWorkingDirectory)/testresults.xml
+
 - task: PublishCodeCoverageResults@1
   displayName: 'Publish coverage results'
   inputs:

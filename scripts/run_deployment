@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+
+from sdh_deployment.run_deployment import main
+
+main()

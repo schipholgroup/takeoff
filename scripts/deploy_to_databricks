@@ -1,6 +1,0 @@
-#!/usr/bin/python3
-
-from pyspark_streaming_deployment import main
-from pyspark_streaming_deployment.deploy_to_databricks import deploy_application
-
-main.main(deploy_application)

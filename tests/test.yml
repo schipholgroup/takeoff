@@ -1,0 +1,54 @@
+steps:
+- task: deployToAdls
+- task: deployWebAppService
+  appServiceName: name
+  appServiceSkuName: S1
+  appServiceSkuCapacity: 1
+  appServiceSkuTier: Basic
+- task: createEventhubConsumerGroups
+  groups:
+    - eventhubEntity: sdhdevciss
+      consumerGroup: consumerGroupName1
+    - eventhubEntity: sdhdevciss
+      consumerGroup: consumerGroupName2
+- task: createDatabricksSecrets
+- task: deployToDatabricks
+  config:  >
+    {
+      "name": "__generated_value__",
+      "new_cluster": {
+        "spark_version": "4.2.x-scala2.11",
+        "node_type_id": "Standard_DS3_v2",
+        "spark_conf": {
+          "spark.sql.warehouse.dir": "dbfs:/mnt/sdh/data/raw/managedtables",
+          "spark.databricks.delta.preview.enabled": "true",
+          "spark.sql.hive.metastore.jars": "builtin",
+          "spark.sql.execution.arrow.enabled": "true",
+          "spark.sql.hive.metastore.version": "1.2.1"
+        },
+        "spark_env_vars": {
+          "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+        },
+        "num_workers": 2,
+        "cluster_log_conf": {
+          "dbfs": {
+            "destination": "dbfs:/mnt/sdh/logs/{name}"
+          }
+        }
+      },
+      "email_notifications": {
+        "on_start": ["b5u1o2u2g4r7q3c2@digital-airport.slack.com"],
+        "on_success": ["b5u1o2u2g4r7q3c2@digital-airport.slack.com"],
+        "on_failure": ["b5u1o2u2g4r7q3c2@digital-airport.slack.com"]
+      },
+      "max_retries": 5,
+      "libraries": [
+        {
+          "jar": "dbfs:/mnt/sdh/libraries/spark-cosmos-sink/spark-cosmos-sink-0.2.5.jar"
+        }
+      ],
+      "spark_python_task": {
+        "python_file": "__generated_value__",
+        "parameters": "__generated_list__"
+      }
+    }
