@@ -4,7 +4,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(
-    name="pyspark-streaming-deployment",
+    name="sdh-deployment",
     version="0.0.1",
     description="A package to bundle deployment scripts",
     author="Schiphol Data Hub",
