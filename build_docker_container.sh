@@ -3,7 +3,6 @@
 echo "Checking if commit is release tag or master branch"
 
 tag=`git describe --exact-match --tags HEAD`
-branch=$(git rev-parse --abbrev-ref HEAD)
 
 docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
 
@@ -24,7 +23,7 @@ if [[ ${tag} =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]
 then
     build_and_push ${tag} "python"
     build_and_push ${tag} "pyspark"
-elif [[ "$branch" = "master" ]]
+elif [[ ${BUILD_SOURCEBRANCHNAME} = "master" ]]
 then
     build_and_push "SNAPSHOT" "python"
     build_and_push "SNAPSHOT" "pyspark"
