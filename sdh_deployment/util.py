@@ -74,7 +74,7 @@ def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
 
 def get_databricks_client(dtap: str) -> ApiClient:
     databricks_token = os.environ[f"AZURE_DATABRICKS_TOKEN_{dtap.upper()}"]
-    databricks_host = os.environ[f"AZURE_DATABRICKS_HOST"]
+    databricks_host = os.environ["AZURE_DATABRICKS_HOST"]
     return ApiClient(host=databricks_host, token=databricks_token)
 
 
