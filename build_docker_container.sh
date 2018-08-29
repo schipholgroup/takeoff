@@ -20,7 +20,7 @@ function build_and_push(){
 
 }
 
-if [[ ${tag} =~ ^([0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2})$ ]]
+if [[ ${tag} =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]
 then
     build_and_push ${tag} "python"
     build_and_push ${tag} "pyspark"
