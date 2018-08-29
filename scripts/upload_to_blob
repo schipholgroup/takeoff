@@ -1,0 +1,7 @@
+#!/usr/bin/python3
+
+from pyspark_streaming_deployment import main
+from pyspark_streaming_deployment.upload_to_blob import upload_application_to_blob
+
+main.main(upload_application_to_blob)
+

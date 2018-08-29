@@ -24,3 +24,8 @@ steps:
     summaryFileLocation: $(System.DefaultWorkingDirectory)/coverage.xml
     reportDirectory: $(System.DefaultWorkingDirectory)/htmlcov
     failIfCoverageEmpty: true
+
+- task: ShellScript@2
+  displayName: 'Build and push docker image'
+  inputs:
+    scriptPath: ./build_docker_container.sh

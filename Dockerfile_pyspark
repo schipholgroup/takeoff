@@ -1,0 +1,8 @@
+FROM fokkodriesprong/docker-pyspark:latest
+
+ADD setup.py /
+ADD README.md /
+ADD scripts /scripts
+ADD pyspark_streaming_deployment /pyspark_streaming_deployment
+
+RUN python setup.py install

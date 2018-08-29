@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass
 
 from azure.common.credentials import UserPassCredentials, ServicePrincipalCredentials
+from azure.storage.blob import BlockBlobService
 from databricks_cli.sdk import ApiClient
 from git import Repo
 from typing import Pattern
@@ -55,6 +56,13 @@ def read_azure_sp(dtap: str) -> AzureSp:
     azure_sp_password = os.environ[f'AZURE_SP_PASSWORD_{dtap.upper()}']
 
     return AzureSp(azure_sp_tenantid, azure_sp_username, azure_sp_password)
+
+
+def get_shared_blob_service() -> BlockBlobService:
+    return BlockBlobService(
+        account_name=os.environ['AZURE_SHARED_BLOB_USERNAME'],
+        account_key=os.environ['AZURE_SHARED_BLOB_PASSWORD']
+    )
 
 
 def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
