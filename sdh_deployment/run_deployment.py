@@ -47,6 +47,11 @@ def main():
 
             DeployToAdls.deploy_to_adls(env)
 
+        if task == "uploadToBlob":
+            from sdh_deployment.upload_to_blob import UploadToBlob
+
+            UploadToBlob.upload_application_to_blob(env, step)
+
         elif task == "applicationInsights":
             from sdh_deployment.create_application_insights import (
                 CreateApplicationInsights
