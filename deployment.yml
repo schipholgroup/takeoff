@@ -3,3 +3,5 @@ steps:
   dockerfiles:
   - file: Dockerfile_python
     postfix: python
+  - file: Dockerfile_pyspark
+    postfix: pyspark
