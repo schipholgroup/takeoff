@@ -3,6 +3,7 @@ from unittest import mock
 
 from yaml import load
 
+from sdh_deployment.build_docker_image import BuildDocker, DockerFile
 from sdh_deployment.deploy_to_adls import DeployToAdls
 from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp
@@ -46,7 +47,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        DeployToAdls, "deploy_to_adls", return_value=None
+            DeployToAdls, "deploy_to_adls", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(env)
@@ -71,7 +72,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
+            CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -106,9 +107,9 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateEventhubConsumerGroups,
-        "create_eventhub_consumer_groups",
-        return_value=None,
+            CreateEventhubConsumerGroups,
+            "create_eventhub_consumer_groups",
+            return_value=None,
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -140,7 +141,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
+            CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(env)
@@ -203,7 +204,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        DeployToDatabricks, "deploy_to_databricks", return_value=None
+            DeployToDatabricks, "deploy_to_databricks", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -247,4 +248,32 @@ steps:
                     "parameters": "__generated_list__",
                 },
             },
+        )
+
+
+@mock.patch.dict(os.environ, environment_variables)
+@mock.patch("sdh_deployment.run_deployment.get_environment")
+@mock.patch("sdh_deployment.run_deployment.load_yaml")
+def test_build_docker_image(mock_load_yaml, mock_get_version):
+    mock_load_yaml.return_value = load(
+        """
+steps:
+- task: buildDockerImage
+  dockerfiles:
+    - file: Dockerfile
+      postfix: ''
+    - file: Dockefile_special
+      postfix: 'special'
+    """
+    )
+    mock_get_version.return_value = env
+
+    from sdh_deployment.run_deployment import main
+
+    with mock.patch.object(
+            BuildDocker, "run", return_value=None
+    ) as mock_task:
+        main()
+        mock_task.assert_called_once_with(
+            [DockerFile('Dockefile', ''), DockerFile('Dockerfile_special', 'special')]
         )
