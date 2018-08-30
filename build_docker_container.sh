@@ -23,7 +23,7 @@ if [[ ${tag} =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]
 then
     build_and_push ${tag} "python"
     build_and_push ${tag} "pyspark"
-elif [[ ${BUILD_SOURCEBRANCHNAME} = "master" ]]
+elif [[ "${BUILD_SOURCEBRANCHNAME}" = "master" ]]
 then
     build_and_push "SNAPSHOT" "python"
     build_and_push "SNAPSHOT" "pyspark"
