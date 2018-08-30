@@ -3,7 +3,6 @@ import logging
 from yaml import load
 from dataclasses import dataclass
 
-from sdh_deployment.build_docker_image import DockerFile
 from sdh_deployment.util import get_tag, get_branch, get_short_hash
 
 logger = logging.getLogger(__name__)
@@ -90,11 +89,12 @@ def main():
             DeployToDatabricks.deploy_to_databricks(env, json.loads(step["config"]))
 
         elif task == "buildDockerImage":
-            from sdh_deployment.build_docker_image import BuildDocker
+            from sdh_deployment.build_docker_image import DockerImageBuilder, DockerFile
 
             dockerfiles = [DockerFile(df['file'], df['postfix'])
                            for df in step['dockerfiles']]
-            BuildDocker(env).run(dockerfiles)
+
+            DockerImageBuilder(env).run(dockerfiles)
 
         else:
             raise Exception(

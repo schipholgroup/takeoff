@@ -3,7 +3,7 @@ from unittest import mock
 
 from yaml import load
 
-from sdh_deployment.build_docker_image import BuildDocker, DockerFile
+from sdh_deployment.build_docker_image import DockerImageBuilder, DockerFile
 from sdh_deployment.deploy_to_adls import DeployToAdls
 from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp
@@ -24,9 +24,8 @@ environment_variables = {
     "APPSERVICE_LOCATION": "west europe",
     "BUILD_DEFINITIONNAME": "my-build",
     "BUILD_SOURCEBRANCHNAME": "True",
-    "DOCKER_REGISTRY_URL": "https://abc.frl",
-    "DOCKER_REGISTRY_USERNAME": "user123",
-    "DOCKER_REGISTRY_PASSWORD": "supersecret123",
+    "REGISTRY_USERNAME": "user123",
+    "REGISTRY_PASSWORD": "supersecret123",
 }
 
 env = ApplicationVersion("DEV", "abc123githash")
@@ -248,32 +247,4 @@ steps:
                     "parameters": "__generated_list__",
                 },
             },
-        )
-
-
-@mock.patch.dict(os.environ, environment_variables)
-@mock.patch("sdh_deployment.run_deployment.get_environment")
-@mock.patch("sdh_deployment.run_deployment.load_yaml")
-def test_build_docker_image(mock_load_yaml, mock_get_version):
-    mock_load_yaml.return_value = load(
-        """
-steps:
-- task: buildDockerImage
-  dockerfiles:
-    - file: Dockerfile
-      postfix: ''
-    - file: Dockefile_special
-      postfix: 'special'
-    """
-    )
-    mock_get_version.return_value = env
-
-    from sdh_deployment.run_deployment import main
-
-    with mock.patch.object(
-            BuildDocker, "run", return_value=None
-    ) as mock_task:
-        main()
-        mock_task.assert_called_once_with(
-            [DockerFile('Dockefile', ''), DockerFile('Dockerfile_special', 'special')]
         )

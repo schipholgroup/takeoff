@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from typing import List
 
@@ -7,6 +8,8 @@ from docker import DockerClient
 from sdh_deployment.run_deployment import ApplicationVersion
 from sdh_deployment.util import get_application_name, get_docker_credentials
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class DockerFile(object):
@@ -14,7 +17,7 @@ class DockerFile(object):
     postfix: str
 
 
-class BuildDocker(object):
+class DockerImageBuilder(object):
     def __init__(self, env: ApplicationVersion):
         self.env = env
         self.client: DockerClient = docker.from_env()
@@ -30,13 +33,13 @@ class BuildDocker(object):
             tag = f'{self.env.version}-{df.postfix}'
             repository = f'{self.docker_credentials.registry}/{application_name}'
 
-            print(f"Building docker image for {df.dockerfile}")
+            logger.info(f"Building docker image for {df.dockerfile}")
             self.client.images.build(
                 path='/root',
                 tag=f'{repository}:{tag}',
                 dockerfile=f'/root/{df.dockerfile}')
 
-            print(f"Uploading docker image for {df.dockerfile}")
+            logger.info(f"Uploading docker image for {df.dockerfile}")
             self.client.images.push(
                 repository=repository,
                 tag=tag)
