@@ -1,7 +1,15 @@
 version: "3.3"
 services:
   python:
-    image: sdh-deployment
+    image: python:3.7.0
+    working_dir: /root/
+    volumes:
+    - type: bind
+      source: ./
+      target: /root
+    tty: true
+  dockerception:
+    image: dockerception
     build:
       context: ./
       dockerfile: Dockerfile_python
@@ -13,3 +21,6 @@ services:
        target: /root
      - "/var/run/docker.sock:/var/run/docker.sock"
     tty: true
+    environment:
+      - REGISTRY_USERNAME
+      - REGISTRY_PASSWORD
