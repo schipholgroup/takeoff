@@ -30,7 +30,7 @@ class DockerImageBuilder(object):
     def run(self, dockerfiles: List[DockerFile]):
         application_name = get_application_name()
         for df in dockerfiles:
-            tag = f'{self.env.version}-{df.postfix}'
+            tag = f'{self.env.version}{df.postfix}'
             repository = f'{self.docker_credentials.registry}/{application_name}'
 
             logger.info(f"Building docker image for {df.dockerfile}")
