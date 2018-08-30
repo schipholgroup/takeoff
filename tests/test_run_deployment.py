@@ -3,20 +3,18 @@ from unittest import mock
 
 from yaml import load
 
-from sdh_deployment.build_docker_image import DockerImageBuilder, DockerFile
-from sdh_deployment.deploy_to_adls import DeployToAdls
 from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp
+)
+from sdh_deployment.create_databricks_secrets import (
+    CreateDatabricksSecrets
 )
 from sdh_deployment.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
     EventHubConsumerGroup,
 )
-from sdh_deployment.create_databricks_secrets import (
-    CreateDatabricksSecrets
-)
+from sdh_deployment.deploy_to_adls import DeployToAdls
 from sdh_deployment.deploy_to_databricks import DeployToDatabricks
-
 from sdh_deployment.run_deployment import ApplicationVersion
 
 environment_variables = {
