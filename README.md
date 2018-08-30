@@ -91,9 +91,8 @@ In your `.vsts-ci.yaml` you can use these steps and docker commands to (choose a
         AZURE_DATABRICKS_TOKEN_PRD: ${azure_databricks_token_prd}
         SUBSCRIPTION_ID: ${SUBSCRIPTION_ID}
         GITHUB_TOKEN: ${github_token}
-        DOCKER_REGISTRY_URL: ${docker_registry_url}
-        DOCKER_REGISTRY_USERNAME: ${docker_registry_username}
-        DOCKER_REGISTRY_PASSWORD: ${docker_registry_password}
+        REGISTRY_USERNAME: ${registry_username}
+        REGISTRY_PASSWORD: ${registry_password}
         AZURE_SHARED_BLOB_USERNAME: $(azure_shared_blob_username)
         AZURE_SHARED_BLOB_PASSWORD: $(azure_shared_blob_password)
     ```

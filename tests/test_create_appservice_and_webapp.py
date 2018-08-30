@@ -1,6 +1,7 @@
 from unittest import mock
 import os
 import unittest
+from sdh_deployment.util import SHARED_REGISTRY
 from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp as victim
 )
@@ -14,12 +15,12 @@ from sdh_deployment.create_appservice_and_webapp import (
 )
 
 VALID_SITE_CONFIG = SiteConfig(
-    linux_fx_version=f"DOCKER|my_registry.stuff.com/my-app:latest",
+    linux_fx_version=f"DOCKER|{SHARED_REGISTRY}/my-app:latest",
     app_settings=[
         {"name": "DOCKER_ENABLE_CI", "value": True},
         {
             "name": "DOCKER_REGISTRY_SERVER_URL",
-            "value": "https://my_registry.stuff.com",
+            "value": "https://" + SHARED_REGISTRY,
         },
         {"name": "DOCKER_REGISTRY_SERVER_USERNAME", "value": "awesomeperson"},
         {"name": "DOCKER_REGISTRY_SERVER_PASSWORD", "value": "supersecret42"},
@@ -35,9 +36,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             "WEBAPP_NAME": "my-app",
             "APPSERVICE_LOCATION": "west europe",
             "BUILD_DEFINITIONNAME": "my-build",
-            "DOCKER_REGISTRY_URL": "my_registry.stuff.com",
-            "DOCKER_REGISTRY_USERNAME": "awesomeperson",
-            "DOCKER_REGISTRY_PASSWORD": "supersecret42",
+            "REGISTRY_USERNAME": "awesomeperson",
+            "REGISTRY_PASSWORD": "supersecret42",
         },
     )
     def test_get_site_config(self):
@@ -77,9 +77,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             "WEBAPP_NAME": "my-app",
             "APPSERVICE_LOCATION": "west europe",
             "BUILD_DEFINITIONNAME": "my-build",
-            "DOCKER_REGISTRY_URL": "https://abc.frl",
-            "DOCKER_REGISTRY_USERNAME": "user123",
-            "DOCKER_REGISTRY_PASSWORD": "supersecret123",
+            "REGISTRY_USERNAME": "user123",
+            "REGISTRY_PASSWORD": "supersecret123",
         },
     )
     def test_get_webapp_to_create(self, get_site_config_mock):
