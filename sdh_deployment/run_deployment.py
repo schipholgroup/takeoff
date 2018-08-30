@@ -88,6 +88,14 @@ def main():
 
             DeployToDatabricks.deploy_to_databricks(env, json.loads(step["config"]))
 
+        elif task == "buildDockerImage":
+            from sdh_deployment.build_docker_image import DockerImageBuilder, DockerFile
+
+            dockerfiles = [DockerFile(df['file'], df['postfix'])
+                           for df in step['dockerfiles']]
+
+            DockerImageBuilder(env).run(dockerfiles)
+
         else:
             raise Exception(
                 f"Deployment step {task} is unknown, please check the config"

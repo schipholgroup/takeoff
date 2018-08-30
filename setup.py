@@ -17,7 +17,8 @@ setup(
         'pytest==3.6.2',
         'pytest-cov==2.5.1',
         'flake8==3.5.0',
-        'PyYAML==3.13'
+        'PyYAML==3.13',
+        'docker==3.5.0'
     ],
     extras_require={
         'test': {

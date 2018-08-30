@@ -10,6 +10,7 @@ from typing import Pattern
 RESOURCE_GROUP = "sdh{dtap}"
 EVENTHUB_NAMESPACE = "sdheventhub{dtap}"
 AZURE_LOCATION = "west europe"  # default to this Azure location
+SHARED_REGISTRY = 'sdhcontainerregistryshared.azurecr.io'
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,13 @@ class AzureSp(object):
     tenant: str
     username: str
     password: str
+
+
+@dataclass(frozen=True)
+class DockerCredentials(object):
+    username: str
+    password: str
+    registry: str
 
 
 def get_branch() -> str:
@@ -36,6 +44,14 @@ def get_short_hash(n: int = 7) -> str:
 
 def get_application_name() -> str:
     return os.environ["BUILD_DEFINITIONNAME"]
+
+
+def get_docker_credentials() -> DockerCredentials:
+    return DockerCredentials(
+        username=os.environ['REGISTRY_USERNAME'],
+        password=os.environ['REGISTRY_PASSWORD'],
+        registry=SHARED_REGISTRY
+    )
 
 
 def get_subscription_id() -> str:

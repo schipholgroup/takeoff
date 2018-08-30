@@ -3,19 +3,18 @@ from unittest import mock
 
 from yaml import load
 
-from sdh_deployment.deploy_to_adls import DeployToAdls
 from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp
+)
+from sdh_deployment.create_databricks_secrets import (
+    CreateDatabricksSecrets
 )
 from sdh_deployment.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
     EventHubConsumerGroup,
 )
-from sdh_deployment.create_databricks_secrets import (
-    CreateDatabricksSecrets
-)
+from sdh_deployment.deploy_to_adls import DeployToAdls
 from sdh_deployment.deploy_to_databricks import DeployToDatabricks
-
 from sdh_deployment.run_deployment import ApplicationVersion
 
 environment_variables = {
@@ -23,9 +22,8 @@ environment_variables = {
     "APPSERVICE_LOCATION": "west europe",
     "BUILD_DEFINITIONNAME": "my-build",
     "BUILD_SOURCEBRANCHNAME": "True",
-    "DOCKER_REGISTRY_URL": "https://abc.frl",
-    "DOCKER_REGISTRY_USERNAME": "user123",
-    "DOCKER_REGISTRY_PASSWORD": "supersecret123",
+    "REGISTRY_USERNAME": "user123",
+    "REGISTRY_PASSWORD": "supersecret123",
 }
 
 env = ApplicationVersion("DEV", "abc123githash")
@@ -46,7 +44,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        DeployToAdls, "deploy_to_adls", return_value=None
+            DeployToAdls, "deploy_to_adls", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(env)
@@ -71,7 +69,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
+            CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -106,9 +104,9 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateEventhubConsumerGroups,
-        "create_eventhub_consumer_groups",
-        return_value=None,
+            CreateEventhubConsumerGroups,
+            "create_eventhub_consumer_groups",
+            return_value=None,
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -140,7 +138,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
+            CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(env)
@@ -203,7 +201,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        DeployToDatabricks, "deploy_to_databricks", return_value=None
+            DeployToDatabricks, "deploy_to_databricks", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(

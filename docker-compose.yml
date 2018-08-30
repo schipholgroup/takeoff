@@ -4,7 +4,25 @@ services:
     image: python:3.7.0
     working_dir: /root/
     volumes:
+    - type: bind
+      source: ./
+      target: /root
+    tty: true
+  dockerception:
+    image: dockerception
+    build:
+      context: ./
+      dockerfile: Dockerfile_python
+    working_dir: /root/
+    privileged: true
+    volumes:
      - type: bind
        source: ./
        target: /root
+     - "/var/run/docker.sock:/var/run/docker.sock"
     tty: true
+    environment:
+      - REGISTRY_USERNAME
+      - REGISTRY_PASSWORD
+      - BUILD_SOURCEBRANCHNAME
+      - BUILD_DEFINITIONNAME

@@ -26,7 +26,11 @@ steps:
     reportDirectory: $(System.DefaultWorkingDirectory)/htmlcov
     failIfCoverageEmpty: true
 
-- task: ShellScript@2
-  displayName: 'Build and push docker image'
+- task: DockerCompose@0
+  displayName: Deploy to Azure and Databricks
   inputs:
-    scriptPath: ./build_docker_container.sh
+    dockerComposeCommand: |
+      run --rm dockerception run_deployment
+  env:
+    REGISTRY_USERNAME: ${REGISTRY_USERNAME}
+    REGISTRY_PASSWORD: ${REGISTRY_PASSWORD}
