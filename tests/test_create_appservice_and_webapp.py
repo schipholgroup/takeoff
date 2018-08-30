@@ -44,15 +44,26 @@ class TestDeployToDatabricks(unittest.TestCase):
         result = victim._get_site_config("my-app")
         assert result == VALID_SITE_CONFIG
 
-    @mock.patch.dict(os.environ, {"APPSERVICE_NAME": "my_epic_app"})
-    def test_parse_appservice_parameters(self):
+    def test_parse_appservice_parameters_defaults(self):
         expected_appservice_config = AppService(
             name="my_epic_app",
             sku=AppServiceSKU(name="S1", capacity=2, tier="Standard"),
         )
 
         result = victim._parse_appservice_parameters(
-            "prd", {"appServiceName": expected_appservice_config.name}
+            "prd", {"appService": {'name': expected_appservice_config.name}}
+        )
+
+        assert expected_appservice_config == result
+
+    def test_parse_appservice_parameters_config_unavailable(self):
+        expected_appservice_config = AppService(
+            name="my_epic_app",
+            sku=AppServiceSKU(name="S1", capacity=2, tier="Standard"),
+        )
+
+        result = victim._parse_appservice_parameters(
+            "prd", {"appService": {'name': expected_appservice_config.name, 'sku': {'acp': {'name': 'I1', 'capacity': 10, 'tier': 'uber'}}}}
         )
 
         assert expected_appservice_config == result

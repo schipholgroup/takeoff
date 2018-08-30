@@ -68,13 +68,21 @@ class CreateAppserviceAndWebapp:
         for the location
         :return: AppService object created based on env parameters
         """
-        default_sku = appservice_sku_defaults[dtap]
+        provided_config = config.get('appService')
+
+        # check if there is any config available for sku for this environment.
+        if 'sku' in provided_config and dtap in provided_config['sku']:
+            config = provided_config.get('sku').get(dtap)
+            sku_config = AppServiceSKU(config.get('name'), config.get('capacity'), config.get('tier'))
+        else:
+            sku_config = appservice_sku_defaults[dtap]
+
         return AppService(
-            name=config.get("appServiceName"),
+            name=provided_config.get('name'),
             sku=AppServiceSKU(
-                name=config.get("appServiceSku", default_sku.name),
-                capacity=config.get("appServiceSku", default_sku.capacity),
-                tier=config.get("appServiceTier", default_sku.tier),
+                name=sku_config.name,
+                capacity=sku_config.capacity,
+                tier=sku_config.tier,
             ),
         )
 
