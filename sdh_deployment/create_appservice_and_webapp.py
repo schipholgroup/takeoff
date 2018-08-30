@@ -8,6 +8,7 @@ from sdh_deployment.util import (
     RESOURCE_GROUP,
     AZURE_LOCATION,
     get_application_name,
+    SHARED_REGISTRY,
 )
 from sdh_deployment.run_deployment import ApplicationVersion
 
@@ -88,13 +89,12 @@ class CreateAppserviceAndWebapp:
 
     @staticmethod
     def _get_site_config(build_definition_name: str) -> SiteConfig:
-        docker_registry_url = os.environ["DOCKER_REGISTRY_URL"]
-        docker_registry_username = os.environ["DOCKER_REGISTRY_USERNAME"]
-        docker_registry_password = os.environ["DOCKER_REGISTRY_PASSWORD"]
+        docker_registry_username = os.environ["REGISTRY_USERNAME"]
+        docker_registry_password = os.environ["REGISTRY_PASSWORD"]
         return SiteConfig(
             # this syntax seems to be necessary
             linux_fx_version="DOCKER|{registry_url}/{build_definition_name}:latest".format(
-                registry_url=docker_registry_url,
+                registry_url=SHARED_REGISTRY,
                 build_definition_name=build_definition_name,
             ),
             app_settings=[
@@ -105,7 +105,7 @@ class CreateAppserviceAndWebapp:
                 {
                     "name": "DOCKER_REGISTRY_SERVER_URL",
                     # This MUST start with https://
-                    "value": "https://" + docker_registry_url,
+                    "value": "https://" + SHARED_REGISTRY,
                 },
                 {
                     "name": "DOCKER_REGISTRY_SERVER_USERNAME",
@@ -151,11 +151,9 @@ class CreateAppserviceAndWebapp:
         return app_service_id
 
     @staticmethod
-    def _create_or_update_webapp(
-        web_client: WebSiteManagementClient, appservice_id: str, dtap: str, config: dict
-    ) -> Site:
+    def _create_or_update_webapp(web_client: WebSiteManagementClient, appservice_id: str, dtap: str) -> Site:
         webapp_to_create = CreateAppserviceAndWebapp._get_webapp_to_create(
-            appservice_id, dtap, config
+            appservice_id, dtap
         )
         return web_client.web_apps.create_or_update(
             webapp_to_create.resource_group,
@@ -183,5 +181,5 @@ class CreateAppserviceAndWebapp:
         )
 
         return CreateAppserviceAndWebapp._create_or_update_webapp(
-            web_client, appservice_id, formatted_dtap, config
+            web_client, appservice_id, formatted_dtap
         )
