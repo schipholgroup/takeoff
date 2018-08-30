@@ -104,10 +104,22 @@ This will run a deployment based on the `deployment.yml` in the root of your pro
 steps:
 - task: deployToAdls
 - task: deployWebAppService
-  appServiceName: name
-  appServiceSkuName: S1
-  appServiceSkuCapacity: 1
-  appServiceSkuTier: Basic
+- task: deployWebAppService
+  appService:
+    name: name
+    sku:
+      prd:
+        name: B1
+        capacity: 1
+        tier: Basic
+      acp:
+        name: B1
+        capacity: 1
+        tier: Basic
+      dev:
+        name: B1
+        capacity: 1
+        tier: Basic
 - task: createEventhubConsumerGroups
   groups:
     - eventhubEntity: sdhdevciss
