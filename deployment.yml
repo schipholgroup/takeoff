@@ -1,0 +1,5 @@
+steps:
+- task: buildDockerImage
+  dockerfiles:
+  - file: Dockerfile_python
+    postfix: python

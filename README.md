@@ -117,6 +117,12 @@ steps:
 - task: createDatabricksSecrets
 - task: uploadToBlob
   lang: {sbt,maven,python}
+- task: buildDockerImage
+  dockerfiles:
+    - file: Dockerfile
+      postfix: ''
+    - file: Dockerfile_pyspark
+      postfix: 'pyspark'
 - task: deployToDatabricks
   config:  >
     {
