@@ -52,9 +52,9 @@ class CreateAppserviceAndWebapp:
                 location=AZURE_LOCATION,
                 reserved=True,  # This is the way to specify that it's a linux app-service-plan
                 sku=SkuDescription(
-                    name=service_to_create.sku_name,
-                    capacity=service_to_create.sku_capacity,
-                    tier=service_to_create.sku_tier,
+                    name=service_to_create.sku.name,
+                    capacity=service_to_create.sku.capacity,
+                    tier=service_to_create.sku.tier,
                 ),
             ),
         )
