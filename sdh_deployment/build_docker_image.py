@@ -30,11 +30,11 @@ class DockerImageBuilder(object):
     def run(self, dockerfiles: List[DockerFile]):
         application_name = get_application_name()
         for df in dockerfiles:
-            tag = f'{self.env.version}'
+            tag = self.env.version
 
             # only append a postfix if there is one provided
             if df.postfix:
-                tag += f'{df.postfix}'
+                tag += df.postfix
 
             repository = f'{self.docker_credentials.registry}/{application_name}'
 
