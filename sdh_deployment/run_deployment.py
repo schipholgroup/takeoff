@@ -91,7 +91,7 @@ def main():
         elif task == "buildDockerImage":
             from sdh_deployment.build_docker_image import DockerImageBuilder, DockerFile
 
-            dockerfiles = [DockerFile(df['file'], df['postfix'])
+            dockerfiles = [DockerFile(df['file'], df.get('postfix'))
                            for df in step['dockerfiles']]
 
             DockerImageBuilder(env).run(dockerfiles)
