@@ -40,6 +40,13 @@ class ConnectingString(object):
     eventhub_entity: str
     connection_string: str
 
+    @property
+    def eventhub_entity_without_environment(self):
+        """The eventhub entity is postfixed with the environment, for example: 'sdhcisseventhubdev'.
+        To have secrets in databricks environment agnostic, we remove that postfix.
+        """
+        return self.eventhub_entity[:-3]
+
 
 @dataclass(frozen=True)
 class EventHubConsumerGroup(object):
@@ -217,7 +224,7 @@ class CreateEventhubConsumerGroups:
         # For each Eventhub we have a separate connection string which is set by a shared access policy
         # The different consumer groups can use this same shared access policy
         secrets = [
-            Secret(f"{_.eventhub_entity}-connection-string", _.connection_string)
+            Secret(f"{_.eventhub_entity_without_environment}-connection-string", _.connection_string)
             for _ in connection_strings
         ]
 
