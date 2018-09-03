@@ -27,7 +27,7 @@ def get_environment() -> ApplicationVersion:
     git_hash = get_short_hash()
 
     if tag:
-        return ApplicationVersion("PRD", tag)
+        return ApplicationVersion("PRD", str(tag))
     elif branch == "master":
         return ApplicationVersion("ACP", "SNAPSHOT")
     else:
