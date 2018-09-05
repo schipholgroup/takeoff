@@ -40,9 +40,9 @@ def main():
 
     for step in config["steps"]:
         task = step["task"]
-        logger.info("{:76s}".format('*'*76))
-        logger.info("{:10s} {:13s} {:40s} {:10s}".format('*'*10, 'RUNNING TASK:', task, '*'*10))
-        logger.info("{:76s}".format('*'*76))
+        logger.info("{:76s}".format('*' * 76))
+        logger.info("{:10s} {:13s} {:40s} {:10s}".format('*' * 10, 'RUNNING TASK:', task, '*' * 10))
+        logger.info("{:76s}".format('*' * 76))
 
         if task == "uploadToBlob":
             from sdh_deployment.upload_to_blob import UploadToBlob
