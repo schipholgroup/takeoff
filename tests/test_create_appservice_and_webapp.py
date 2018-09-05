@@ -90,7 +90,7 @@ class TestDeployToWebApp(unittest.TestCase):
 
         expected_result = WebApp(
             resource_group=RESOURCE_GROUP.format(dtap="dev"),
-            name="my-build",
+            name="my-build-dev",
             site=Site(
                 location="west europe",
                 site_config=VALID_SITE_CONFIG,
