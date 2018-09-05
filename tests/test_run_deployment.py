@@ -13,7 +13,6 @@ from sdh_deployment.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
     EventHubConsumerGroup,
 )
-from sdh_deployment.deploy_to_adls import DeployToAdls
 from sdh_deployment.deploy_to_databricks import DeployToDatabricks
 from sdh_deployment.run_deployment import ApplicationVersion
 
@@ -27,6 +26,7 @@ environment_variables = {
 }
 
 env = ApplicationVersion("DEV", "abc123githash")
+
 
 @mock.patch.dict(os.environ, environment_variables)
 @mock.patch("sdh_deployment.run_deployment.get_environment")
