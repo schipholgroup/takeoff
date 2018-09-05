@@ -88,14 +88,15 @@ class CreateAppserviceAndWebapp:
         )
 
     @staticmethod
-    def _get_site_config(build_definition_name: str) -> SiteConfig:
+    def _get_site_config(build_definition_name: str, env: ApplicationVersion) -> SiteConfig:
         docker_registry_username = os.environ["REGISTRY_USERNAME"]
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
         return SiteConfig(
             # this syntax seems to be necessary
-            linux_fx_version="DOCKER|{registry_url}/{build_definition_name}:latest".format(
+            linux_fx_version="DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
                 registry_url=SHARED_REGISTRY,
                 build_definition_name=build_definition_name,
+                tag=env.version
             ),
             app_settings=[
                 {
@@ -120,7 +121,7 @@ class CreateAppserviceAndWebapp:
         )
 
     @staticmethod
-    def _get_webapp_to_create(appservice_id: str, dtap: str) -> WebApp:
+    def _get_webapp_to_create(appservice_id: str, dtap: str, env: ApplicationVersion) -> WebApp:
         # use build definition name as default web app name
         build_definition_name = get_application_name()
         webapp_name = "{name}-{env}".format(
@@ -132,7 +133,7 @@ class CreateAppserviceAndWebapp:
             site=Site(
                 location=AZURE_LOCATION,
                 site_config=CreateAppserviceAndWebapp._get_site_config(
-                    build_definition_name
+                    build_definition_name, env
                 ),
                 server_farm_id=appservice_id,
             ),
@@ -151,9 +152,12 @@ class CreateAppserviceAndWebapp:
         return app_service_id
 
     @staticmethod
-    def _create_or_update_webapp(web_client: WebSiteManagementClient, appservice_id: str, dtap: str) -> Site:
+    def _create_or_update_webapp(web_client: WebSiteManagementClient,
+                                 appservice_id: str,
+                                 dtap: str,
+                                 env: ApplicationVersion) -> Site:
         webapp_to_create = CreateAppserviceAndWebapp._get_webapp_to_create(
-            appservice_id, dtap
+            appservice_id, dtap, env
         )
         return web_client.web_apps.create_or_update(
             webapp_to_create.resource_group,
@@ -181,5 +185,5 @@ class CreateAppserviceAndWebapp:
         )
 
         return CreateAppserviceAndWebapp._create_or_update_webapp(
-            web_client, appservice_id, formatted_dtap
+            web_client, appservice_id, formatted_dtap, env
         )
