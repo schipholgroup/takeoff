@@ -28,28 +28,6 @@ environment_variables = {
 
 env = ApplicationVersion("DEV", "abc123githash")
 
-
-@mock.patch.dict(os.environ, environment_variables)
-@mock.patch("sdh_deployment.run_deployment.get_environment")
-@mock.patch("sdh_deployment.run_deployment.load_yaml")
-def test_deploy_to_adls(mock_load_yaml, mock_get_version):
-    mock_load_yaml.return_value = load(
-        """
-steps:
-- task: deployToAdls
-    """
-    )
-    mock_get_version.return_value = env
-
-    from sdh_deployment.run_deployment import main
-
-    with mock.patch.object(
-            DeployToAdls, "deploy_to_adls", return_value=None
-    ) as mock_task:
-        main()
-        mock_task.assert_called_once_with(env)
-
-
 @mock.patch.dict(os.environ, environment_variables)
 @mock.patch("sdh_deployment.run_deployment.get_environment")
 @mock.patch("sdh_deployment.run_deployment.load_yaml")
