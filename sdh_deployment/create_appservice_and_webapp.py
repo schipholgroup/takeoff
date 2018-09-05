@@ -124,8 +124,8 @@ class CreateAppserviceAndWebapp:
     def _get_webapp_to_create(appservice_id: str, dtap: str, env: ApplicationVersion) -> WebApp:
         # use build definition name as default web app name
         build_definition_name = get_application_name()
-        webapp_name = "{name}-{env}".format(
-            name=build_definition_name.lower(), env=dtap.lower()
+        webapp_name = "{name}".format(
+            name=build_definition_name.lower()
         )
         return WebApp(
             resource_group=RESOURCE_GROUP.format(dtap=dtap.lower()),
