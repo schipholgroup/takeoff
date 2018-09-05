@@ -1,6 +1,8 @@
 from unittest import mock
 import os
 import unittest
+
+from sdh_deployment.run_deployment import ApplicationVersion
 from sdh_deployment.util import SHARED_REGISTRY
 from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp as victim
@@ -14,8 +16,10 @@ from sdh_deployment.create_appservice_and_webapp import (
     RESOURCE_GROUP,
 )
 
+ENV = ApplicationVersion('env', 'ver')
+
 VALID_SITE_CONFIG = SiteConfig(
-    linux_fx_version=f"DOCKER|{SHARED_REGISTRY}/my-app:latest",
+    linux_fx_version=f"DOCKER|{SHARED_REGISTRY}/my-app:{ENV.version}",
     app_settings=[
         {"name": "DOCKER_ENABLE_CI", "value": True},
         {
@@ -29,7 +33,7 @@ VALID_SITE_CONFIG = SiteConfig(
 )
 
 
-class TestDeployToDatabricks(unittest.TestCase):
+class TestDeployToWebApp(unittest.TestCase):
     @mock.patch.dict(
         os.environ,
         {
@@ -41,7 +45,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         },
     )
     def test_get_site_config(self):
-        result = victim._get_site_config("my-app")
+        result = victim._get_site_config("my-app", ENV)
         assert result == VALID_SITE_CONFIG
 
     def test_parse_appservice_parameters_defaults(self):
@@ -86,7 +90,7 @@ class TestDeployToDatabricks(unittest.TestCase):
 
         expected_result = WebApp(
             resource_group=RESOURCE_GROUP.format(dtap="dev"),
-            name="my-build-dev",
+            name="my-build",
             site=Site(
                 location="west europe",
                 site_config=VALID_SITE_CONFIG,
@@ -94,7 +98,7 @@ class TestDeployToDatabricks(unittest.TestCase):
             ),
         )
 
-        result = victim._get_webapp_to_create("appservice_id", "dev")
+        result = victim._get_webapp_to_create("appservice_id", "dev", ENV)
 
         assert result == expected_result
 
