@@ -64,6 +64,7 @@ class TestDeployToDatabricks(unittest.TestCase):
             "libraries": [{"jar": "some.jar"}, {"egg": "some.egg"}],
             "new_cluster": {
                 "spark_version": "4.1.x-scala2.11",
+                "cluster_name": "app-42",
                 "spark_conf": {
                     "spark.sql.warehouse.dir": "/some_",
                     "some.setting": "true",

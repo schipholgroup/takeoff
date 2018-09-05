@@ -89,6 +89,7 @@ class DeployToDatabricks:
         ] = job_config["new_cluster"]["cluster_log_conf"]["dbfs"]["destination"].format(
             name=name
         )
+        job_config["new_cluster"]["cluster_name"] = f"{name}-{version}"
         job_config["name"] = f"{name}-{version}"
         job_config["spark_python_task"]["python_file"] = python_file
         job_config["libraries"].append({"egg": egg})
