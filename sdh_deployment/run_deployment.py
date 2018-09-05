@@ -40,14 +40,11 @@ def main():
 
     for step in config["steps"]:
         task = step["task"]
-        logger.info(f"*** RUNNING STEP: {task}")
+        logger.info("{:76s}".format('*'*76))
+        logger.info("{:10s} {:13s} {:40s} {:10s}".format('*'*10, 'RUNNING TASK:', task, '*'*10))
+        logger.info("{:76s}".format('*'*76))
 
-        if task == "deployToAdls":
-            from sdh_deployment.deploy_to_adls import DeployToAdls
-
-            DeployToAdls.deploy_to_adls(env)
-
-        elif task == "uploadToBlob":
+        if task == "uploadToBlob":
             from sdh_deployment.upload_to_blob import UploadToBlob
 
             UploadToBlob.upload_application_to_blob(env, step)
