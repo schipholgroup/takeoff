@@ -47,7 +47,7 @@ class TestDeployToWebApp(unittest.TestCase):
         result = victim._get_site_config("my-app", ENV)
         assert result == VALID_SITE_CONFIG
 
-    @mock.patch.dict(os.environ, { "BUILD_DEFINITIONNAME": "my-build"})
+    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
     def test_parse_appservice_parameters_defaults(self):
         expected_appservice_config = AppService(
             name='my-build',
@@ -60,7 +60,7 @@ class TestDeployToWebApp(unittest.TestCase):
 
         assert expected_appservice_config == result
 
-    @mock.patch.dict(os.environ, { "BUILD_DEFINITIONNAME": "my-build"})
+    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
     def test_parse_appservice_parameters_config_unavailable(self):
         expected_appservice_config = AppService(
             name='my-build',
