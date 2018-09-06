@@ -43,8 +43,7 @@ class WebApp(object):
 class CreateAppserviceAndWebapp:
     @staticmethod
     def _create_or_update_appservice(
-        web_client: WebSiteManagementClient, dtap: str, service_to_create: AppService
-    ) -> str:
+        web_client: WebSiteManagementClient, dtap: str, service_to_create: AppService) -> str:
         service_plan_async_operation = web_client.app_service_plans.create_or_update(
             RESOURCE_GROUP.format(dtap=dtap.lower()),
             service_to_create.name,

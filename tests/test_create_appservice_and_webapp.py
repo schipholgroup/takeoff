@@ -37,7 +37,6 @@ class TestDeployToWebApp(unittest.TestCase):
     @mock.patch.dict(
         os.environ,
         {
-            "WEBAPP_NAME": "my-app",
             "APPSERVICE_LOCATION": "west europe",
             "BUILD_DEFINITIONNAME": "my-build",
             "REGISTRY_USERNAME": "awesomeperson",
@@ -48,26 +47,28 @@ class TestDeployToWebApp(unittest.TestCase):
         result = victim._get_site_config("my-app", ENV)
         assert result == VALID_SITE_CONFIG
 
+    @mock.patch.dict(os.environ, { "BUILD_DEFINITIONNAME": "my-build"})
     def test_parse_appservice_parameters_defaults(self):
         expected_appservice_config = AppService(
-            name="my_epic_app",
+            name='my-build',
             sku=AppServiceSKU(name="S1", capacity=2, tier="Standard"),
         )
 
         result = victim._parse_appservice_parameters(
-            "prd", {"appService": {'name': expected_appservice_config.name}}
+            "prd", {"appService": {'name': 'my-build'}}
         )
 
         assert expected_appservice_config == result
 
+    @mock.patch.dict(os.environ, { "BUILD_DEFINITIONNAME": "my-build"})
     def test_parse_appservice_parameters_config_unavailable(self):
         expected_appservice_config = AppService(
-            name="my_epic_app",
+            name='my-build',
             sku=AppServiceSKU(name="S1", capacity=2, tier="Standard"),
         )
 
         result = victim._parse_appservice_parameters(
-            "prd", {"appService": {'name': expected_appservice_config.name, 'sku': {'acp': {'name': 'I1', 'capacity': 10, 'tier': 'uber'}}}}
+            "prd", {"appService": {'name': 'my-build', 'sku': {'acp': {'name': 'I1', 'capacity': 10, 'tier': 'uber'}}}}
         )
 
         assert expected_appservice_config == result
@@ -78,7 +79,6 @@ class TestDeployToWebApp(unittest.TestCase):
     @mock.patch.dict(
         os.environ,
         {
-            "WEBAPP_NAME": "my-app",
             "APPSERVICE_LOCATION": "west europe",
             "BUILD_DEFINITIONNAME": "my-build",
             "REGISTRY_USERNAME": "user123",
