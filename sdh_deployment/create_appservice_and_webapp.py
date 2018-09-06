@@ -79,7 +79,7 @@ class CreateAppserviceAndWebapp:
             sku_config = appservice_sku_defaults[dtap]
 
         return AppService(
-            name=provided_config.get('name'),
+            name=get_application_name(),
             sku=AppServiceSKU(
                 name=sku_config.name,
                 capacity=sku_config.capacity,
@@ -123,9 +123,9 @@ class CreateAppserviceAndWebapp:
     @staticmethod
     def _get_webapp_to_create(appservice_id: str, dtap: str, env: ApplicationVersion) -> WebApp:
         # use build definition name as default web app name
-        build_definition_name = get_application_name()
+        application_name = get_application_name()
         webapp_name = "{name}-{env}".format(
-            name=build_definition_name.lower(), env=dtap.lower()
+            name=application_name.lower(), env=dtap.lower()
         )
         return WebApp(
             resource_group=RESOURCE_GROUP.format(dtap=dtap.lower()),
@@ -133,7 +133,7 @@ class CreateAppserviceAndWebapp:
             site=Site(
                 location=AZURE_LOCATION,
                 site_config=CreateAppserviceAndWebapp._get_site_config(
-                    build_definition_name, env
+                    application_name, env
                 ),
                 server_farm_id=appservice_id,
             ),
@@ -141,8 +141,7 @@ class CreateAppserviceAndWebapp:
 
     @staticmethod
     def _get_appservice(
-        web_client: WebSiteManagementClient, dtap: str, config: dict
-    ) -> str:
+        web_client: WebSiteManagementClient, dtap: str, config: dict) -> str:
         service_to_create = CreateAppserviceAndWebapp._parse_appservice_parameters(
             dtap, config
         )

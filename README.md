@@ -101,11 +101,8 @@ This will run a deployment based on the `deployment.yml` in the root of your pro
 
 ```yaml
 steps:
-- task: deployToAdls
-- task: deployWebAppService
 - task: deployWebAppService
   appService:
-    name: name
     sku:
       prd:
         name: B1
