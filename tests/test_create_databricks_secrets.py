@@ -1,7 +1,5 @@
 import unittest
-from sdh_deployment.create_databricks_secrets import (
-    CreateDatabricksSecrets as victim
-)
+from sdh_deployment.create_databricks_secrets import CreateDatabricksSecrets as victim
 
 
 class TestCreateDatabricksSecrets(unittest.TestCase):

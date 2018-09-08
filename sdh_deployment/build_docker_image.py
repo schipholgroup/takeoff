@@ -25,7 +25,8 @@ class DockerImageBuilder(object):
         self.client.login(
             username=self.docker_credentials.username,
             password=self.docker_credentials.password,
-            registry=self.docker_credentials.registry)
+            registry=self.docker_credentials.registry,
+        )
 
     def run(self, dockerfiles: List[DockerFile]):
         application_name = get_application_name()
@@ -36,15 +37,14 @@ class DockerImageBuilder(object):
             if df.postfix:
                 tag += df.postfix
 
-            repository = f'{self.docker_credentials.registry}/{application_name}'
+            repository = f"{self.docker_credentials.registry}/{application_name}"
 
             logger.info(f"Building docker image for {df.dockerfile}")
             self.client.images.build(
-                path='/root',
-                tag=f'{repository}:{tag}',
-                dockerfile=f'/root/{df.dockerfile}')
+                path="/root",
+                tag=f"{repository}:{tag}",
+                dockerfile=f"/root/{df.dockerfile}",
+            )
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
-            self.client.images.push(
-                repository=repository,
-                tag=tag)
+            self.client.images.push(repository=repository, tag=tag)

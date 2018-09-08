@@ -3,12 +3,8 @@ from unittest import mock
 
 from yaml import load
 
-from sdh_deployment.create_appservice_and_webapp import (
-    CreateAppserviceAndWebapp
-)
-from sdh_deployment.create_databricks_secrets import (
-    CreateDatabricksSecrets
-)
+from sdh_deployment.create_appservice_and_webapp import CreateAppserviceAndWebapp
+from sdh_deployment.create_databricks_secrets import CreateDatabricksSecrets
 from sdh_deployment.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
     EventHubConsumerGroup,
@@ -47,7 +43,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-            CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
+        CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -82,9 +78,9 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-            CreateEventhubConsumerGroups,
-            "create_eventhub_consumer_groups",
-            return_value=None,
+        CreateEventhubConsumerGroups,
+        "create_eventhub_consumer_groups",
+        return_value=None,
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -95,7 +91,8 @@ steps:
                     consumer_group="consumerGroupName1",
                 ),
                 EventHubConsumerGroup(
-                    eventhub_entity_name="sdhdevciss", consumer_group="consumerGroupName2"
+                    eventhub_entity_name="sdhdevciss",
+                    consumer_group="consumerGroupName2",
                 ),
             ],
         )
@@ -116,7 +113,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-            CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
+        CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(env)
@@ -179,7 +176,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-            DeployToDatabricks, "deploy_to_databricks", return_value=None
+        DeployToDatabricks, "deploy_to_databricks", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(

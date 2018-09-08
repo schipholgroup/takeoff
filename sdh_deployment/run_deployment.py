@@ -40,9 +40,13 @@ def main():
 
     for step in config["steps"]:
         task = step["task"]
-        logger.info('*' * 76)
-        logger.info("{:10s} {:13s} {:40s} {:10s}".format('*' * 10, 'RUNNING TASK:', task, '*' * 10))
-        logger.info('*' * 76)
+        logger.info("*" * 76)
+        logger.info(
+            "{:10s} {:13s} {:40s} {:10s}".format(
+                "*" * 10, "RUNNING TASK:", task, "*" * 10
+            )
+        )
+        logger.info("*" * 76)
 
         if task == "uploadToBlob":
             from sdh_deployment.upload_to_blob import UploadToBlob
@@ -54,7 +58,7 @@ def main():
                 CreateApplicationInsights
             )
 
-            CreateApplicationInsights.create_application_insights(env)
+            CreateApplicationInsights.create_databricks_application_insights(env)
 
         elif task == "deployWebAppService":
             from sdh_deployment.create_appservice_and_webapp import (
@@ -88,8 +92,9 @@ def main():
         elif task == "buildDockerImage":
             from sdh_deployment.build_docker_image import DockerImageBuilder, DockerFile
 
-            dockerfiles = [DockerFile(df['file'], df.get('postfix'))
-                           for df in step['dockerfiles']]
+            dockerfiles = [
+                DockerFile(df["file"], df.get("postfix")) for df in step["dockerfiles"]
+            ]
 
             DockerImageBuilder(env).run(dockerfiles)
 

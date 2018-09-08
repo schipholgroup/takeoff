@@ -1,7 +1,4 @@
-from sdh_deployment.deploy_to_databricks import (
-    JobConfig,
-    DeployToDatabricks as victim,
-)
+from sdh_deployment.deploy_to_databricks import JobConfig, DeployToDatabricks as victim
 
 import json
 import unittest

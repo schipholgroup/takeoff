@@ -1,4 +1,6 @@
 from azure.mgmt.web import WebSiteManagementClient
+from azure.mgmt.cosmosdb import CosmosDB
+
 import os
 from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConfig
 from dataclasses import dataclass
@@ -11,6 +13,7 @@ from sdh_deployment.util import (
     SHARED_REGISTRY,
 )
 from sdh_deployment.run_deployment import ApplicationVersion
+from sdh_deployment.create_application_insights import CreateApplicationInsights
 
 
 @dataclass(frozen=True)
@@ -40,10 +43,17 @@ class WebApp(object):
     site: Site
 
 
+@dataclass(frozen=True)
+class CosmosCredentials(object):
+    uri: str
+    key: str
+
+
 class CreateAppserviceAndWebapp:
     @staticmethod
     def _create_or_update_appservice(
-            web_client: WebSiteManagementClient, dtap: str, service_to_create: AppService) -> str:
+        web_client: WebSiteManagementClient, dtap: str, service_to_create: AppService
+    ) -> str:
         service_plan_async_operation = web_client.app_service_plans.create_or_update(
             RESOURCE_GROUP.format(dtap=dtap.lower()),
             service_to_create.name,
@@ -62,40 +72,66 @@ class CreateAppserviceAndWebapp:
         return result.id
 
     @staticmethod
+    def _get_cosmos_credentials(dtap: str) -> CosmosCredentials:
+        cosmos = CreateAppserviceAndWebapp._get_cosmos_management_client(dtap)
+
+        cosmos_instance = {
+            "resource_group_name": f"sdh{dtap}".format(dtap=dtap),
+            "account_name": f"sdhcosmos{dtap}".format(dtap=dtap),
+        }
+
+        endpoint = cosmos.database_accounts.get(**cosmos_instance).document_endpoint
+
+        key = cosmos.database_accounts.list_read_only_keys(
+            **cosmos_instance
+        ).primary_readonly_master_key
+
+        return CosmosCredentials(endpoint, key)
+
+    @staticmethod
     def _parse_appservice_parameters(dtap: str, config: dict) -> AppService:
         """
         Parse parameters to use from environment variables. Defaults are provided for all required SKU parameters and
         for the location
         :return: AppService object created based on env parameters
         """
-        provided_config = config.get('appService')
+        provided_config = config.get("appService")
 
         # check if there is any config available for sku for this environment.
-        if 'sku' in provided_config and dtap in provided_config['sku']:
-            config = provided_config.get('sku').get(dtap)
-            sku_config = AppServiceSKU(config.get('name'), config.get('capacity'), config.get('tier'))
+        if "sku" in provided_config and dtap in provided_config["sku"]:
+            config = provided_config.get("sku").get(dtap)
+            sku_config = AppServiceSKU(
+                config.get("name"), config.get("capacity"), config.get("tier")
+            )
         else:
             sku_config = appservice_sku_defaults[dtap]
 
         return AppService(
             name=get_application_name(),
             sku=AppServiceSKU(
-                name=sku_config.name,
-                capacity=sku_config.capacity,
-                tier=sku_config.tier,
+                name=sku_config.name, capacity=sku_config.capacity, tier=sku_config.tier
             ),
         )
 
     @staticmethod
-    def _get_site_config(build_definition_name: str, env: ApplicationVersion) -> SiteConfig:
+    def _build_site_config(
+        build_definition_name: str, env: ApplicationVersion
+    ) -> SiteConfig:
         docker_registry_username = os.environ["REGISTRY_USERNAME"]
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
+
+        cosmos_credentials = CreateAppserviceAndWebapp._get_cosmos_credentials(
+            env.environment
+        )
+        application_insights = CreateApplicationInsights.create_application_insights(
+            env, "web", "web"
+        )
         return SiteConfig(
             # this syntax seems to be necessary
             linux_fx_version="DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
                 registry_url=SHARED_REGISTRY,
                 build_definition_name=build_definition_name,
-                tag=env.version
+                tag=env.version,
             ),
             app_settings=[
                 {
@@ -116,11 +152,19 @@ class CreateAppserviceAndWebapp:
                     "value": docker_registry_password,
                 },
                 {"name": "WEBSITE_HTTPLOGGING_RETENTION_DAYS", "value": 7},
+                {"name": "COSMOS_URI", "value": cosmos_credentials.uri},
+                {"name": "COSMOS_KEY", "value": cosmos_credentials.key},
+                {
+                    "name": "INSTRUMENTATION_KEY",
+                    "value": application_insights.instrumentation_key,
+                },
             ],
         )
 
     @staticmethod
-    def _get_webapp_to_create(appservice_id: str, dtap: str, env: ApplicationVersion) -> WebApp:
+    def _get_webapp_to_create(
+        appservice_id: str, dtap: str, env: ApplicationVersion
+    ) -> WebApp:
         # use build definition name as default web app name
         application_name = get_application_name()
         webapp_name = "{name}-{env}".format(
@@ -131,7 +175,7 @@ class CreateAppserviceAndWebapp:
             name=webapp_name,
             site=Site(
                 location=AZURE_LOCATION,
-                site_config=CreateAppserviceAndWebapp._get_site_config(
+                site_config=CreateAppserviceAndWebapp._build_site_config(
                     application_name, env
                 ),
                 server_farm_id=appservice_id,
@@ -140,7 +184,8 @@ class CreateAppserviceAndWebapp:
 
     @staticmethod
     def _get_appservice(
-            web_client: WebSiteManagementClient, dtap: str, config: dict) -> str:
+        web_client: WebSiteManagementClient, dtap: str, config: dict
+    ) -> str:
         service_to_create = CreateAppserviceAndWebapp._parse_appservice_parameters(
             dtap, config
         )
@@ -150,10 +195,12 @@ class CreateAppserviceAndWebapp:
         return app_service_id
 
     @staticmethod
-    def _create_or_update_webapp(web_client: WebSiteManagementClient,
-                                 appservice_id: str,
-                                 dtap: str,
-                                 env: ApplicationVersion) -> Site:
+    def _create_or_update_webapp(
+        web_client: WebSiteManagementClient,
+        appservice_id: str,
+        dtap: str,
+        env: ApplicationVersion,
+    ) -> Site:
         webapp_to_create = CreateAppserviceAndWebapp._get_webapp_to_create(
             appservice_id, dtap, env
         )
@@ -168,8 +215,14 @@ class CreateAppserviceAndWebapp:
         subscription_id = get_subscription_id()
         credentials = get_azure_user_credentials(dtap)
 
-        web_client = WebSiteManagementClient(credentials, subscription_id)
-        return web_client
+        return WebSiteManagementClient(credentials, subscription_id)
+
+    @staticmethod
+    def _get_cosmos_management_client(dtap) -> CosmosDB:
+        subscription_id = get_subscription_id()
+        credentials = get_azure_user_credentials(dtap)
+
+        return CosmosDB(credentials, subscription_id)
 
     @staticmethod
     def create_appservice_and_webapp(env: ApplicationVersion, config: dict) -> Site:

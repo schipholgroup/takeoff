@@ -10,7 +10,7 @@ from typing import Pattern
 RESOURCE_GROUP = "sdh{dtap}"
 EVENTHUB_NAMESPACE = "sdheventhub{dtap}"
 AZURE_LOCATION = "west europe"  # default to this Azure location
-SHARED_REGISTRY = 'sdhcontainerregistryshared.azurecr.io'
+SHARED_REGISTRY = "sdhcontainerregistryshared.azurecr.io"
 
 
 @dataclass(frozen=True)
@@ -48,9 +48,9 @@ def get_application_name() -> str:
 
 def get_docker_credentials() -> DockerCredentials:
     return DockerCredentials(
-        username=os.environ['REGISTRY_USERNAME'],
-        password=os.environ['REGISTRY_PASSWORD'],
-        registry=SHARED_REGISTRY
+        username=os.environ["REGISTRY_USERNAME"],
+        password=os.environ["REGISTRY_PASSWORD"],
+        registry=SHARED_REGISTRY,
     )
 
 
@@ -76,8 +76,8 @@ def read_azure_sp(dtap: str) -> AzureSp:
 
 def get_shared_blob_service() -> BlockBlobService:
     return BlockBlobService(
-        account_name=os.environ['AZURE_SHARED_BLOB_USERNAME'],
-        account_key=os.environ['AZURE_SHARED_BLOB_PASSWORD']
+        account_name=os.environ["AZURE_SHARED_BLOB_USERNAME"],
+        account_key=os.environ["AZURE_SHARED_BLOB_PASSWORD"],
     )
 
 

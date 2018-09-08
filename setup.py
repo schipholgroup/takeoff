@@ -12,21 +12,21 @@ setup(
     author_email="SDH-Support@schiphol.nl",
     packages=["sdh_deployment"],
     install_requires=[
-        'gitpython==2.1.10',
-        'databricks-cli==0.7.2',
-        'pytest==3.6.2',
-        'pytest-cov==2.5.1',
-        'flake8==3.5.0',
-        'PyYAML==3.13',
-        'docker==3.5.0'
+        "gitpython==2.1.10",
+        "databricks-cli==0.7.2",
+        "pytest==3.6.2",
+        "pytest-cov==2.5.1",
+        "flake8==3.5.0",
+        "PyYAML==3.13",
+        "docker==3.5.0",
     ],
     extras_require={
-        'test': {
-            'pytest==3.6.2',
-            'databricks-cli==0.7.2',
-            'gitpython==2.1.10',
-            'py4j==0.10.7',
-            'azure==4.0.0'
+        "test": {
+            "pytest==3.6.2",
+            "databricks-cli==0.7.2",
+            "gitpython==2.1.10",
+            "py4j==0.10.7",
+            "azure==4.0.0",
         },
         "lint": {"flake8==3.5.0"},
     },

@@ -224,7 +224,10 @@ class CreateEventhubConsumerGroups:
         # For each Eventhub we have a separate connection string which is set by a shared access policy
         # The different consumer groups can use this same shared access policy
         secrets = [
-            Secret(f"{_.eventhub_entity_without_environment}-connection-string", _.connection_string)
+            Secret(
+                f"{_.eventhub_entity_without_environment}-connection-string",
+                _.connection_string,
+            )
             for _ in connection_strings
         ]
 

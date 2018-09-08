@@ -31,7 +31,21 @@ class CreateApplicationInsights:
         return None
 
     @staticmethod
-    def create_application_insights(env: ApplicationVersion):
+    def create_application_insights(
+        env: ApplicationVersion, kind: str, application_type: str
+    ) -> ApplicationInsightsComponent:
+
+        # Check some values
+        if kind not in {"web", "ios", "other", "store", "java", "phone"}:
+            raise ValueError("Unknown application insights kind: {}".format(kind))
+
+        if application_type not in {"web", "other"}:
+            raise ValueError(
+                "Unknown application insights application_type: {}".format(
+                    application_type
+                )
+            )
+
         application_name = get_application_name()
         client = CreateApplicationInsights.__create_client(env.environment)
 
@@ -40,11 +54,19 @@ class CreateApplicationInsights:
             logger.info("Creating new Application Insights...")
             # Create a new Application Insights
             comp = ApplicationInsightsComponent(
-                location=AZURE_LOCATION, kind="other", application_type="other"
+                location=AZURE_LOCATION, kind=kind, application_type=application_type
             )
             insight = client.components.create_or_update(
                 f"sdh{env.environment.lower()}", application_name, comp
             )
+        return insight
+
+    @staticmethod
+    def create_databricks_application_insights(env: ApplicationVersion):
+        application_name = get_application_name()
+        insight = CreateApplicationInsights.create_application_insights(
+            env, "other", "other"
+        )
 
         instrumentation_secret = Secret(
             "instrumentation-key", insight.instrumentation_key
