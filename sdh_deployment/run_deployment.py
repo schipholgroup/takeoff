@@ -34,7 +34,8 @@ def get_environment() -> ApplicationVersion:
         return ApplicationVersion("DEV", git_hash)
 
 
-def main():
+# TODO: refactor this function to avoid having C901
+def main():  # noqa: C901
     env = get_environment()
     config = load_yaml()
 
@@ -97,6 +98,16 @@ def main():
             ]
 
             DockerImageBuilder(env).run(dockerfiles)
+
+        elif task == "deployToK8s":
+            from sdh_deployment.deploy_to_k8s import DeployToK8s
+
+            # temporary workaround: only deploy on k8s on prd.
+            if env.environment == "PRD":
+                logging.info("Whoohoo, a PRD deploy, deploying!")
+                DeployToK8s.deploy_to_k8s(env, step["config"])
+            else:
+                logging.info("Not a PRD deploy, not deploying")
 
         else:
             raise Exception(
