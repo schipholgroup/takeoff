@@ -121,7 +121,7 @@ class CreateAppserviceAndWebapp:
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
 
         cosmos_credentials = CreateAppserviceAndWebapp._get_cosmos_credentials(
-            env.environment
+            env.environment.lower()
         )
         application_insights = CreateApplicationInsights.create_application_insights(
             env, "web", "web"
