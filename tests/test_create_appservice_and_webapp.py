@@ -21,8 +21,11 @@ ENV = ApplicationVersion("env", "ver")
 
 VALID_SITE_CONFIG = SiteConfig(
     linux_fx_version=f"DOCKER|{SHARED_REGISTRY}/my-app:{ENV.version}",
+    http_logging_enabled=True,
+    always_on=True,
     app_settings=[
-        {"name": "DOCKER_ENABLE_CI", "value": True},
+        {"name": "DOCKER_ENABLE_CI", "value": "true"},
+        {"name": "BUILD_VERSION", "value": ENV.version},
         {"name": "DOCKER_REGISTRY_SERVER_URL", "value": "https://" + SHARED_REGISTRY},
         {"name": "DOCKER_REGISTRY_SERVER_USERNAME", "value": "awesomeperson"},
         {"name": "DOCKER_REGISTRY_SERVER_PASSWORD", "value": "supersecret42"},
@@ -118,8 +121,8 @@ class TestDeployToWebApp(unittest.TestCase):
         )
 
         expected_result = WebApp(
-            resource_group=RESOURCE_GROUP.format(dtap="dev"),
-            name="my-build-dev",
+            resource_group=RESOURCE_GROUP.format(dtap=ENV.environment.lower()),
+            name="my-build-env",
             site=Site(
                 location="west europe",
                 site_config=VALID_SITE_CONFIG,
@@ -127,7 +130,7 @@ class TestDeployToWebApp(unittest.TestCase):
             ),
         )
 
-        result = victim._get_webapp_to_create("appservice_id", "dev", ENV)
+        result = victim._get_webapp_to_create("appservice_id", ENV)
 
         assert result == expected_result
 

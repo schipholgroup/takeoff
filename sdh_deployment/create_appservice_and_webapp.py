@@ -52,7 +52,7 @@ class CosmosCredentials(object):
 class CreateAppserviceAndWebapp:
     @staticmethod
     def _create_or_update_appservice(
-        web_client: WebSiteManagementClient, dtap: str, service_to_create: AppService
+            web_client: WebSiteManagementClient, dtap: str, service_to_create: AppService
     ) -> str:
         service_plan_async_operation = web_client.app_service_plans.create_or_update(
             RESOURCE_GROUP.format(dtap=dtap.lower()),
@@ -114,9 +114,7 @@ class CreateAppserviceAndWebapp:
         )
 
     @staticmethod
-    def _build_site_config(
-        build_definition_name: str, env: ApplicationVersion
-    ) -> SiteConfig:
+    def _build_site_config(build_definition_name: str, env: ApplicationVersion) -> SiteConfig:
         docker_registry_username = os.environ["REGISTRY_USERNAME"]
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
 
@@ -133,10 +131,16 @@ class CreateAppserviceAndWebapp:
                 build_definition_name=build_definition_name,
                 tag=env.version,
             ),
+            http_logging_enabled=True,
+            always_on=True,
             app_settings=[
                 {
-                    "name": "DOCKER_ENABLE_CI",  # we always want this to be enabled
-                    "value": True,
+                    "name": "DOCKER_ENABLE_CI",
+                    "value": "true"
+                },
+                {
+                    "name": "BUILD_VERSION",
+                    "value": env.version
                 },
                 {
                     "name": "DOCKER_REGISTRY_SERVER_URL",
@@ -162,16 +166,15 @@ class CreateAppserviceAndWebapp:
         )
 
     @staticmethod
-    def _get_webapp_to_create(
-        appservice_id: str, dtap: str, env: ApplicationVersion
-    ) -> WebApp:
+    def _get_webapp_to_create(appservice_id: str, env: ApplicationVersion) -> WebApp:
         # use build definition name as default web app name
         application_name = get_application_name()
         webapp_name = "{name}-{env}".format(
-            name=application_name.lower(), env=dtap.lower()
+            name=application_name.lower(),
+            env=env.environment.lower()
         )
         return WebApp(
-            resource_group=RESOURCE_GROUP.format(dtap=dtap.lower()),
+            resource_group=RESOURCE_GROUP.format(dtap=env.environment.lower()),
             name=webapp_name,
             site=Site(
                 location=AZURE_LOCATION,
@@ -184,7 +187,7 @@ class CreateAppserviceAndWebapp:
 
     @staticmethod
     def _get_appservice(
-        web_client: WebSiteManagementClient, dtap: str, config: dict
+            web_client: WebSiteManagementClient, dtap: str, config: dict
     ) -> str:
         service_to_create = CreateAppserviceAndWebapp._parse_appservice_parameters(
             dtap, config
@@ -196,14 +199,9 @@ class CreateAppserviceAndWebapp:
 
     @staticmethod
     def _create_or_update_webapp(
-        web_client: WebSiteManagementClient,
-        appservice_id: str,
-        dtap: str,
-        env: ApplicationVersion,
-    ) -> Site:
-        webapp_to_create = CreateAppserviceAndWebapp._get_webapp_to_create(
-            appservice_id, dtap, env
-        )
+            web_client: WebSiteManagementClient,
+            webapp_to_create: WebApp) -> Site:
+
         return web_client.web_apps.create_or_update(
             webapp_to_create.resource_group,
             webapp_to_create.name,
@@ -227,14 +225,27 @@ class CreateAppserviceAndWebapp:
     @staticmethod
     def create_appservice_and_webapp(env: ApplicationVersion, config: dict) -> Site:
         formatted_dtap = env.environment.lower()
+
         web_client = CreateAppserviceAndWebapp._get_website_management_client(
-            formatted_dtap
-        )
+            dtap=formatted_dtap)
 
         appservice_id = CreateAppserviceAndWebapp._get_appservice(
-            web_client, formatted_dtap, config
-        )
+            web_client=web_client,
+            dtap=formatted_dtap,
+            config=config)
 
-        return CreateAppserviceAndWebapp._create_or_update_webapp(
-            web_client, appservice_id, formatted_dtap, env
-        )
+        webapp_to_create = CreateAppserviceAndWebapp._get_webapp_to_create(
+            appservice_id=appservice_id,
+            env=env)
+
+        site = CreateAppserviceAndWebapp._create_or_update_webapp(
+            web_client=web_client,
+            webapp_to_create=webapp_to_create)
+
+        # DOCKER_CI_ENABLE is kinda buggy and not documented, this assures the app is restarted for
+        # sure when the deployment updates
+        web_client.web_apps.restart(
+            resource_group_name=(RESOURCE_GROUP.format(dtap=env.environment.lower())),
+            name=webapp_to_create.name)
+
+        return site
