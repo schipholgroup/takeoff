@@ -14,6 +14,7 @@ steps:
                                                          --cov-report html \
                                                          --junitxml /root/testresults.xml \
                                                          tests"
+
 - task: PublishTestResults@2
   inputs:
     testResultsFiles: $(System.DefaultWorkingDirectory)/testresults.xml
@@ -25,6 +26,9 @@ steps:
     summaryFileLocation: $(System.DefaultWorkingDirectory)/coverage.xml
     reportDirectory: $(System.DefaultWorkingDirectory)/htmlcov
     failIfCoverageEmpty: true
+
+- script: docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
+  displayName: Login to registry
 
 - task: DockerCompose@0
   displayName: Deploy to Azure and Databricks

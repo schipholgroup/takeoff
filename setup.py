@@ -18,7 +18,7 @@ setup(
         "pytest-cov==2.5.1",
         "flake8==3.5.0",
         "PyYAML==3.13",
-        "docker==3.5.0",
+        "docker==3.5.0"
     ],
     extras_require={
         "test": {
@@ -27,6 +27,7 @@ setup(
             "gitpython==2.1.10",
             "py4j==0.10.7",
             "azure==4.0.0",
+            "kubernetes==7.0.0",
         },
         "lint": {"flake8==3.5.0"},
     },
