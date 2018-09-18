@@ -1,8 +1,9 @@
+# hadolint ignore=DL3007
 FROM fokkodriesprong/docker-pyspark:latest
 
-ADD setup.py /
-ADD README.md /
-ADD scripts /scripts
-ADD sdh_deployment /sdh_deployment
+COPY setup.py /
+COPY README.md /
+COPY scripts /scripts
+COPY sdh_deployment /sdh_deployment
 
 RUN python setup.py install
