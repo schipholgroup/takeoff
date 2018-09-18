@@ -8,6 +8,14 @@ services:
       source: ./
       target: /root
     tty: true
+  hadolint:
+    image: hadolint/hadolint:latest-debian
+    working_dir: /root/
+    volumes:
+    - type: bind
+      source: ./
+      target: /root
+    tty: true
   dockerception:
     image: dockerception
     build:

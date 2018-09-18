@@ -15,6 +15,12 @@ steps:
                                                          --junitxml /root/testresults.xml \
                                                          tests"
 
+- task: DockerCompose@0
+  displayName: Run Docker linting
+  inputs:
+    dockerComposeCommand: |
+      run --rm hadolint bash -c "hadolint Dockerfile_python && hadolint Dockerfile_pyspark"
+
 - task: PublishTestResults@2
   inputs:
     testResultsFiles: $(System.DefaultWorkingDirectory)/testresults.xml
