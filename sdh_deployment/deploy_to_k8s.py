@@ -1,24 +1,40 @@
 import logging
 import os
 
+import yaml
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
 from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes import client, config
+from kubernetes.client import CoreV1Api
 from kubernetes.client.apis import ExtensionsV1beta1Api
 
+from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.util import (
-    SHARED_REGISTRY,
     get_subscription_id,
     get_azure_user_credentials,
-    get_application_name
+    get_application_name,
+    render_file_with_jinja
 )
-from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 
 
 # assumes kubectl is available
-class DeployToK8s:
+class DeployToK8s(DeploymentStep):
+
+    def run(self, env: ApplicationVersion, config: dict):
+        # get the ip address for this environment
+        service_ip = config["service_ips"][env.environment.lower()]
+
+        # load some k8s config
+        k8s_deployment = render_file_with_jinja(config["deployment_config_path"], {"docker_tag": env.docker_tag}, yaml.load)
+        k8s_service = render_file_with_jinja(config["service_config_path"], {"service_ip": service_ip}, yaml.load)
+
+        logging.info(f"Deploying to K8S. Environment: {env.environment}")
+        self.deploy_to_k8s(env=env,
+                           deployment_config=k8s_deployment,
+                           service_config=k8s_service)
 
     @staticmethod
     def _write_kube_config(credential_results: CredentialResults):
@@ -38,8 +54,10 @@ class DeployToK8s:
     def _authenticate_with_k8s(dtap: str):
         resource_group = os.getenv('RESOURCE_GROUP', f'sdh{dtap}')
         k8s_name = os.getenv('K8S_RESOURCE_NAME', 'sdh-kubernetes')
+
         # get azure container service client
-        credentials = get_azure_user_credentials(dtap)
+        # For now, get the prd credentials by default, because we only have a single k8s cluster now
+        credentials = get_azure_user_credentials(os.getenv('AZURE_CREDENTIALS_ENV', 'prd'))
 
         client = ContainerServiceClient(
             credentials=credentials,
@@ -62,35 +80,46 @@ class DeployToK8s:
         return False
 
     @staticmethod
-    def _k8s_deployment_exists(deployment_name: str, namespace: str, api_instance: ExtensionsV1beta1Api) -> bool:
-        existing_deployments = api_instance.list_namespaced_deployment(namespace=namespace).to_dict()
+    def _k8s_deployment_exists(deployment_name: str, namespace: str, api_client: ExtensionsV1beta1Api) -> bool:
+        existing_deployments = api_client.list_namespaced_deployment(namespace=namespace).to_dict()
         return DeployToK8s._k8s_resource_exists(deployment_name, existing_deployments)
 
     @staticmethod
-    def _k8s_namespace_exists(namespace: str, core_api_client):
-        existing_namespaces = core_api_client.list_namespace().to_dict()
+    def _k8s_namespace_exists(namespace: str, api_client: CoreV1Api):
+        existing_namespaces = api_client.list_namespace().to_dict()
         return DeployToK8s._k8s_resource_exists(namespace, existing_namespaces)
 
     @staticmethod
-    def _create_or_patch_namespace(k8s_namespace: str):
-        # very simple way to ensure the namespace exists
-        core_api_client = client.CoreV1Api()
+    def _k8s_service_exists(service_name: str, namespace: str, api_client: CoreV1Api):
+        existing_services = api_client.list_namespaced_service(namespace=namespace).to_dict()
+        return DeployToK8s._k8s_resource_exists(service_name, existing_services)
 
-        if not DeployToK8s._k8s_namespace_exists(k8s_namespace, core_api_client):
+    @staticmethod
+    def _create_namespace_if_not_exists(api_client: CoreV1Api, k8s_namespace: str):
+        # very simple way to ensure the namespace exists
+        if not DeployToK8s._k8s_namespace_exists(k8s_namespace, api_client):
             logger.info(f"No k8s namespace for this application. Creating namespace: {k8s_namespace}")
             namespace_to_create = client.V1Namespace(metadata={"name": k8s_namespace})
-            core_api_client.create_namespace(body=namespace_to_create)
+            api_client.create_namespace(body=namespace_to_create)
+
+    @staticmethod
+    def _create_or_patch_service(api_client: CoreV1Api, service_config: dict, k8s_namespace: str):
+        service_name = service_config['metadata']['name']
+        if DeployToK8s._k8s_service_exists(service_name, k8s_namespace, api_client):
+            # we need to patch the existing service
+            logger.info(f"Found existing k8s service: {service_name} in namespace {k8s_namespace}")
+            api_client.patch_namespaced_service(name=service_name,
+                                                namespace=k8s_namespace,
+                                                body=service_config)
+        else:
+            # the service doesn't exist, we need to create it
+            logger.info(f"No existing k8s service found, creating service: {service_name} in namespace {k8s_namespace}")
+            api_client.create_namespaced_service(namespace=k8s_namespace,
+                                                 body=service_config)
 
     @staticmethod
     def _create_or_patch_deployment(deployment: dict, application_name: str, env: ApplicationVersion, k8s_namespace: str):
         api_instance = client.ExtensionsV1beta1Api()
-
-        # set the right version
-        deployment['spec']['template']['spec']['containers'][0]['image'] = "{registry}/{image}:{tag}".format(
-            registry=SHARED_REGISTRY,
-            image=application_name,
-            tag=env.version
-        )
 
         # to patch or not to patch
         if DeployToK8s._k8s_deployment_exists(application_name, k8s_namespace, api_instance):
@@ -104,17 +133,25 @@ class DeployToK8s:
                                                       body=deployment)
 
     @staticmethod
-    def deploy_to_k8s(env: ApplicationVersion, deploy_config: dict):
+    def deploy_to_k8s(env: ApplicationVersion, deployment_config: dict, service_config: dict):
         application_name = get_application_name()
         k8s_namespace = f"{application_name}-{env.environment.lower()}"
+
         # 1: get kubernetes credentials with azure credentials for vsts user
         DeployToK8s._authenticate_with_k8s(env.environment)
 
         # load the kubeconfig we just fetched
         config.load_kube_config()
+        logger.info("Kubeconfig loaded")
+
+        # create the core api client
+        core_api_client = CoreV1Api()
 
         # 2: verify that the namespace exists, if not: create it
-        DeployToK8s._create_or_patch_namespace(k8s_namespace)
+        DeployToK8s._create_namespace_if_not_exists(core_api_client, k8s_namespace)
 
-        # 2: create OR patch kubernetes deployment
-        DeployToK8s._create_or_patch_deployment(deploy_config, application_name, env, k8s_namespace)
+        # 3: create OR patch kubernetes deployment
+        DeployToK8s._create_or_patch_deployment(deployment_config, application_name, env, k8s_namespace)
+
+        # 4: create OR patch kubernetes service
+        DeployToK8s._create_or_patch_service(core_api_client, service_config, k8s_namespace)

@@ -1,7 +1,7 @@
 import configparser
+import json
 import logging
 import re
-import copy
 from dataclasses import dataclass
 from typing import List
 
@@ -9,12 +9,14 @@ from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
 
+from sdh_deployment import util
+from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.util import (
     get_application_name,
     get_databricks_client,
     has_prefix_match,
 )
-from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +29,7 @@ class JobConfig(object):
     job_id: int
 
 
-class DeployToDatabricks:
+class DeployToDatabricks(DeploymentStep):
     @staticmethod
     def _job_is_streaming(job_config: dict):
         """
@@ -38,8 +40,12 @@ class DeployToDatabricks:
         """
         return "schedule" not in job_config.keys()
 
+    def run(self, env: ApplicationVersion, config: dict):
+        config_file_fn = config['config_file_fn']
+        self.deploy_to_databricks(env, config_file_fn)
+
     @staticmethod
-    def deploy_to_databricks(env: ApplicationVersion, config: dict):
+    def deploy_to_databricks(env: ApplicationVersion, config_file_fn: str):
         """
         The application parameters (cosmos and eventhub) will be removed from this file as they
         will be set as databricks secrets eventually
@@ -50,7 +56,7 @@ class DeployToDatabricks:
         application_name = get_application_name()
 
         job_config = DeployToDatabricks._construct_job_config(
-            job_config=config,
+            config_file_fn=config_file_fn,
             name=application_name,
             version=env.version,
             egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{env.version}.egg",
@@ -77,22 +83,14 @@ class DeployToDatabricks:
         return config
 
     @staticmethod
-    def _construct_job_config(
-        job_config: dict, name: str, version: str, egg: str, python_file: str
-    ) -> dict:
-        # We want to do a copy, since we are going to append the dict
-        # which is passed by reference
-        job_config = copy.deepcopy(job_config)
-
-        job_config["new_cluster"]["cluster_log_conf"]["dbfs"][
-            "destination"
-        ] = job_config["new_cluster"]["cluster_log_conf"]["dbfs"]["destination"].format(
-            name=name
-        )
-        job_config["name"] = f"{name}-{version}"
-        job_config["spark_python_task"]["python_file"] = python_file
-        job_config["libraries"].append({"egg": egg})
-
+    def _construct_job_config(config_file_fn: str, name: str, version: str, egg: str, python_file: str) -> dict:
+        params = {
+            "application_name": f"{name}-{version}",
+            "log_destination": name,
+            "python_file": python_file,
+            "egg_file": egg
+        }
+        job_config = util.render_file_with_jinja(config_file_fn, params, json.loads)
         return job_config
 
     @staticmethod

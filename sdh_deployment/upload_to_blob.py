@@ -1,16 +1,21 @@
 import glob
 import logging
+
 from azure.storage.blob import BlockBlobService
 
+from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.util import get_application_name, get_shared_blob_service
-from sdh_deployment.run_deployment import ApplicationVersion
 
 BLOB_CONTAINER_NAME = "libraries"
 
 logger = logging.getLogger(__name__)
 
 
-class UploadToBlob:
+class UploadToBlob(DeploymentStep):
+    def run(self, env: ApplicationVersion, config: dict):
+        self.upload_application_to_blob(env, config)
+
     @staticmethod
     def _upload_file_to_blob(client: BlockBlobService, source: str, destination: str):
         logger.info(

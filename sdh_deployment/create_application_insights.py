@@ -3,6 +3,8 @@ import logging
 from azure.mgmt.applicationinsights import ApplicationInsightsManagementClient
 from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
+from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.create_databricks_secrets import Secret, CreateDatabricksSecrets
 from sdh_deployment.util import (
     get_application_name,
@@ -11,28 +13,14 @@ from sdh_deployment.util import (
     get_azure_user_credentials,
     AZURE_LOCATION,
 )
-from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 
 
-class CreateApplicationInsights:
-    @staticmethod
-    def __create_client(dtap: str) -> ApplicationInsightsManagementClient:
-        return ApplicationInsightsManagementClient(
-            get_azure_user_credentials(dtap), get_subscription_id()
-        )
-
-    @staticmethod
-    def __find(client: ApplicationInsightsManagementClient, name: str):
-        for insight in client.components.list():
-            if insight.name == name:
-                return insight
-        return None
-
+class CreateApplicationInsights(DeploymentStep):
     @staticmethod
     def create_application_insights(
-        env: ApplicationVersion, kind: str, application_type: str
+            env: ApplicationVersion, kind: str, application_type: str
     ) -> ApplicationInsightsComponent:
 
         # Check some values
@@ -60,6 +48,24 @@ class CreateApplicationInsights:
                 f"sdh{env.environment.lower()}", application_name, comp
             )
         return insight
+
+    @staticmethod
+    def __create_client(dtap: str) -> ApplicationInsightsManagementClient:
+        return ApplicationInsightsManagementClient(
+            get_azure_user_credentials(dtap), get_subscription_id()
+        )
+
+    @staticmethod
+    def __find(client: ApplicationInsightsManagementClient, name: str):
+        for insight in client.components.list():
+            if insight.name == name:
+                return insight
+        return None
+
+
+class CreateDatabricksApplicationInsights(DeploymentStep):
+    def run(self, env: ApplicationVersion, _: dict):
+        self.create_databricks_application_insights(env)
 
     @staticmethod
     def create_databricks_application_insights(env: ApplicationVersion):

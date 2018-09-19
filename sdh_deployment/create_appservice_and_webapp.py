@@ -1,9 +1,13 @@
-from azure.mgmt.web import WebSiteManagementClient
-from azure.mgmt.cosmosdb import CosmosDB
-
 import os
-from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConfig
 from dataclasses import dataclass
+
+from azure.mgmt.cosmosdb import CosmosDB
+from azure.mgmt.web import WebSiteManagementClient
+from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConfig
+
+from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.DeploymentStep import DeploymentStep
+from sdh_deployment.create_application_insights import CreateApplicationInsights
 from sdh_deployment.util import (
     get_subscription_id,
     get_azure_user_credentials,
@@ -12,8 +16,6 @@ from sdh_deployment.util import (
     get_application_name,
     SHARED_REGISTRY,
 )
-from sdh_deployment.run_deployment import ApplicationVersion
-from sdh_deployment.create_application_insights import CreateApplicationInsights
 
 
 @dataclass(frozen=True)
@@ -49,7 +51,7 @@ class CosmosCredentials(object):
     key: str
 
 
-class CreateAppserviceAndWebapp:
+class CreateAppserviceAndWebapp(DeploymentStep):
     @staticmethod
     def _create_or_update_appservice(
             web_client: WebSiteManagementClient, dtap: str, service_to_create: AppService
@@ -129,7 +131,7 @@ class CreateAppserviceAndWebapp:
             linux_fx_version="DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
                 registry_url=SHARED_REGISTRY,
                 build_definition_name=build_definition_name,
-                tag=env.version,
+                tag=env.docker_tag,
             ),
             http_logging_enabled=True,
             always_on=True,
@@ -221,6 +223,9 @@ class CreateAppserviceAndWebapp:
         credentials = get_azure_user_credentials(dtap)
 
         return CosmosDB(credentials, subscription_id)
+
+    def run(self, env: ApplicationVersion, config: dict):
+        self.create_appservice_and_webapp(env, config)
 
     @staticmethod
     def create_appservice_and_webapp(env: ApplicationVersion, config: dict) -> Site:

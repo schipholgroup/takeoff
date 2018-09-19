@@ -1,14 +1,16 @@
 import logging
 import re
+from dataclasses import dataclass
+from pprint import pprint
+from typing import List
+
 from azure.keyvault import KeyVaultClient
 from azure.keyvault.models import SecretBundle
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
-from dataclasses import dataclass
-from pprint import pprint
-from typing import List
-from sdh_deployment.run_deployment import ApplicationVersion
 
+from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.util import (
     get_application_name,
     get_azure_sp_credentials,
@@ -33,7 +35,7 @@ class IdAndKey:
     databricks_secret_key: str
 
 
-class CreateDatabricksSecrets:
+class CreateDatabricksSecrets(DeploymentStep):
     @staticmethod
     def _scope_exists(scopes: dict, scope_name: str):
         return scope_name in set(_["name"] for _ in scopes["scopes"])
@@ -107,6 +109,9 @@ class CreateDatabricksSecrets:
         ]
 
         return app_secrets
+
+    def run(self, env: ApplicationVersion, _: dict):
+        self.create_databricks_secrets(env)
 
     @staticmethod
     def create_databricks_secrets(env: ApplicationVersion):

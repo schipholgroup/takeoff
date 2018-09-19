@@ -1,4 +1,5 @@
 {
+  "name": "{{ application_name }}",
   "new_cluster": {
     "spark_version": "4.1.x-scala2.11",
     "spark_conf": {
@@ -7,18 +8,16 @@
     },
     "cluster_log_conf": {
       "dbfs": {
-        "destination": "dbfs:/mnt/sdh/logs/{name}"
+        "destination": "dbfs:/mnt/sdh/logs/{{ log_destination }}"
       }
     }
   },
   "some_int": 5,
-  "name": "__generated_value__",
   "libraries": [
-    {
-      "jar": "some.jar"
-    }
+    { "egg": "{{ egg_file }}" },
+    { "jar": "some.jar" }
   ],
   "spark_python_task": {
-    "python_file": "__generated_value__"
+    "python_file": "{{ python_file }}"
   }
 }
