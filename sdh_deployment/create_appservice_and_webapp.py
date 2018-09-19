@@ -129,7 +129,7 @@ class CreateAppserviceAndWebapp:
             linux_fx_version="DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
                 registry_url=SHARED_REGISTRY,
                 build_definition_name=build_definition_name,
-                tag=env.version,
+                tag=env.docker_tag,
             ),
             http_logging_enabled=True,
             always_on=True,

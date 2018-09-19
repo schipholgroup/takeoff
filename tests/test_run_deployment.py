@@ -225,9 +225,9 @@ steps:
 
 def test_version_no_feature():
     env = ApplicationVersion("DEV", "SNAPSHOT", 'some-branch')
-    assert not env.is_feature
+    assert not env.on_feature_branch
 
 
 def test_version_is_feature():
     env = ApplicationVersion("DEV", "108fba3", 'some-branch')
-    assert env.is_feature
+    assert env.on_feature_branch

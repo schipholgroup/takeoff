@@ -31,10 +31,7 @@ class DockerImageBuilder(object):
     def run(self, dockerfiles: List[DockerFile]):
         application_name = get_application_name()
         for df in dockerfiles:
-            if self.env.is_feature:
-                tag = self.env.branch
-            else:
-                tag = self.env.version
+            tag = self.env.docker_tag
 
             # only append a postfix if there is one provided
             if df.postfix:
