@@ -21,7 +21,7 @@ environment_variables = {
     "REGISTRY_PASSWORD": "supersecret123",
 }
 
-env = ApplicationVersion("DEV", "abc123githash")
+env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 
 
 @mock.patch.dict(os.environ, environment_variables)
@@ -43,7 +43,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
+            CreateAppserviceAndWebapp, "create_appservice_and_webapp", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -78,9 +78,9 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateEventhubConsumerGroups,
-        "create_eventhub_consumer_groups",
-        return_value=None,
+            CreateEventhubConsumerGroups,
+            "create_eventhub_consumer_groups",
+            return_value=None,
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -113,7 +113,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
+            CreateDatabricksSecrets, "create_databricks_secrets", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(env)
@@ -176,7 +176,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-        DeployToDatabricks, "deploy_to_databricks", return_value=None
+            DeployToDatabricks, "deploy_to_databricks", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -221,3 +221,13 @@ steps:
                 },
             },
         )
+
+
+def test_version_no_feature():
+    env = ApplicationVersion("DEV", "SNAPSHOT", 'some-branch')
+    assert not env.on_feature_branch
+
+
+def test_version_is_feature():
+    env = ApplicationVersion("DEV", "108fba3", 'some-branch')
+    assert env.on_feature_branch

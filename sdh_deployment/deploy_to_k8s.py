@@ -89,7 +89,7 @@ class DeployToK8s:
         deployment['spec']['template']['spec']['containers'][0]['image'] = "{registry}/{image}:{tag}".format(
             registry=SHARED_REGISTRY,
             image=application_name,
-            tag=env.version
+            tag=env.docker_tag
         )
 
         # to patch or not to patch
