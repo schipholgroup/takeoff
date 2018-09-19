@@ -2,6 +2,7 @@ import json
 import logging
 from yaml import load
 from dataclasses import dataclass
+import re
 
 from sdh_deployment.util import get_tag, get_branch, get_short_hash
 
@@ -13,6 +14,12 @@ logging.basicConfig(level=logging.INFO)
 class ApplicationVersion(object):
     environment: str
     version: str
+    branch: str
+
+    @property
+    def is_feature(self) -> bool:
+        tag_pattern = re.compile('[0-9a-f]{7}')
+        return True if tag_pattern.match(self.version) else False
 
 
 def load_yaml() -> dict:
@@ -27,11 +34,11 @@ def get_environment() -> ApplicationVersion:
     git_hash = get_short_hash()
 
     if tag:
-        return ApplicationVersion("PRD", str(tag))
+        return ApplicationVersion("PRD", str(tag), branch)
     elif branch == "master":
-        return ApplicationVersion("ACP", "SNAPSHOT")
+        return ApplicationVersion("ACP", "SNAPSHOT", branch)
     else:
-        return ApplicationVersion("DEV", git_hash)
+        return ApplicationVersion("DEV", git_hash, branch)
 
 
 # TODO: refactor this function to avoid having C901

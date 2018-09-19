@@ -21,7 +21,7 @@ environment_variables = {
     "REGISTRY_PASSWORD": "supersecret123",
 }
 
-env = ApplicationVersion("DEV", "abc123githash")
+env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 
 
 @mock.patch.dict(os.environ, environment_variables)

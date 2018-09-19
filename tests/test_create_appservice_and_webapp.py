@@ -17,7 +17,7 @@ from sdh_deployment.create_appservice_and_webapp import (
 from sdh_deployment.run_deployment import ApplicationVersion
 from sdh_deployment.util import SHARED_REGISTRY
 
-ENV = ApplicationVersion("env", "ver")
+ENV = ApplicationVersion("env", "ver", 'branch')
 
 VALID_SITE_CONFIG = SiteConfig(
     linux_fx_version=f"DOCKER|{SHARED_REGISTRY}/my-app:{ENV.version}",
