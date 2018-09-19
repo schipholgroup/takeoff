@@ -29,8 +29,8 @@ class ApplicationVersion(object):
             return self.version
 
 
-def load_yaml() -> dict:
-    with open("deployment.yml", "r") as f:
+def load_yaml(path: str) -> dict:
+    with open(path, "r") as f:
         config_file = f.read()
     return load(config_file)
 
@@ -51,7 +51,7 @@ def get_environment() -> ApplicationVersion:
 # TODO: refactor this function to avoid having C901
 def main():  # noqa: C901
     env = get_environment()
-    config = load_yaml()
+    config = load_yaml("deployment.yml")
 
     for step in config["steps"]:
         task = step["task"]
@@ -116,12 +116,14 @@ def main():  # noqa: C901
         elif task == "deployToK8s":
             from sdh_deployment.deploy_to_k8s import DeployToK8s
 
-            # temporary workaround: only deploy on k8s on prd.
-            if env.environment == "PRD":
-                logging.info("Whoohoo, a PRD deploy, deploying!")
-                DeployToK8s.deploy_to_k8s(env, step["config"])
-            else:
-                logging.info("Not a PRD deploy, not deploying")
+            # load some k8s config
+            k8s_deployment = load_yaml("k8s_config/deployment.yaml")
+            k8s_service = load_yaml("k8s_config/service.yaml")
+
+            logging.info(f"Deploying to K8S. Environment: {env.environment}")
+            DeployToK8s.deploy_to_k8s(env=env,
+                                      deployment_config=k8s_deployment,
+                                      service_config=k8s_service)
 
         else:
             raise Exception(
