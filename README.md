@@ -183,9 +183,9 @@ To finish setting up CI/CD VSTS
 
 In your `.vsts-ci.yaml` you can use additional steps and docker commands to (choose any of the following that are applicable to your application):
 
-* Run linting
+* Run Python linting
 
-    To customise linting copy-paste the `.flake8` file to the root of your project, otherwise the defaults are ran (which you most likely don't want)
+    To customise Python linting copy-paste the `.flake8` file to the root of your project, otherwise the defaults are ran (which you most likely don't want)
     ```yaml
     - task: DockerCompose@0
       displayName: Run python linting
@@ -193,6 +193,17 @@ In your `.vsts-ci.yaml` you can use additional steps and docker commands to (cho
         dockerComposeCommand: |
           run --rm pyspark bash -c "pip install --process-dependency-links .[deploy] && run_linting"
     ```
+
+* Run Dockerfile linting
+    To customise Dockerfile linting, you can add a `.hadolint.yaml` file in the root of your project. Otherwise, the defaults are used, which are pretty good.
+    ```yaml
+    - task: DockerCompose@0
+      displayName: Run Dockerfile linting
+      inputs:
+        dockerComposeCommand: |
+          run --rm hadolint bash -c "hadolint Dockerfile"
+    ```
+
 * Run tests
 
     To customise code coverage settings copy-paste the `.coveragerc` file to the root of your project, otherwise the defaults are ran (which you most likely don't want)
