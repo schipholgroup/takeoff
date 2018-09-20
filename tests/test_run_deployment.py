@@ -62,6 +62,7 @@ steps:
 
     from sdh_deployment.run_deployment import main
 
+
     with mock.patch.object(CreateEventhubConsumerGroups, "run", return_value=None) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -131,6 +132,7 @@ def test_version_no_feature():
 def test_version_is_feature():
     env = ApplicationVersion("DEV", "108fba3", 'some-branch')
     assert env.on_feature_branch
+
 
 
 class MockedClass(DeploymentStep):

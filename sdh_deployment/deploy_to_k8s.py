@@ -119,8 +119,6 @@ class DeployToK8s(DeploymentStep):
 
     @staticmethod
     def _create_or_patch_deployment(deployment: dict, application_name: str, env: ApplicationVersion, k8s_namespace: str):
-        api_instance = client.ExtensionsV1beta1Api()
-
         # to patch or not to patch
         if DeployToK8s._k8s_deployment_exists(application_name, k8s_namespace, api_instance):
             logger.info(f"Found existing k8s deployment: {application_name} in namespace {k8s_namespace}")
