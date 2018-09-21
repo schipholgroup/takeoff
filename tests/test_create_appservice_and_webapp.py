@@ -2,6 +2,7 @@ import os
 import unittest
 from unittest import mock
 
+from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp as victim,
     CosmosCredentials,
@@ -14,7 +15,6 @@ from sdh_deployment.create_appservice_and_webapp import (
     Site,
     RESOURCE_GROUP,
 )
-from sdh_deployment.run_deployment import ApplicationVersion
 from sdh_deployment.util import SHARED_REGISTRY
 
 ENV = ApplicationVersion("env", "ver", 'branch')

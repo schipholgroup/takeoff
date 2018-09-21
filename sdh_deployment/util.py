@@ -4,8 +4,10 @@ from dataclasses import dataclass
 from azure.common.credentials import UserPassCredentials, ServicePrincipalCredentials
 from azure.storage.blob import BlockBlobService
 from databricks_cli.sdk import ApiClient
+from jinja2 import Template
 from git import Repo
-from typing import Pattern
+from typing import Pattern, Callable
+from yaml import load
 
 RESOURCE_GROUP = "sdh{dtap}"
 EVENTHUB_NAMESPACE = "sdheventhub{dtap}"
@@ -25,6 +27,13 @@ class DockerCredentials(object):
     username: str
     password: str
     registry: str
+
+
+def render_file_with_jinja(path: str, params: dict, parse_function: Callable) -> dict:
+    with open(path) as file_:
+        template = Template(file_.read())
+    rendered = template.render(**params)
+    return parse_function(rendered)
 
 
 def get_branch() -> str:
@@ -114,3 +123,9 @@ def has_prefix_match(find_in: str, to_find: str, pattern: Pattern[str]):
     if match:
         return match.groups()[0] == to_find
     return False
+
+
+def load_yaml(path: str) -> dict:
+    with open(path, "r") as f:
+        config_file = f.read()
+    return load(config_file)

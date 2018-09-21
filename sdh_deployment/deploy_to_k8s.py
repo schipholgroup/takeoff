@@ -1,25 +1,40 @@
 import logging
 import os
 
+import yaml
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
 from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes import client, config
 from kubernetes.client import CoreV1Api
 from kubernetes.client.apis import ExtensionsV1beta1Api
 
+from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.util import (
-    SHARED_REGISTRY,
     get_subscription_id,
     get_azure_user_credentials,
-    get_application_name
+    get_application_name,
+    render_file_with_jinja
 )
-from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 
 
 # assumes kubectl is available
-class DeployToK8s:
+class DeployToK8s(DeploymentStep):
+
+    def run(self, env: ApplicationVersion, config: dict):
+        # get the ip address for this environment
+        service_ip = config["service_ips"][env.environment.lower()]
+
+        # load some k8s config
+        k8s_deployment = render_file_with_jinja(config["deployment_config_path"], {"docker_tag": env.docker_tag}, yaml.load)
+        k8s_service = render_file_with_jinja(config["service_config_path"], {"service_ip": service_ip}, yaml.load)
+
+        logging.info(f"Deploying to K8S. Environment: {env.environment}")
+        self.deploy_to_k8s(env=env,
+                           deployment_config=k8s_deployment,
+                           service_config=k8s_service)
 
     @staticmethod
     def _write_kube_config(credential_results: CredentialResults):
@@ -105,14 +120,6 @@ class DeployToK8s:
     @staticmethod
     def _create_or_patch_deployment(deployment: dict, application_name: str, env: ApplicationVersion, k8s_namespace: str):
         api_instance = client.ExtensionsV1beta1Api()
-
-        # set the right version
-        deployment['spec']['template']['spec']['containers'][0]['image'] = "{registry}/{image}:{tag}".format(
-            registry=SHARED_REGISTRY,
-            image=application_name,
-            tag=env.docker_tag
-        )
-
         # to patch or not to patch
         if DeployToK8s._k8s_deployment_exists(application_name, k8s_namespace, api_instance):
             logger.info(f"Found existing k8s deployment: {application_name} in namespace {k8s_namespace}")

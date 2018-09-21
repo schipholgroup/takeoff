@@ -1,32 +1,12 @@
-import json
 import logging
-from yaml import load
-from dataclasses import dataclass
-import re
 
+from yaml import load
+
+from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.util import get_tag, get_branch, get_short_hash
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-
-@dataclass(frozen=True)
-class ApplicationVersion(object):
-    environment: str
-    version: str
-    branch: str
-
-    @property
-    def on_feature_branch(self) -> bool:
-        tag_pattern = re.compile('[0-9a-f]{7}')
-        return True if tag_pattern.match(self.version) else False
-
-    @property
-    def docker_tag(self) -> str:
-        if self.on_feature_branch:
-            return self.branch
-        else:
-            return self.version
 
 
 def load_yaml(path: str) -> dict:
@@ -48,13 +28,12 @@ def get_environment() -> ApplicationVersion:
         return ApplicationVersion("DEV", git_hash, branch)
 
 
-# TODO: refactor this function to avoid having C901
-def main():  # noqa: C901
+def main():
     env = get_environment()
     config = load_yaml("deployment.yml")
 
-    for step in config["steps"]:
-        task = step["task"]
+    for step_config in config["steps"]:
+        task = step_config["task"]
         logger.info("*" * 76)
         logger.info(
             "{:10s} {:13s} {:40s} {:10s}".format(
@@ -62,70 +41,14 @@ def main():  # noqa: C901
             )
         )
         logger.info("*" * 76)
+        run_task(env, task, step_config)
 
-        if task == "uploadToBlob":
-            from sdh_deployment.upload_to_blob import UploadToBlob
 
-            UploadToBlob.upload_application_to_blob(env, step)
-
-        elif task == "createApplicationInsights":
-            from sdh_deployment.create_application_insights import (
-                CreateApplicationInsights
-            )
-
-            CreateApplicationInsights.create_databricks_application_insights(env)
-
-        elif task == "deployWebAppService":
-            from sdh_deployment.create_appservice_and_webapp import (
-                CreateAppserviceAndWebapp
-            )
-
-            CreateAppserviceAndWebapp.create_appservice_and_webapp(env, step)
-
-        elif task == "createDatabricksSecrets":
-            from sdh_deployment.create_databricks_secrets import CreateDatabricksSecrets
-
-            CreateDatabricksSecrets.create_databricks_secrets(env)
-
-        elif task == "createEventhubConsumerGroups":
-            from sdh_deployment.create_eventhub_consumer_groups import (
-                CreateEventhubConsumerGroups,
-                EventHubConsumerGroup,
-            )
-
-            groups = [
-                EventHubConsumerGroup(group["eventhubEntity"], group["consumerGroup"])
-                for group in step["groups"]
-            ]
-            CreateEventhubConsumerGroups.create_eventhub_consumer_groups(env, groups)
-
-        elif task == "deployToDatabricks":
-            from sdh_deployment.deploy_to_databricks import DeployToDatabricks
-
-            DeployToDatabricks.deploy_to_databricks(env, json.loads(step["config"]))
-
-        elif task == "buildDockerImage":
-            from sdh_deployment.build_docker_image import DockerImageBuilder, DockerFile
-
-            dockerfiles = [
-                DockerFile(df["file"], df.get("postfix")) for df in step["dockerfiles"]
-            ]
-
-            DockerImageBuilder(env).run(dockerfiles)
-
-        elif task == "deployToK8s":
-            from sdh_deployment.deploy_to_k8s import DeployToK8s
-
-            # load some k8s config
-            k8s_deployment = load_yaml("k8s_config/deployment.yaml")
-            k8s_service = load_yaml("k8s_config/service.yaml")
-
-            logging.info(f"Deploying to K8S. Environment: {env.environment}")
-            DeployToK8s.deploy_to_k8s(env=env,
-                                      deployment_config=k8s_deployment,
-                                      service_config=k8s_service)
-
-        else:
-            raise Exception(
-                f"Deployment step {task} is unknown, please check the config"
-            )
+def run_task(env: ApplicationVersion, task: str, task_config):
+    from sdh_deployment.deployment_step import deployment_steps
+    if task not in deployment_steps:
+        raise Exception(
+            f"Deployment step {task} is unknown, please check the config"
+        )
+    else:
+        return deployment_steps[task]().run(env, task_config)

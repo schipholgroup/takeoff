@@ -1,10 +1,13 @@
 import logging
 import os
-from azure.mgmt.eventhub import EventHubManagementClient
-from azure.mgmt.relay.models import AccessRights
 from dataclasses import dataclass
 from typing import List, Set
 
+from azure.mgmt.eventhub import EventHubManagementClient
+from azure.mgmt.relay.models import AccessRights
+
+from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.create_databricks_secrets import Secret, CreateDatabricksSecrets
 from sdh_deployment.util import (
     get_azure_user_credentials,
@@ -14,7 +17,6 @@ from sdh_deployment.util import (
     get_databricks_client,
     get_subscription_id,
 )
-from sdh_deployment.run_deployment import ApplicationVersion
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -54,10 +56,18 @@ class EventHubConsumerGroup(object):
     consumer_group: str
 
 
-class CreateEventhubConsumerGroups:
+class CreateEventhubConsumerGroups(DeploymentStep):
+
+    def run(self, env: ApplicationVersion, config: dict):
+        groups = [
+            EventHubConsumerGroup(group["eventhubEntity"], group["consumerGroup"])
+            for group in config["groups"]
+        ]
+        self.create_eventhub_consumer_groups(env, groups)
+
     @staticmethod
     def _eventhub_exists(
-        client: EventHubManagementClient, group: ConsumerGroup
+            client: EventHubManagementClient, group: ConsumerGroup
     ) -> bool:
         hubs = list(
             client.event_hubs.list_by_namespace(
@@ -99,7 +109,7 @@ class CreateEventhubConsumerGroups:
 
     @staticmethod
     def _get_requested_consumer_groups(
-        parsed_groups: List[EventHubConsumerGroup], dtap: str
+            parsed_groups: List[EventHubConsumerGroup], dtap: str
     ) -> List[ConsumerGroup]:
         eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=dtap.lower())
         resource_group = RESOURCE_GROUP.format(dtap=dtap.lower())
@@ -116,7 +126,7 @@ class CreateEventhubConsumerGroups:
 
     @staticmethod
     def _authorization_rules_exists(
-        client: EventHubManagementClient, group: EventHub, name: str
+            client: EventHubManagementClient, group: EventHub, name: str
     ) -> bool:
         logging.info(
             f"Retrieving rules, Resource Group {group.resource_group}, "
@@ -147,13 +157,13 @@ class CreateEventhubConsumerGroups:
 
     @staticmethod
     def _create_connection_strings(
-        client: EventHubManagementClient, eventhub_entities: Set[EventHub]
+            client: EventHubManagementClient, eventhub_entities: Set[EventHub]
     ) -> List[ConnectingString]:
         policy_name = f"{get_application_name()}-policy"
 
         for group in eventhub_entities:
             if not CreateEventhubConsumerGroups._authorization_rules_exists(
-                client, group, policy_name
+                    client, group, policy_name
             ):
                 client.event_hubs.create_or_update_authorization_rule(
                     group.resource_group,
@@ -180,7 +190,7 @@ class CreateEventhubConsumerGroups:
 
     @staticmethod
     def _get_unique_eventhubs(
-        consumer_groups_to_create: List[ConsumerGroup]
+            consumer_groups_to_create: List[ConsumerGroup]
     ) -> Set[EventHub]:
         return set(
             EventHub(_.resource_group, _.eventhub_namespace, _.eventhub_entity)
@@ -189,7 +199,7 @@ class CreateEventhubConsumerGroups:
 
     @staticmethod
     def create_eventhub_consumer_groups(
-        env: ApplicationVersion, consumer_groups: List[EventHubConsumerGroup]
+            env: ApplicationVersion, consumer_groups: List[EventHubConsumerGroup]
     ):
         logger.info(f"Using Azure resource group: {RESOURCE_GROUP}")
         logger.info(f"Using Azure namespace: {EVENTHUB_NAMESPACE}")
@@ -210,7 +220,7 @@ class CreateEventhubConsumerGroups:
 
         for group in consumer_groups_to_create:
             if CreateEventhubConsumerGroups._eventhub_exists(
-                eventhub_client, group
+                    eventhub_client, group
             ) and not CreateEventhubConsumerGroups._group_exists(
                 eventhub_client, group
             ):

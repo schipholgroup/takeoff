@@ -8,7 +8,7 @@ steps:
   displayName: Run python tests
   inputs:
     dockerComposeCommand: |
-      run --rm python bash -c "pip install -e .[test] && pytest \
+      run --rm python bash -c "pip install -e .[test] && pytest -v \
                                                          --cov=sdh_deployment \
                                                          --cov-report xml \
                                                          --cov-report html \

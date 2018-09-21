@@ -1,7 +1,6 @@
-from sdh_deployment.deploy_to_databricks import JobConfig, DeployToDatabricks as victim
-
-import json
 import unittest
+
+from sdh_deployment.deploy_to_databricks import JobConfig, DeployToDatabricks as victim
 
 jobs = [
     JobConfig("foo-SNAPSHOT", 1),
@@ -11,11 +10,8 @@ jobs = [
     JobConfig("baz-0e12f6d", 5),
 ]
 
-with open("tests/test_job_config.json", "r") as f:
-    streaming_job_config = json.load(f)
-
-with open("tests/test_job_config_scheduled.json", "r") as f:
-    batch_job_config = json.load(f)
+streaming_job_config = "tests/test_job_config.json.j2"
+batch_job_config = "tests/test_job_config_scheduled.json.j2"
 
 
 class TestDeployToDatabricks(unittest.TestCase):
@@ -30,7 +26,7 @@ class TestDeployToDatabricks(unittest.TestCase):
 
     def test_is_streaming_job(self):
         job_config = victim._construct_job_config(
-            job_config=streaming_job_config,
+            config_file_fn=streaming_job_config,
             name="app",
             version="42",
             egg="some.egg",
@@ -39,7 +35,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         assert victim._job_is_streaming(job_config) is True
 
         job_config = victim._construct_job_config(
-            job_config=batch_job_config,
+            config_file_fn=batch_job_config,
             name="app",
             version="42",
             egg="some.egg",
@@ -49,7 +45,7 @@ class TestDeployToDatabricks(unittest.TestCase):
 
     def test_construct_job_config(self):
         job_config = victim._construct_job_config(
-            job_config=streaming_job_config,
+            config_file_fn=streaming_job_config,
             name="app",
             version="42",
             egg="some.egg",
@@ -58,7 +54,10 @@ class TestDeployToDatabricks(unittest.TestCase):
 
         assert {
             "name": "app-42",
-            "libraries": [{"jar": "some.jar"}, {"egg": "some.egg"}],
+            "libraries": [
+               {"egg": "some.egg"},
+               {"jar": "some.jar"}
+            ],
             "new_cluster": {
                 "spark_version": "4.1.x-scala2.11",
                 "spark_conf": {
@@ -68,5 +67,4 @@ class TestDeployToDatabricks(unittest.TestCase):
                 "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/app"}},
             },
             "some_int": 5,
-            "spark_python_task": {"python_file": "some.py"},
-        } == job_config
+            "spark_python_task": {"python_file": "some.py"}} == job_config
