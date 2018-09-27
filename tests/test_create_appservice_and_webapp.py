@@ -1,6 +1,7 @@
 import os
 import unittest
 from unittest import mock
+from unittest.mock import Mock
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.create_appservice_and_webapp import (
@@ -54,7 +55,7 @@ class TestDeployToWebApp(unittest.TestCase):
         },
     )
     def test_build_site_config(
-        self, _get_cosmos_credentials_mock, create_application_insights_mock
+            self, _get_cosmos_credentials_mock, create_application_insights_mock
     ):
         _get_cosmos_credentials_mock.return_value = CosmosCredentials(
             "https://localhost:443", "secretcosmoskey"
@@ -63,9 +64,13 @@ class TestDeployToWebApp(unittest.TestCase):
             "secret-insturmentation-key"
         )
 
-        result = victim._build_site_config("my-app", ENV)
-        assert result.app_settings == VALID_SITE_CONFIG.app_settings
-        assert result == VALID_SITE_CONFIG
+        result = victim._build_site_config({'YEAH': "SCIENCE!"}, "my-app", ENV)
+
+        config = VALID_SITE_CONFIG
+        config.app_settings = [{'name': 'YEAH', 'value': 'SCIENCE!'}] + config.app_settings
+
+        assert result.app_settings == config.app_settings
+        assert result == config
 
     @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
     def test_parse_appservice_parameters_defaults(self):
@@ -113,7 +118,7 @@ class TestDeployToWebApp(unittest.TestCase):
         },
     )
     def test_get_webapp_to_create(
-        self, _get_cosmos_credentials_mock, get_site_config_mock
+            self, _get_cosmos_credentials_mock, get_site_config_mock
     ):
         get_site_config_mock.return_value = VALID_SITE_CONFIG
         _get_cosmos_credentials_mock.return_value = CosmosCredentials(
@@ -130,7 +135,13 @@ class TestDeployToWebApp(unittest.TestCase):
             ),
         )
 
-        result = victim._get_webapp_to_create("appservice_id", ENV)
+        mock_web_app = Mock()
+        mock_properties = Mock()
+
+        mock_properties.properties = {}
+        mock_web_app.web_apps.list_application_settings = Mock(return_value=mock_properties)
+
+        result = victim._get_webapp_to_create("appservice_id", mock_web_app, ENV)
 
         assert result == expected_result
 
