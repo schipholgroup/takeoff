@@ -149,7 +149,6 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         # This will make sure that properties set by other parties and other deployment scripts will not be removed
         # as this is the default Azure behaviour
         existing_properties.update(new_properties)
-        print(existing_properties)
 
         def as_list(d: dict):
             return [{'name': k, 'value': v} for k, v in d.items()]
