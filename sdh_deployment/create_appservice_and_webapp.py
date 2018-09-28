@@ -251,6 +251,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
 
         webapp_to_create = CreateAppserviceAndWebapp._get_webapp_to_create(
             appservice_id=appservice_id,
+            web_client=web_client,
             env=env)
 
         site = CreateAppserviceAndWebapp._create_or_update_webapp(
