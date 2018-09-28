@@ -1,9 +1,12 @@
+import logging
 import os
+import sys
 from dataclasses import dataclass
 
 from azure.mgmt.cosmosdb import CosmosDB
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConfig
+from msrestazure.azure_exceptions import CloudError
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
@@ -16,6 +19,10 @@ from sdh_deployment.util import (
     get_application_name,
     SHARED_REGISTRY,
 )
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -116,7 +123,9 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         )
 
     @staticmethod
-    def _build_site_config(build_definition_name: str, env: ApplicationVersion) -> SiteConfig:
+    def _build_site_config(existing_properties: dict,
+                           build_definition_name: str,
+                           env: ApplicationVersion) -> SiteConfig:
         docker_registry_username = os.environ["REGISTRY_USERNAME"]
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
 
@@ -126,6 +135,24 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         application_insights = CreateApplicationInsights.create_application_insights(
             env, "web", "web"
         )
+        new_properties = {
+            'DOCKER_ENABLE_CI': 'true',
+            'BUILD_VERSION': env.version,
+            'DOCKER_REGISTRY_SERVER_URL': "https://" + SHARED_REGISTRY,
+            'DOCKER_REGISTRY_SERVER_USERNAME': docker_registry_username,
+            "DOCKER_REGISTRY_SERVER_PASSWORD": docker_registry_password,
+            "WEBSITE_HTTPLOGGING_RETENTION_DAYS": 7,
+            "COSMOS_URI": cosmos_credentials.uri,
+            "COSMOS_KEY": cosmos_credentials.key,
+            "INSTRUMENTATION_KEY": application_insights.instrumentation_key
+        }
+        # This will make sure that properties set by other parties and other deployment scripts will not be removed
+        # as this is the default Azure behaviour
+        existing_properties.update(new_properties)
+
+        def as_list(d: dict):
+            return [{'name': k, 'value': v} for k, v in d.items()]
+
         return SiteConfig(
             # this syntax seems to be necessary
             linux_fx_version="DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
@@ -135,53 +162,36 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             ),
             http_logging_enabled=True,
             always_on=True,
-            app_settings=[
-                {
-                    "name": "DOCKER_ENABLE_CI",
-                    "value": "true"
-                },
-                {
-                    "name": "BUILD_VERSION",
-                    "value": env.version
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_URL",
-                    # This MUST start with https://
-                    "value": "https://" + SHARED_REGISTRY,
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                    "value": docker_registry_username,
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                    "value": docker_registry_password,
-                },
-                {"name": "WEBSITE_HTTPLOGGING_RETENTION_DAYS", "value": 7},
-                {"name": "COSMOS_URI", "value": cosmos_credentials.uri},
-                {"name": "COSMOS_KEY", "value": cosmos_credentials.key},
-                {
-                    "name": "INSTRUMENTATION_KEY",
-                    "value": application_insights.instrumentation_key,
-                },
-            ],
+            app_settings=as_list(existing_properties)
         )
 
     @staticmethod
-    def _get_webapp_to_create(appservice_id: str, env: ApplicationVersion) -> WebApp:
+    def _get_webapp_to_create(appservice_id: str,
+                              web_client: WebSiteManagementClient,
+                              env: ApplicationVersion) -> WebApp:
         # use build definition name as default web app name
         application_name = get_application_name()
         webapp_name = "{name}-{env}".format(
             name=application_name.lower(),
             env=env.environment.lower()
         )
+
+        existing_properties = {}
+        try:
+            existing_properties = web_client.web_apps.list_application_settings(env.environment.lower(),
+                                                                                webapp_name).properties
+        except CloudError:
+            logging.warning(f"{webapp_name} could not be found, skipping existing properties")
+
         return WebApp(
             resource_group=RESOURCE_GROUP.format(dtap=env.environment.lower()),
             name=webapp_name,
             site=Site(
                 location=AZURE_LOCATION,
                 site_config=CreateAppserviceAndWebapp._build_site_config(
-                    application_name, env
+                    existing_properties=existing_properties,
+                    build_definition_name=application_name,
+                    env=env
                 ),
                 server_farm_id=appservice_id,
             ),
