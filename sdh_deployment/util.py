@@ -1,12 +1,12 @@
 import os
 from dataclasses import dataclass
+from typing import Pattern, Callable
 
 from azure.common.credentials import UserPassCredentials, ServicePrincipalCredentials
 from azure.storage.blob import BlockBlobService
 from databricks_cli.sdk import ApiClient
-from jinja2 import Template
 from git import Repo
-from typing import Pattern, Callable
+from jinja2 import Template
 from yaml import load
 
 RESOURCE_GROUP = "sdh{dtap}"
@@ -29,10 +29,15 @@ class DockerCredentials(object):
     registry: str
 
 
-def render_file_with_jinja(path: str, params: dict, parse_function: Callable) -> dict:
+def render_string_with_jinja(path: str, params: dict) -> str:
     with open(path) as file_:
         template = Template(file_.read())
     rendered = template.render(**params)
+    return rendered
+
+
+def render_file_with_jinja(path: str, params: dict, parse_function: Callable) -> dict:
+    rendered = render_string_with_jinja(path, params)
     return parse_function(rendered)
 
 

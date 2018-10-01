@@ -19,9 +19,7 @@ logger = logging.getLogger(__name__)
 
 class CreateApplicationInsights(DeploymentStep):
     @staticmethod
-    def create_application_insights(
-            env: ApplicationVersion, kind: str, application_type: str
-    ) -> ApplicationInsightsComponent:
+    def create_application_insights(env: ApplicationVersion, kind: str, application_type: str) -> ApplicationInsightsComponent:
 
         # Check some values
         if kind not in {"web", "ios", "other", "store", "java", "phone"}:

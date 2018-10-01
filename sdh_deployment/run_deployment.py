@@ -51,4 +51,4 @@ def run_task(env: ApplicationVersion, task: str, task_config):
             f"Deployment step {task} is unknown, please check the config"
         )
     else:
-        return deployment_steps[task]().run(env, task_config)
+        return deployment_steps[task](env, task_config).run()
