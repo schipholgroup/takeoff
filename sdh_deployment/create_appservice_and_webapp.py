@@ -131,7 +131,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
     def _set_linux_fx_version(self):
         if 'compose' in self.config:
             compose_config = self.config.get("compose")
-            tag_config = self.config.get("images")
+            tag_config = self.config.get("variables")
             tag_config.update({
                 'registry': SHARED_REGISTRY,
                 'application_name': get_application_name(),
