@@ -30,6 +30,13 @@ class JobConfig(object):
 
 
 class DeployToDatabricks(DeploymentStep):
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
+
+    def run(self):
+        config_file_fn = self.config['config_file_fn']
+        self.deploy_to_databricks(config_file_fn)
+
     @staticmethod
     def _job_is_streaming(job_config: dict):
         """
@@ -40,12 +47,7 @@ class DeployToDatabricks(DeploymentStep):
         """
         return "schedule" not in job_config.keys()
 
-    def run(self, env: ApplicationVersion, config: dict):
-        config_file_fn = config['config_file_fn']
-        self.deploy_to_databricks(env, config_file_fn)
-
-    @staticmethod
-    def deploy_to_databricks(env: ApplicationVersion, config_file_fn: str):
+    def deploy_to_databricks(self, config_file_fn: str):
         """
         The application parameters (cosmos and eventhub) will be removed from this file as they
         will be set as databricks secrets eventually
@@ -58,22 +60,21 @@ class DeployToDatabricks(DeploymentStep):
         job_config = DeployToDatabricks._construct_job_config(
             config_file_fn=config_file_fn,
             name=application_name,
-            version=env.version,
-            egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{env.version}.egg",
-            python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{env.version}.py",
+            version=self.env.version,
+            egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{self.env.version}.egg",
+            python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{self.env.version}.py",
         )
 
-        databricks_client = get_databricks_client(env.environment)
+        databricks_client = get_databricks_client(self.env.environment)
 
-        is_streaming = DeployToDatabricks._job_is_streaming(job_config)
+        is_streaming = self._job_is_streaming(job_config)
         logger.info("Removing old job")
-        DeployToDatabricks.__remove_job(
-            databricks_client, application_name, is_streaming=is_streaming
-        )
+        self.__remove_job(databricks_client, application_name, is_streaming=is_streaming)
+
         logger.info("Submitting new job with configuration:")
         logger.info(str(job_config))
 
-        DeployToDatabricks._submit_job(databricks_client, job_config, is_streaming)
+        self._submit_job(databricks_client, job_config, is_streaming)
 
     @staticmethod
     def _read_application_config(fn: str):
@@ -147,4 +148,8 @@ class DeployToDatabricks(DeploymentStep):
         job_resp = jobs_api.create_job(job_config)
 
         if is_streaming:
-            jobs_api.run_now(job_resp["job_id"], None, None, None, None)
+            jobs_api.run_now(job_id=job_resp["job_id"],
+                             jar_params=None,
+                             notebook_params=None,
+                             python_params=None,
+                             spark_submit_params=None)

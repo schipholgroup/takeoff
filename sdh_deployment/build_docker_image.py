@@ -19,7 +19,10 @@ class DockerFile(object):
 
 
 class DockerImageBuilder(DeploymentStep):
-    def run(self, env: ApplicationVersion, config: dict):
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
+
+    def run(self):
         client: DockerClient = docker.from_env()
         docker_credentials = get_docker_credentials()
         client.login(
@@ -28,18 +31,17 @@ class DockerImageBuilder(DeploymentStep):
             registry=docker_credentials.registry,
         )
         dockerfiles = [
-            DockerFile(df["file"], df.get("postfix")) for df in config["dockerfiles"]
+            DockerFile(df["file"], df.get("postfix")) for df in self.config["dockerfiles"]
         ]
-        self.deploy(env, dockerfiles, docker_credentials, client)
+        self.deploy(dockerfiles, docker_credentials, client)
 
-    @staticmethod
-    def deploy(env: ApplicationVersion,
+    def deploy(self,
                dockerfiles: List[DockerFile],
                docker_credentials,
                docker_client):
         application_name = get_application_name()
         for df in dockerfiles:
-            tag = env.docker_tag
+            tag = self.env.docker_tag
 
             # only append a postfix if there is one provided
             if df.postfix:

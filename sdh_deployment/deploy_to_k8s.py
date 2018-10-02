@@ -22,18 +22,20 @@ logger = logging.getLogger(__name__)
 
 # assumes kubectl is available
 class DeployToK8s(DeploymentStep):
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
 
-    def run(self, env: ApplicationVersion, config: dict):
+    def run(self):
         # get the ip address for this environment
-        service_ip = config["service_ips"][env.environment.lower()]
+        service_ip = config["service_ips"][self.env.environment.lower()]
 
         # load some k8s config
-        k8s_deployment = render_file_with_jinja(config["deployment_config_path"], {"docker_tag": env.docker_tag}, yaml.load)
-        k8s_service = render_file_with_jinja(config["service_config_path"], {"service_ip": service_ip}, yaml.load)
+        k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"], {"docker_tag": self.env.docker_tag}, yaml.load)
+        k8s_service = render_file_with_jinja(self.config["service_config_path"], {"service_ip": service_ip}, yaml.load)
 
-        logging.info(f"Deploying to K8S. Environment: {env.environment}")
-        self.deploy_to_k8s(env=env,
-                           deployment_config=k8s_deployment,
+        logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
+
+        self.deploy_to_k8s(deployment_config=k8s_deployment,
                            service_config=k8s_service)
 
     @staticmethod
@@ -50,9 +52,8 @@ class DeployToK8s(DeploymentStep):
 
         logger.info("Kubeconfig successfully written")
 
-    @staticmethod
-    def _authenticate_with_k8s(dtap: str):
-        resource_group = os.getenv('RESOURCE_GROUP', f'sdh{dtap}')
+    def _authenticate_with_k8s(self):
+        resource_group = os.getenv('RESOURCE_GROUP', f'sdh{self.env.environment}')
         k8s_name = os.getenv('K8S_RESOURCE_NAME', 'sdh-kubernetes')
 
         # get azure container service client
@@ -117,8 +118,7 @@ class DeployToK8s(DeploymentStep):
             api_client.create_namespaced_service(namespace=k8s_namespace,
                                                  body=service_config)
 
-    @staticmethod
-    def _create_or_patch_deployment(deployment: dict, application_name: str, env: ApplicationVersion, k8s_namespace: str):
+    def _create_or_patch_deployment(self, deployment: dict, application_name: str, k8s_namespace: str):
         api_instance = client.ExtensionsV1beta1Api()
         # to patch or not to patch
         if DeployToK8s._k8s_deployment_exists(application_name, k8s_namespace, api_instance):
@@ -131,13 +131,12 @@ class DeployToK8s(DeploymentStep):
             api_instance.create_namespaced_deployment(namespace=k8s_namespace,
                                                       body=deployment)
 
-    @staticmethod
-    def deploy_to_k8s(env: ApplicationVersion, deployment_config: dict, service_config: dict):
+    def deploy_to_k8s(self, deployment_config: dict, service_config: dict):
         application_name = get_application_name()
-        k8s_namespace = f"{application_name}-{env.environment.lower()}"
+        k8s_namespace = f"{application_name}-{self.env.environment.lower()}"
 
         # 1: get kubernetes credentials with azure credentials for vsts user
-        DeployToK8s._authenticate_with_k8s(env.environment)
+        self._authenticate_with_k8s()
 
         # load the kubeconfig we just fetched
         config.load_kube_config()
@@ -147,10 +146,10 @@ class DeployToK8s(DeploymentStep):
         core_api_client = CoreV1Api()
 
         # 2: verify that the namespace exists, if not: create it
-        DeployToK8s._create_namespace_if_not_exists(core_api_client, k8s_namespace)
+        self._create_namespace_if_not_exists(core_api_client, k8s_namespace)
 
         # 3: create OR patch kubernetes deployment
-        DeployToK8s._create_or_patch_deployment(deployment_config, application_name, env, k8s_namespace)
+        self._create_or_patch_deployment(deployment_config, application_name, k8s_namespace)
 
         # 4: create OR patch kubernetes service
-        DeployToK8s._create_or_patch_service(core_api_client, service_config, k8s_namespace)
+        self._create_or_patch_service(core_api_client, service_config, k8s_namespace)

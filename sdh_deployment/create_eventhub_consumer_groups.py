@@ -57,13 +57,15 @@ class EventHubConsumerGroup(object):
 
 
 class CreateEventhubConsumerGroups(DeploymentStep):
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
 
-    def run(self, env: ApplicationVersion, config: dict):
+    def run(self):
         groups = [
             EventHubConsumerGroup(group["eventhubEntity"], group["consumerGroup"])
-            for group in config["groups"]
+            for group in self.config["groups"]
         ]
-        self.create_eventhub_consumer_groups(env, groups)
+        self.create_eventhub_consumer_groups(groups)
 
     @staticmethod
     def _eventhub_exists(
@@ -107,16 +109,14 @@ class CreateEventhubConsumerGroups(DeploymentStep):
             for hub_group_pair in consumer_group_input.split(",")
         ]
 
-    @staticmethod
-    def _get_requested_consumer_groups(
-            parsed_groups: List[EventHubConsumerGroup], dtap: str
-    ) -> List[ConsumerGroup]:
-        eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=dtap.lower())
-        resource_group = RESOURCE_GROUP.format(dtap=dtap.lower())
+    def _get_requested_consumer_groups(self, parsed_groups: List[EventHubConsumerGroup]) -> List[ConsumerGroup]:
+        formatted_dtap = self.env.environment.lower()
+        eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=formatted_dtap)
+        resource_group = RESOURCE_GROUP.format(dtap=formatted_dtap)
 
         return [
             ConsumerGroup(
-                group.eventhub_entity_name + dtap.lower(),
+                group.eventhub_entity_name + formatted_dtap,
                 group.consumer_group,
                 eventhub_namespace,
                 resource_group,
@@ -156,9 +156,8 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     @staticmethod
-    def _create_connection_strings(
-            client: EventHubManagementClient, eventhub_entities: Set[EventHub]
-    ) -> List[ConnectingString]:
+    def _create_connection_strings(client: EventHubManagementClient,
+                                   eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
         policy_name = f"{get_application_name()}-policy"
 
         for group in eventhub_entities:
@@ -189,33 +188,24 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         ]
 
     @staticmethod
-    def _get_unique_eventhubs(
-            consumer_groups_to_create: List[ConsumerGroup]
-    ) -> Set[EventHub]:
+    def _get_unique_eventhubs(consumer_groups_to_create: List[ConsumerGroup]) -> Set[EventHub]:
         return set(
             EventHub(_.resource_group, _.eventhub_namespace, _.eventhub_entity)
             for _ in consumer_groups_to_create
         )
 
-    @staticmethod
-    def create_eventhub_consumer_groups(
-            env: ApplicationVersion, consumer_groups: List[EventHubConsumerGroup]
-    ):
+    def create_eventhub_consumer_groups(self, consumer_groups: List[EventHubConsumerGroup]):
         logger.info(f"Using Azure resource group: {RESOURCE_GROUP}")
         logger.info(f"Using Azure namespace: {EVENTHUB_NAMESPACE}")
 
-        credentials = get_azure_user_credentials(env.environment)
+        credentials = get_azure_user_credentials(self.env.environment)
         eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
 
-        consumer_groups_to_create = CreateEventhubConsumerGroups._get_requested_consumer_groups(
-            consumer_groups, env.environment
-        )
+        consumer_groups_to_create = self._get_requested_consumer_groups(consumer_groups)
 
-        connection_strings = CreateEventhubConsumerGroups._create_connection_strings(
-            eventhub_client,
-            CreateEventhubConsumerGroups._get_unique_eventhubs(
-                consumer_groups_to_create
-            ),
+        connection_strings = self._create_connection_strings(
+            client=eventhub_client,
+            eventhub_entities=self._get_unique_eventhubs(consumer_groups_to_create),
         )
 
         for group in consumer_groups_to_create:
@@ -224,11 +214,11 @@ class CreateEventhubConsumerGroups(DeploymentStep):
             ) and not CreateEventhubConsumerGroups._group_exists(
                 eventhub_client, group
             ):
-                CreateEventhubConsumerGroups._create_consumer_group(
-                    eventhub_client, group
-                )
+                self._create_consumer_group(
+                    client=eventhub_client,
+                    group=group)
 
-        databricks_client = get_databricks_client(env.environment)
+        databricks_client = get_databricks_client(self.env.environment)
         application_name = get_application_name()
 
         # For each Eventhub we have a separate connection string which is set by a shared access policy
@@ -242,6 +232,4 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         ]
 
         CreateDatabricksSecrets._create_scope(databricks_client, application_name)
-        CreateDatabricksSecrets._add_secrets(
-            databricks_client, application_name, secrets
-        )
+        CreateDatabricksSecrets._add_secrets(databricks_client, application_name, secrets)

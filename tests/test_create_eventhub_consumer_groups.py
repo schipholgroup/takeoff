@@ -2,6 +2,7 @@ import os
 import unittest
 from unittest import mock
 
+from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.create_eventhub_consumer_groups import (
     ConsumerGroup,
     EventHubConsumerGroup,
@@ -11,10 +12,9 @@ from sdh_deployment.create_eventhub_consumer_groups import (
 
 class TestCreateEventhubConsumerGroups(unittest.TestCase):
     def test_get_requested_consumer_groups(self):
-        consumer_groups = victim._get_requested_consumer_groups(
-            [EventHubConsumerGroup("hub1", "my-app-group1")], "DEV"
-        )
-        print(consumer_groups)
+        env = ApplicationVersion('DEV', 'local', 'foo')
+        consumer_groups = victim(env, {})._get_requested_consumer_groups(
+            [EventHubConsumerGroup("hub1", "my-app-group1")])
         assert len(consumer_groups) == 1
         asserting_groups = [
             ConsumerGroup("hub1dev", "my-app-group1", "sdheventhubdev", "sdhdev")

@@ -61,8 +61,7 @@ class CosmosCredentials(object):
 
 class CreateAppserviceAndWebapp(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
-        self.env = env
-        self.config = config
+        super().__init__(env, config)
 
     def run(self):
         self.create_appservice_and_webapp()
