@@ -1,3 +1,4 @@
+import base64
 import os
 import unittest
 from unittest import mock
@@ -140,3 +141,32 @@ class TestDeployToWebApp(unittest.TestCase):
         assert result == expected_result
 
         get_site_config_mock.assert_called_once()
+
+    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
+    def test_linux_fx_version_docker(self):
+        linux_fx = 'DOCKER|sdhcontainerregistryshared.azurecr.io/my-build:ver'
+
+        config = {}
+        assert victim(ENV, config)._get_linux_fx_version() == linux_fx
+
+    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
+    def test_linux_fx_version_compose(self):
+        compose = """version: '3.2'
+services:
+  app:
+    image: {registry}/{application_name}:{tag}{app_postfix}""".format(registry=SHARED_REGISTRY,
+                                                                      application_name='my-build',
+                                                                      tag='ver',
+                                                                      app_postfix='-flask')
+        encoded = base64.b64encode(compose.encode())
+
+        linux_fx = 'COMPOSE|{}'.format(encoded)
+
+        config = {
+            'compose': {
+                'filename': 'tests/test_docker-compose.yml.j2',
+                'variables': {
+                    'app_postfix': '-flask'}
+            }
+        }
+        assert victim(ENV, config)._get_linux_fx_version() == linux_fx

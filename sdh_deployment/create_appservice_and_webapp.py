@@ -128,10 +128,10 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             ),
         )
 
-    def _set_linux_fx_version(self):
+    def _get_linux_fx_version(self):
         if 'compose' in self.config:
             compose_config = self.config.get("compose")
-            tag_config = self.config.get("variables")
+            tag_config = compose_config.get("variables")
             tag_config.update({
                 'registry': SHARED_REGISTRY,
                 'application_name': get_application_name(),
@@ -139,8 +139,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             })
 
             rendered_compose = render_string_with_jinja(compose_config['filename'], tag_config)
-            base64.b64encode(rendered_compose)
-            return "COMPOSE|{compose}".format(compose=base64.b64encode(rendered_compose))
+            return "COMPOSE|{compose}".format(compose=base64.b64encode(rendered_compose.encode()))
         else:
             return "DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
                 registry_url=SHARED_REGISTRY,
@@ -173,7 +172,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             return [{'name': k, 'value': v} for k, v in d.items()]
 
         return SiteConfig(
-            linux_fx_version=self._set_linux_fx_version(),
+            linux_fx_version=self._get_linux_fx_version(),
             http_logging_enabled=True,
             always_on=True,
             app_settings=as_list(existing_properties)
