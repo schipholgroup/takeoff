@@ -138,7 +138,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             })
 
             rendered_compose = render_string_with_jinja(compose_config['filename'], tag_config)
-            return "COMPOSE|{compose}".format(compose=base64.b64encode(rendered_compose.encode()))
+            return "COMPOSE|{compose}".format(compose=base64.b64encode(rendered_compose.encode()).decode())
         else:
             return "DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
                 registry_url=SHARED_REGISTRY,
