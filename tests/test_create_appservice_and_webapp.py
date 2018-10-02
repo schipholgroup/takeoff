@@ -158,7 +158,7 @@ services:
                                                                       application_name='my-build',
                                                                       tag='ver',
                                                                       app_postfix='-flask')
-        encoded = base64.b64encode(compose.encode())
+        encoded = base64.b64encode(compose.encode()).decode()
 
         linux_fx = 'COMPOSE|{}'.format(encoded)
 
