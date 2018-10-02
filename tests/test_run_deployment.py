@@ -1,6 +1,7 @@
 import os
 from unittest import mock
 
+import pytest
 from yaml import load
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
@@ -11,6 +12,7 @@ from sdh_deployment.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
 )
 from sdh_deployment.deploy_to_databricks import DeployToDatabricks
+from sdh_deployment.run_deployment import run_task
 
 environment_variables = {
     "WEBAPP_NAME": "my-app",
@@ -23,11 +25,15 @@ environment_variables = {
 
 env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 
+def test_no_run_task():
+    with pytest.raises(ValueError):
+        run_task(env, 'foo', {})
 
 @mock.patch.dict(os.environ, environment_variables)
 @mock.patch("sdh_deployment.run_deployment.get_environment")
 @mock.patch("sdh_deployment.run_deployment.load_yaml")
-def test_deploy_web_app_service(mock_load_yaml, mock_get_version):
+@mock.patch.object(CreateAppserviceAndWebapp, 'run', return_value=None)
+def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
 steps:
@@ -38,15 +44,16 @@ steps:
 
     from sdh_deployment.run_deployment import main
 
-    with mock.patch.object(CreateAppserviceAndWebapp, "run", return_value=None) as mock_task:
+    with mock.patch.object(CreateAppserviceAndWebapp, "__init__", return_value=None) as mock_task:
         main()
-        mock_task.assert_called_once_with(env, {"task": "deployWebAppService"})
+        mock_task.assert_called_once_with(env, {'task': 'deployWebAppService'})
 
 
 @mock.patch.dict(os.environ, environment_variables)
 @mock.patch("sdh_deployment.run_deployment.get_environment")
 @mock.patch("sdh_deployment.run_deployment.load_yaml")
-def test_create_eventhub_consumer_groups(mock_load_yaml, mock_get_version):
+@mock.patch.object(CreateEventhubConsumerGroups, 'run', return_value=None)
+def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
 steps:
@@ -62,7 +69,7 @@ steps:
 
     from sdh_deployment.run_deployment import main
 
-    with mock.patch.object(CreateEventhubConsumerGroups, "run", return_value=None) as mock_task:
+    with mock.patch.object(CreateEventhubConsumerGroups, "__init__", return_value=None) as mock_task:
         main()
         mock_task.assert_called_once_with(
             env, {
@@ -79,7 +86,8 @@ steps:
 @mock.patch.dict(os.environ, environment_variables)
 @mock.patch("sdh_deployment.run_deployment.get_environment")
 @mock.patch("sdh_deployment.run_deployment.load_yaml")
-def test_create_databricks_secret(mock_load_yaml, mock_get_version):
+@mock.patch.object(CreateDatabricksSecrets, 'run', return_value=None)
+def test_create_databricks_secret(_, mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
 steps:
@@ -90,7 +98,7 @@ steps:
 
     from sdh_deployment.run_deployment import main
 
-    with mock.patch.object(CreateDatabricksSecrets, "run", return_value=None) as mock_task:
+    with mock.patch.object(CreateDatabricksSecrets, "__init__", return_value=None) as mock_task:
         main()
         mock_task.assert_called_once_with(env, {'task': 'createDatabricksSecrets'})
 
@@ -98,7 +106,8 @@ steps:
 @mock.patch.dict(os.environ, environment_variables)
 @mock.patch("sdh_deployment.run_deployment.get_environment")
 @mock.patch("sdh_deployment.run_deployment.load_yaml")
-def test_deploy_to_databricks(mock_load_yaml, mock_get_version):
+@mock.patch.object(DeployToDatabricks, 'run', return_value=None)
+def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
         """
 steps:
@@ -111,7 +120,7 @@ steps:
     from sdh_deployment.run_deployment import main
 
     with mock.patch.object(
-            DeployToDatabricks, "run", return_value=None
+            DeployToDatabricks, "__init__", return_value=None
     ) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -134,7 +143,10 @@ def test_version_is_feature():
 
 
 class MockedClass(DeploymentStep):
-    def run(self, env: ApplicationVersion, config: dict):
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
+
+    def run(self):
         return 'yeah, science!'
 
 
