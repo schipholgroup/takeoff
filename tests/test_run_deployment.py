@@ -25,9 +25,11 @@ environment_variables = {
 
 env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 
+
 def test_no_run_task():
     with pytest.raises(ValueError):
         run_task(env, 'foo', {})
+
 
 @mock.patch.dict(os.environ, environment_variables)
 @mock.patch("sdh_deployment.run_deployment.get_environment")
