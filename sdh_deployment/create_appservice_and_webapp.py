@@ -151,7 +151,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
 
         cosmos_credentials = self._get_cosmos_credentials(self.env.environment.lower())
-        application_insights = CreateApplicationInsights.create_application_insights(self.env, "web", "web")
+        application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
         new_properties = {
             'DOCKER_ENABLE_CI': 'true',
             'BUILD_VERSION': self.env.version,
