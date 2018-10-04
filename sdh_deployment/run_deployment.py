@@ -47,8 +47,8 @@ def main():
 def run_task(env: ApplicationVersion, task: str, task_config):
     from sdh_deployment.deployment_step import deployment_steps
     if task not in deployment_steps:
-        raise Exception(
+        raise ValueError(
             f"Deployment step {task} is unknown, please check the config"
         )
     else:
-        return deployment_steps[task]().run(env, task_config)
+        return deployment_steps[task](env, task_config).run()

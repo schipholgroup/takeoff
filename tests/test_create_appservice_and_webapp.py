@@ -1,3 +1,4 @@
+import base64
 import os
 import unittest
 from unittest import mock
@@ -49,7 +50,7 @@ class TestDeployToWebApp(unittest.TestCase):
         os.environ,
         {
             "APPSERVICE_LOCATION": "west europe",
-            "BUILD_DEFINITIONNAME": "my-build",
+            "BUILD_DEFINITIONNAME": "my-app",
             "REGISTRY_USERNAME": "awesomeperson",
             "REGISTRY_PASSWORD": "supersecret42",
         },
@@ -64,7 +65,7 @@ class TestDeployToWebApp(unittest.TestCase):
             "secret-insturmentation-key"
         )
 
-        result = victim._build_site_config({'YEAH': "SCIENCE!"}, "my-app", ENV)
+        result = victim(ENV, {})._build_site_config({'YEAH': "SCIENCE!"})
 
         config = VALID_SITE_CONFIG
         config.app_settings = [{'name': 'YEAH', 'value': 'SCIENCE!'}] + config.app_settings
@@ -78,9 +79,10 @@ class TestDeployToWebApp(unittest.TestCase):
             name="my-build", sku=AppServiceSKU(name="S1", capacity=2, tier="Standard")
         )
 
-        result = victim._parse_appservice_parameters(
-            "prd", {"appService": {"name": "my-build"}}
-        )
+        config = {
+            'appService': {'sku': {'name': 'S1', 'capacity': 2, 'tier': 'Standard'}}
+        }
+        result = victim(ENV, config)._parse_appservice_parameters("prd")
 
         assert expected_appservice_config == result
 
@@ -90,15 +92,8 @@ class TestDeployToWebApp(unittest.TestCase):
             name="my-build", sku=AppServiceSKU(name="S1", capacity=2, tier="Standard")
         )
 
-        result = victim._parse_appservice_parameters(
-            "prd",
-            {
-                "appService": {
-                    "name": "my-build",
-                    "sku": {"acp": {"name": "I1", "capacity": 10, "tier": "uber"}},
-                }
-            },
-        )
+        config = {"appService": {"name": "my-build", "sku": {"acp": {"name": "I1", "capacity": 10, "tier": "uber"}}, }}
+        result = victim(ENV, config)._parse_appservice_parameters("prd")
 
         assert expected_appservice_config == result
 
@@ -141,8 +136,37 @@ class TestDeployToWebApp(unittest.TestCase):
         mock_properties.properties = {}
         mock_web_app.web_apps.list_application_settings = Mock(return_value=mock_properties)
 
-        result = victim._get_webapp_to_create("appservice_id", mock_web_app, ENV)
+        result = victim(ENV, {})._get_webapp_to_create("appservice_id", mock_web_app)
 
         assert result == expected_result
 
         get_site_config_mock.assert_called_once()
+
+    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
+    def test_linux_fx_version_docker(self):
+        linux_fx = 'DOCKER|sdhcontainerregistryshared.azurecr.io/my-build:ver'
+
+        config = {}
+        assert victim(ENV, config)._get_linux_fx_version() == linux_fx
+
+    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
+    def test_linux_fx_version_compose(self):
+        compose = """version: '3.2'
+services:
+  app:
+    image: {registry}/{application_name}:{tag}{app_postfix}""".format(registry=SHARED_REGISTRY,
+                                                                      application_name='my-build',
+                                                                      tag='ver',
+                                                                      app_postfix='-flask')
+        encoded = base64.b64encode(compose.encode()).decode()
+
+        linux_fx = 'COMPOSE|{}'.format(encoded)
+
+        config = {
+            'compose': {
+                'filename': 'tests/test_docker-compose.yml.j2',
+                'variables': {
+                    'app_postfix': '-flask'}
+            }
+        }
+        assert victim(ENV, config)._get_linux_fx_version() == linux_fx

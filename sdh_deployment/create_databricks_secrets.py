@@ -36,6 +36,12 @@ class IdAndKey:
 
 
 class CreateDatabricksSecrets(DeploymentStep):
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
+
+    def run(self):
+        self.create_databricks_secrets()
+
     @staticmethod
     def _scope_exists(scopes: dict, scope_name: str):
         return scope_name in set(_["name"] for _ in scopes["scopes"])
@@ -73,9 +79,7 @@ class CreateDatabricksSecrets(DeploymentStep):
         return [_.id.split("/")[-1] for _ in secrets]
 
     @staticmethod
-    def _filter_keyvault_ids(
-        keyvault_ids: List[str], application_name
-    ) -> List[IdAndKey]:
+    def _filter_keyvault_ids(keyvault_ids: List[str], application_name) -> List[IdAndKey]:
         """Extracts the actual keys from the prefixed ids
 
         flights-arrivals-cosmos-collection
@@ -91,14 +95,12 @@ class CreateDatabricksSecrets(DeploymentStep):
         ]
 
     @staticmethod
-    def _get_keyvault_secrets(
-        client: KeyVaultClient, vault: str, application_name: str
-    ) -> List[Secret]:
+    def _get_keyvault_secrets(client: KeyVaultClient,
+                              vault: str,
+                              application_name: str) -> List[Secret]:
         secrets = list(client.get_secrets(vault))
         secrets_ids = CreateDatabricksSecrets._extract_keyvault_ids_from(secrets)
-        secrets_filtered = CreateDatabricksSecrets._filter_keyvault_ids(
-            secrets_ids, application_name
-        )
+        secrets_filtered = CreateDatabricksSecrets._filter_keyvault_ids(secrets_ids, application_name)
 
         app_secrets = [
             Secret(
@@ -110,27 +112,17 @@ class CreateDatabricksSecrets(DeploymentStep):
 
         return app_secrets
 
-    def run(self, env: ApplicationVersion, _: dict):
-        self.create_databricks_secrets(env)
-
-    @staticmethod
-    def create_databricks_secrets(env: ApplicationVersion):
+    def create_databricks_secrets(self):
         application_name = get_application_name()
-        azure_credentials = get_azure_sp_credentials(env.environment)
+        azure_credentials = get_azure_sp_credentials(self.env.environment)
         keyvault_client = KeyVaultClient(azure_credentials)
-        vault = f"https://sdhkeyvault{env.environment.lower()}.vault.azure.net/"
+        vault = f"https://sdhkeyvault{self.env.environment.lower()}.vault.azure.net/"
 
-        secrets = CreateDatabricksSecrets._get_keyvault_secrets(
-            keyvault_client, vault, application_name
-        )
-        databricks_client = get_databricks_client(env.environment)
+        secrets = self._get_keyvault_secrets(keyvault_client, vault, application_name)
+        databricks_client = get_databricks_client(self.env.environment)
 
-        CreateDatabricksSecrets._create_scope(databricks_client, application_name)
-        CreateDatabricksSecrets._add_secrets(
-            databricks_client, application_name, secrets
-        )
+        self._create_scope(databricks_client, application_name)
+        self._add_secrets(databricks_client, application_name, secrets)
 
-        print(f'------  {len(secrets)} secrets created in "{env.environment}"')
-        pprint(
-            CreateDatabricksSecrets._list_secrets(databricks_client, application_name)
-        )
+        logging.info(f'------  {len(secrets)} secrets created in "{self.env.environment}"')
+        pprint(self._list_secrets(databricks_client, application_name))

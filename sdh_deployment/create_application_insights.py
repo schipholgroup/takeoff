@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 class CreateApplicationInsights(DeploymentStep):
-    @staticmethod
-    def create_application_insights(
-            env: ApplicationVersion, kind: str, application_type: str
-    ) -> ApplicationInsightsComponent:
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
+
+    def create_application_insights(self, kind: str, application_type: str) -> ApplicationInsightsComponent:
 
         # Check some values
         if kind not in {"web", "ios", "other", "store", "java", "phone"}:
@@ -35,9 +35,9 @@ class CreateApplicationInsights(DeploymentStep):
             )
 
         application_name = get_application_name()
-        client = CreateApplicationInsights.__create_client(env.environment)
+        client = self.__create_client()
 
-        insight = CreateApplicationInsights.__find(client, application_name)
+        insight = self.__find(client, application_name)
         if not insight:
             logger.info("Creating new Application Insights...")
             # Create a new Application Insights
@@ -45,40 +45,35 @@ class CreateApplicationInsights(DeploymentStep):
                 location=AZURE_LOCATION, kind=kind, application_type=application_type
             )
             insight = client.components.create_or_update(
-                f"sdh{env.environment.lower()}", application_name, comp
+                f"sdh{self.env.environment.lower()}", application_name, comp
             )
         return insight
 
-    @staticmethod
-    def __create_client(dtap: str) -> ApplicationInsightsManagementClient:
+    def __create_client(self) -> ApplicationInsightsManagementClient:
         return ApplicationInsightsManagementClient(
-            get_azure_user_credentials(dtap), get_subscription_id()
+            get_azure_user_credentials(self.env.environment), get_subscription_id()
         )
 
-    @staticmethod
-    def __find(client: ApplicationInsightsManagementClient, name: str):
+    def __find(self, client: ApplicationInsightsManagementClient, name: str):
         for insight in client.components.list():
             if insight.name == name:
                 return insight
         return None
 
 
-class CreateDatabricksApplicationInsights(DeploymentStep):
-    def run(self, env: ApplicationVersion, _: dict):
-        self.create_databricks_application_insights(env)
+class CreateDatabricksApplicationInsights(CreateApplicationInsights):
+    def run(self):
+        self.create_databricks_application_insights()
 
-    @staticmethod
-    def create_databricks_application_insights(env: ApplicationVersion):
+    def create_databricks_application_insights(self):
         application_name = get_application_name()
-        insight = CreateApplicationInsights.create_application_insights(
-            env, "other", "other"
-        )
+        insight = self.create_application_insights("other", "other")
 
         instrumentation_secret = Secret(
             "instrumentation-key", insight.instrumentation_key
         )
 
-        databricks_client = get_databricks_client(env.environment)
+        databricks_client = get_databricks_client(self.env.environment)
 
         CreateDatabricksSecrets._create_scope(databricks_client, application_name)
         CreateDatabricksSecrets._add_secrets(
