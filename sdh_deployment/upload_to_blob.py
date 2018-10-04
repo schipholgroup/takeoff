@@ -13,8 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 class UploadToBlob(DeploymentStep):
-    def run(self, env: ApplicationVersion, config: dict):
-        self.upload_application_to_blob(env, config)
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
+
+    def run(self):
+        self.upload_application_to_blob()
 
     @staticmethod
     def _upload_file_to_blob(client: BlockBlobService, source: str, destination: str):
@@ -53,25 +56,24 @@ class UploadToBlob(DeploymentStep):
             )
         return eggs[0]
 
-    @staticmethod
-    def upload_application_to_blob(env: ApplicationVersion, config: dict):
+    def upload_application_to_blob(self):
         build_definition_name = get_application_name()
         blob_service = get_shared_blob_service()
 
         filename_library = (
-            f"{build_definition_name}/{build_definition_name}-{env.version}"
+            f"{build_definition_name}/{build_definition_name}-{self.env.version}"
         )
 
-        if "lang" in config.keys() and config["lang"] in {"maven", "sbt"}:
+        if "lang" in self.config.keys() and self.config["lang"] in {"maven", "sbt"}:
             # it's a jar!
             filename_library += ".jar"
-            jar = UploadToBlob._get_jar(config["lang"])
+            jar = UploadToBlob._get_jar(self.config["lang"])
             UploadToBlob._upload_file_to_blob(blob_service, jar, filename_library)
         else:
             # it's an egg!
             filename_library += ".egg"
             filename_main = (
-                f"{build_definition_name}/{build_definition_name}-main-{env.version}.py"
+                f"{build_definition_name}/{build_definition_name}-main-{self.env.version}.py"
             )
 
             egg = UploadToBlob._get_egg()
