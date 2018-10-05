@@ -1,3 +1,4 @@
+from sdh_deployment.api_load_testing import LoadTester
 from sdh_deployment.build_docker_image import DockerImageBuilder
 from sdh_deployment.create_application_insights import CreateDatabricksApplicationInsights
 from sdh_deployment.create_appservice_and_webapp import CreateAppserviceAndWebapp
@@ -15,5 +16,6 @@ deployment_steps = {
     "createDatabricksSecrets": CreateDatabricksSecrets,
     "createEventhubConsumerGroups": CreateEventhubConsumerGroups,
     "deployToDatabricks": DeployToDatabricks,
-    "deployToK8s": DeployToK8s
+    "deployToK8s": DeployToK8s,
+    "apiLoadTesting": LoadTester
 }
