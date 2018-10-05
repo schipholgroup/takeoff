@@ -18,7 +18,7 @@ from sdh_deployment.util import (
     AZURE_LOCATION,
     get_application_name,
     SHARED_REGISTRY,
-    render_string_with_jinja, get_cosmos_read_only_credentials)
+    render_string_with_jinja, CosmosCredentials)
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -127,7 +127,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         docker_registry_username = os.environ["REGISTRY_USERNAME"]
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
 
-        cosmos_credentials = get_cosmos_read_only_credentials(self.env.environment.lower())
+        cosmos_credentials = CosmosCredentials.get_cosmos_read_only_credentials(self.env.environment.lower())
         application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
         new_properties = {
             'DOCKER_ENABLE_CI': 'true',

@@ -56,6 +56,7 @@ class LoadTester(DeploymentStep):
         scenario = self.config['scenario']
         cmd = f'bash -c "java -cp /api-load-testing.jar io.gatling.app.Gatling -s {scenario}'
         envs = self.get_env_variables()
+        envs['BASE_URL'] = envs['BASE_URL'].format(dtap=self.env.environment.lower())
 
         container = client.containers.run(
             command=cmd,
