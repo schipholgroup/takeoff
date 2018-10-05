@@ -51,6 +51,7 @@ class LoadTester(DeploymentStep):
         repository = f"{docker_credentials.registry}/sdh-load-testing"
         version = self.config['version']
 
+        logging.info(f"Pulling {repository}")
         client.images.pull(repository, version)
 
         scenario = self.config['scenario']
@@ -58,6 +59,7 @@ class LoadTester(DeploymentStep):
         envs = self.get_env_variables()
         envs['BASE_URL'] = envs['BASE_URL'].format(dtap=self.env.environment.lower())
 
+        logging.info(f"Running load test for {scenario}")
         container = client.containers.run(
             command=cmd,
             environment=envs,
@@ -65,4 +67,6 @@ class LoadTester(DeploymentStep):
             stdout=True,
             stderr=True,
         )
+
+        logging.info(f"Load test completed")
         container.logs()
