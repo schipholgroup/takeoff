@@ -9,4 +9,3 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
 
         assert victim._scope_exists(scopes, "foo")
         assert not victim._scope_exists(scopes, "foobar")
-

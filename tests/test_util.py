@@ -55,6 +55,7 @@ def test_get_eventhub_resource_group():
 
     assert RESOURCE_GROUP == "sdh{dtap}"
 
+
 def test_filter_ids():
     ids = ["app-foo-key1", "appfoo-key2", "app-bar-key3", "app-key4"]
 
