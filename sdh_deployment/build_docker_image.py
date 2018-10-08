@@ -50,12 +50,14 @@ class DockerImageBuilder(DeploymentStep):
             repository = f"{docker_credentials.registry}/{application_name}"
 
             logger.info(f"Building docker image for {df.dockerfile}")
-            docker_client.images.build(
+            logger.info("GITHUB_TOKEN:".format(os.environ['GITHUB_TOKEN']))
+            build_result = docker_client.images.build(
                 path="/root",
                 tag=f"{repository}:{tag}",
                 dockerfile=f"/root/{df.dockerfile}",
                 buildargs={'ci_github_token': os.environ['GITHUB_TOKEN']}
             )
+            print(build_result)
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
             result = docker_client.images.push(repository=repository, tag=tag)
