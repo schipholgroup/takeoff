@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass
 from typing import List
-
+import os
 import docker
 from docker import DockerClient
 
@@ -54,6 +54,7 @@ class DockerImageBuilder(DeploymentStep):
                 path="/root",
                 tag=f"{repository}:{tag}",
                 dockerfile=f"/root/{df.dockerfile}",
+                buildargs={'ci_github_token': os.environ['GITHUB_TOKEN']}
             )
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
