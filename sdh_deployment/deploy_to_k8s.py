@@ -27,7 +27,7 @@ class DeployToK8s(DeploymentStep):
 
     def run(self):
         # get the ip address for this environment
-        service_ip = config["service_ips"][self.env.environment.lower()]
+        service_ip = self.config["service_ips"][self.env.environment.lower()]
 
         # load some k8s config
         k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"], {"docker_tag": self.env.docker_tag}, yaml.load)
