@@ -14,7 +14,7 @@ setup(
     install_requires=[
         "gitpython==2.1.10",
         "databricks-cli==0.7.2",
-        "pytest==3.6.2",
+        "pytest==3.8.2",
         "pytest-cov==2.5.1",
         "flake8==3.5.0",
         "PyYAML==3.13",
@@ -23,7 +23,7 @@ setup(
     ],
     extras_require={
         "test": {
-            "pytest==3.6.2",
+            "pytest==3.8.2",
             "databricks-cli==0.7.2",
             "gitpython==2.1.10",
             "py4j==0.10.7",
