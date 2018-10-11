@@ -191,7 +191,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
 
         existing_properties = {}
         try:
-            existing_properties = web_client.web_apps.list_application_settings(formatted_dtap,
+            existing_properties = web_client.web_apps.list_application_settings(RESOURCE_GROUP.format(dtap=formatted_dtap),
                                                                                 webapp_name).properties
         except CloudError:
             logging.warning(f"{webapp_name} could not be found, skipping existing properties")
