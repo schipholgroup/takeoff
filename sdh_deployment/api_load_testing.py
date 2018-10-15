@@ -77,7 +77,7 @@ class LoadTester(DeploymentStep):
             stderr=True,
         )
         try:
-            logger.info(logs.decode())
+            print(logs.decode())
         except Exception as e:
             logging.error(e)
 
@@ -93,7 +93,7 @@ class LoadTester(DeploymentStep):
             stderr=True,
         )
         try:
-            logger.info(logs.decode())
+            print(logs.decode())
         except Exception as e:
             logging.error(e)
 
@@ -121,7 +121,7 @@ class LoadTester(DeploymentStep):
             scenario=scenario,
             image=f'{repository}:{version}')
 
-        self._create_csv(client=client,
-                         image=f'{repository}:{version}')
+        # self._create_csv(client=client,
+        #                  image=f'{repository}:{version}')
 
-        self.upload_results()
+        # self.upload_results()

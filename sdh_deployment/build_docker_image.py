@@ -57,7 +57,7 @@ class DockerImageBuilder(DeploymentStep):
             )
 
             try:
-                logger.info(image[1].decode())
+                print(image[1].decode())
             except Exception as e:
                 logging.error(e)
 
