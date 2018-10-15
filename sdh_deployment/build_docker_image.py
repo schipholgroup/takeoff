@@ -50,13 +50,14 @@ class DockerImageBuilder(DeploymentStep):
             repository = f"{docker_credentials.registry}/{application_name}"
 
             logger.info(f"Building docker image for {df.dockerfile}")
-            docker_client.images.build(
+            logs = docker_client.images.build(
                 path="/root",
                 tag=f"{repository}:{tag}",
                 dockerfile=f"/root/{df.dockerfile}",
             )
 
+            print(logs.decode())
+
             logger.info(f"Uploading docker image for {df.dockerfile}")
             result = docker_client.images.push(repository=repository, tag=tag)
             print(result)
-            print(type(result))

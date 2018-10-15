@@ -69,16 +69,16 @@ class LoadTester(DeploymentStep):
         envs['BASE_URL'] = envs['BASE_URL'].format(dtap=self.env.environment.lower())
 
         cmd = f'bash -c "java -cp /api-load-testing.jar io.gatling.app.Gatling -s {scenario} -on current"'
-        container = client.containers.run(
+        logs = client.containers.run(
             command=cmd,
             environment=envs,
             image=image,
-            volumes={'/results/': {'bind': '/app/results', 'mode': 'rw'}},
+            volumes={'/results': {'bind': '/app/results', 'mode': 'rw'}},
             stdout=True,
             stderr=True,
         )
         try:
-            pprint(container.logs())
+            pprint(logs.decode())
         except Exception as e:
             logging.error(e)
 
@@ -86,7 +86,7 @@ class LoadTester(DeploymentStep):
         logging.info(f"Creating csv from simulation.log")
 
         cmd = f'bash -c "java -jar /gatling_report.jar {self.simulation_log} > {RESULTS_CSV_PATH}"'
-        container = client.containers.run(
+        logs = client.containers.run(
             command=cmd,
             image=image,
             volumes={'/results/': {'bind': '/app/results', 'mode': 'rw'}},
@@ -94,7 +94,7 @@ class LoadTester(DeploymentStep):
             stderr=True,
         )
         try:
-            pprint(container.logs())
+            pprint(logs.decode())
         except Exception as e:
             logging.error(e)
 
