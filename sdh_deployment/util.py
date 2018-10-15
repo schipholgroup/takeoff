@@ -208,6 +208,7 @@ def load_yaml(path: str) -> dict:
         config_file = f.read()
     return load(config_file)
 
+
 def docker_logging(f):
     def wrap(self, *args, **kwargs):
         logs = f(self, *args, **kwargs)
