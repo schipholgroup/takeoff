@@ -7,7 +7,7 @@ from docker import DockerClient
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_application_name, get_docker_credentials
+from sdh_deployment.util import get_application_name, get_docker_credentials, docker_logging
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,16 @@ class DockerImageBuilder(DeploymentStep):
         ]
         self.deploy(dockerfiles, docker_credentials, client)
 
+    @docker_logging
+    def build_image(self, docker_file, docker_client, tag):
+        logger.info(f"Building docker image for {docker_file}")
+        image = docker_client.images.build(
+            path="/root",
+            tag=tag,
+            dockerfile=f"/root/{docker_file}"
+        )
+        return image[0]
+
     def deploy(self,
                dockerfiles: List[DockerFile],
                docker_credentials,
@@ -49,18 +59,8 @@ class DockerImageBuilder(DeploymentStep):
 
             repository = f"{docker_credentials.registry}/{application_name}"
 
-            logger.info(f"Building docker image for {df.dockerfile}")
-            image = docker_client.images.build(
-                path="/root",
-                tag=f"{repository}:{tag}",
-                dockerfile=f"/root/{df.dockerfile}"
-            )
-
-            try:
-                print(image[1].decode())
-            except Exception as e:
-                logging.error(e)
+            self.build_image(df.dockerfile, docker_client, f"{repository}:{tag}")
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
-            result = docker_client.images.push(repository=repository, tag=tag)
-            print(result)
+
+            docker_client.images.push(repository=repository, tag=tag)

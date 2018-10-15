@@ -10,7 +10,7 @@ from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.upload_to_blob import UploadToBlob
 from sdh_deployment.util import get_docker_credentials, CosmosCredentials, KeyVaultSecrets, get_application_name, \
-    get_shared_blob_service
+    get_shared_blob_service, docker_logging
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +61,7 @@ class LoadTester(DeploymentStep):
         UploadToBlob._upload_file_to_blob(blob_service, self.simulation_log, blob_simulation_path, 'load-testing')
         UploadToBlob._upload_file_to_blob(blob_service, RESULTS_CSV_PATH, blob_csv_path, 'load-testing')
 
+    @docker_logging
     def _run_scenario(self, client, scenario, image):
         logging.info(f"Running load test for {scenario}")
 
@@ -76,11 +77,9 @@ class LoadTester(DeploymentStep):
             stdout=True,
             stderr=True,
         )
-        try:
-            print(logs.decode())
-        except Exception as e:
-            logging.error(e)
+        return logs
 
+    @docker_logging
     def _create_csv(self, client, image):
         logging.info(f"Creating csv from simulation.log")
 
@@ -92,10 +91,7 @@ class LoadTester(DeploymentStep):
             stdout=True,
             stderr=True,
         )
-        try:
-            print(logs.decode())
-        except Exception as e:
-            logging.error(e)
+        return logs
 
     def run(self):
         client: DockerClient = docker.from_env()

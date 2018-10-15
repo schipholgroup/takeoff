@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 from dataclasses import dataclass
@@ -206,6 +207,16 @@ def load_yaml(path: str) -> dict:
     with open(path, "r") as f:
         config_file = f.read()
     return load(config_file)
+
+def docker_logging(f):
+    def wrap(self, *args, **kwargs):
+        logs = f(self, *args, **kwargs)
+        try:
+            print(logs.decode())
+        except Exception as e:
+            logging.error(e)
+        return logs
+    return wrap
 
 
 @dataclass(frozen=True)
