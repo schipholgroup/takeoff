@@ -50,16 +50,14 @@ class DockerImageBuilder(DeploymentStep):
             repository = f"{docker_credentials.registry}/{application_name}"
 
             logger.info(f"Building docker image for {df.dockerfile}")
-            logs = docker_client.images.build(
+            image = docker_client.images.build(
                 path="/root",
                 tag=f"{repository}:{tag}",
-                dockerfile=f"/root/{df.dockerfile}",
-                stdout=True,
-                stderr=True,
+                dockerfile=f"/root/{df.dockerfile}"
             )
 
             try:
-                logger.info(logs.decode())
+                logger.info(image[1].decode())
             except Exception as e:
                 logging.error(e)
 
