@@ -33,5 +33,7 @@ setup(
         },
         "lint": {"flake8==3.5.0"},
     },
-    scripts=["scripts/run_deployment", "scripts/run_linting", "scripts/run_tests"],
+    scripts=["scripts/run_deployment",
+             "scripts/run_linting",
+             "scripts/run_tests"],
 )
