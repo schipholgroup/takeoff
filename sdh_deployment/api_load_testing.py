@@ -2,7 +2,6 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from glob import glob
-from pprint import pprint
 
 import docker
 from docker import DockerClient
@@ -78,7 +77,7 @@ class LoadTester(DeploymentStep):
             stderr=True,
         )
         try:
-            pprint(logs.decode())
+            logger.info(logs.decode())
         except Exception as e:
             logging.error(e)
 
@@ -94,7 +93,7 @@ class LoadTester(DeploymentStep):
             stderr=True,
         )
         try:
-            pprint(logs.decode())
+            logger.info(logs.decode())
         except Exception as e:
             logging.error(e)
 

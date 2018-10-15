@@ -54,9 +54,14 @@ class DockerImageBuilder(DeploymentStep):
                 path="/root",
                 tag=f"{repository}:{tag}",
                 dockerfile=f"/root/{df.dockerfile}",
+                stdout=True,
+                stderr=True,
             )
 
-            print(logs.decode())
+            try:
+                logger.info(logs.decode())
+            except Exception as e:
+                logging.error(e)
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
             result = docker_client.images.push(repository=repository, tag=tag)
