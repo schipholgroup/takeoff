@@ -215,6 +215,7 @@ def docker_logging(nr_of_ending_lines=0):
             logs = f(self, *args, **kwargs)
             try:
                 lines = logs.decode().split('\n')
+                logging.info("--------- DOCKER LOGS ------------")
                 logging.info('\n'.join(lines[-nr_of_ending_lines:]))
             except Exception as e:
                 logging.error(e)
