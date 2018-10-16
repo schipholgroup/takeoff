@@ -53,12 +53,13 @@ class LoadTester(DeploymentStep):
         UploadToBlob._upload_file_to_blob(blob_service, self.simulation_log, blob_simulation_path, 'load-testing')
         UploadToBlob._upload_file_to_blob(blob_service, 'results/current.csv', blob_csv_path, 'load-testing')
 
-    @docker_logging
+    @docker_logging(21)
     def _run_scenario(self, client, scenario, image):
         logging.info(f"Running load test for {scenario}")
 
         envs = self.get_env_variables()
         envs['BASE_URL'] = envs['BASE_URL'].format(dtap=self.env.environment.lower())
+        print(envs)
 
         cmd = f'bash -c "java -cp /api-load-testing.jar io.gatling.app.Gatling -s {scenario} -on current"'
         logs = client.containers.run(
