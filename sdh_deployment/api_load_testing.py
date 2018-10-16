@@ -112,4 +112,4 @@ class LoadTester(DeploymentStep):
         self._create_csv(client=client,
                          image=f'{repository}:{version}')
 
-        # self.upload_results()
+        self.upload_results()
