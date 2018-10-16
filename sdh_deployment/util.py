@@ -214,7 +214,7 @@ def docker_logging(ending_lines=0):
         def wrap(self, *args, **kwargs):
             logs = f(self, *args, **kwargs)
             try:
-                print(logs.decode()[-ending_lines:])
+                logging.info(logs.decode()[-ending_lines:])
             except Exception as e:
                 logging.error(e)
             return logs

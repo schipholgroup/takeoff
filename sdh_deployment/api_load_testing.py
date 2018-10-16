@@ -59,7 +59,7 @@ class LoadTester(DeploymentStep):
 
         envs = self.get_env_variables()
         envs['BASE_URL'] = envs['BASE_URL'].format(dtap=self.env.environment.lower())
-        print(envs)
+        logger.info(envs)
 
         cmd = f'bash -c "java -cp /api-load-testing.jar io.gatling.app.Gatling -s {scenario} -on current"'
         logs = client.containers.run(
@@ -84,6 +84,8 @@ class LoadTester(DeploymentStep):
             stdout=True,
             stderr=True,
         )
+
+        logging.info(f"Load test completed")
         return logs
 
     def run(self):
@@ -102,8 +104,6 @@ class LoadTester(DeploymentStep):
         client.images.pull(repository, version)
 
         scenario = self.config['scenario']
-
-        logging.info(f"Load test completed")
 
         self._run_scenario(
             client=client,

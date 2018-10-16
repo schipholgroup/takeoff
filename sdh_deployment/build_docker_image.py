@@ -43,7 +43,7 @@ class DockerImageBuilder(DeploymentStep):
             tag=tag,
             dockerfile=f"/root/{docker_file}"
         )
-        return image[0]
+        return image[1]
 
     def deploy(self,
                dockerfiles: List[DockerFile],
