@@ -35,7 +35,7 @@ class DockerImageBuilder(DeploymentStep):
         ]
         self.deploy(dockerfiles, docker_credentials, client)
 
-    @docker_logging
+    @docker_logging()
     def build_image(self, docker_file, docker_client, tag):
         logger.info(f"Building docker image for {docker_file}")
         image = docker_client.images.build(

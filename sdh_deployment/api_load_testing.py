@@ -72,7 +72,7 @@ class LoadTester(DeploymentStep):
         )
         return logs
 
-    @docker_logging
+    @docker_logging()
     def _create_csv(self, client, image):
         logging.info(f"Creating csv from simulation.log")
 
