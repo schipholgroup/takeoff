@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from datetime import datetime
 from glob import glob
 
@@ -14,14 +13,7 @@ from sdh_deployment.util import get_docker_credentials, CosmosCredentials, KeyVa
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass(frozen=True)
-class DockerFile(object):
-    dockerfile: str
-    postfix: str
-
-
-RESULTS_CSV_PATH = '/app/results/current.csv'
+VSTS_WORKING_DIR = '/home/vsts/work/1/s/'
 
 
 class LoadTester(DeploymentStep):
@@ -48,7 +40,7 @@ class LoadTester(DeploymentStep):
 
     @property
     def simulation_log(self):
-        return glob('/app/results/current*/simulation.log')[0]
+        return glob('results/current*/simulation.log')[0]
 
     def upload_results(self):
         build_definition_name = get_application_name()
@@ -59,7 +51,7 @@ class LoadTester(DeploymentStep):
         blob_csv_path = f"{build_definition_name}/results-{now}.csv"
 
         UploadToBlob._upload_file_to_blob(blob_service, self.simulation_log, blob_simulation_path, 'load-testing')
-        UploadToBlob._upload_file_to_blob(blob_service, RESULTS_CSV_PATH, blob_csv_path, 'load-testing')
+        UploadToBlob._upload_file_to_blob(blob_service, 'results/current.csv', blob_csv_path, 'load-testing')
 
     @docker_logging
     def _run_scenario(self, client, scenario, image):
@@ -73,7 +65,7 @@ class LoadTester(DeploymentStep):
             command=cmd,
             environment=envs,
             image=image,
-            volumes={'/results': {'bind': '/app/results', 'mode': 'rw'}},
+            volumes={f'{VSTS_WORKING_DIR}/results': {'bind': '/app/results', 'mode': 'rw'}},
             stdout=True,
             stderr=True,
         )
@@ -83,11 +75,11 @@ class LoadTester(DeploymentStep):
     def _create_csv(self, client, image):
         logging.info(f"Creating csv from simulation.log")
 
-        cmd = f'bash -c "java -jar /gatling_report.jar {self.simulation_log} > {RESULTS_CSV_PATH}"'
+        cmd = f'bash -c "java -jar /gatling_report.jar {self.simulation_log} > results/current.csv"'
         logs = client.containers.run(
             command=cmd,
             image=image,
-            volumes={'/results/': {'bind': '/app/results', 'mode': 'rw'}},
+            volumes={f'{VSTS_WORKING_DIR}/results/': {'bind': '/app/results', 'mode': 'rw'}},
             stdout=True,
             stderr=True,
         )
@@ -117,7 +109,7 @@ class LoadTester(DeploymentStep):
             scenario=scenario,
             image=f'{repository}:{version}')
 
-        # self._create_csv(client=client,
-        #                  image=f'{repository}:{version}')
+        self._create_csv(client=client,
+                         image=f'{repository}:{version}')
 
         # self.upload_results()
