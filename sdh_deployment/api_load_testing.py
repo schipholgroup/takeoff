@@ -53,7 +53,7 @@ class LoadTester(DeploymentStep):
         UploadToBlob._upload_file_to_blob(blob_service, self.simulation_log, blob_simulation_path, 'load-testing')
         UploadToBlob._upload_file_to_blob(blob_service, 'results/current.csv', blob_csv_path, 'load-testing')
 
-    @docker_logging(21)
+    @docker_logging(26)
     def _run_scenario(self, client, scenario, image):
         logging.info(f"Running load test for {scenario}")
 

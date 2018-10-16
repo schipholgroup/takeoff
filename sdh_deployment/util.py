@@ -209,12 +209,13 @@ def load_yaml(path: str) -> dict:
     return load(config_file)
 
 
-def docker_logging(ending_lines=0):
+def docker_logging(nr_of_ending_lines=0):
     def decorator(f):
         def wrap(self, *args, **kwargs):
             logs = f(self, *args, **kwargs)
             try:
-                logging.info(logs.decode()[-ending_lines:])
+                lines = logs.decode().split('\n')
+                logging.info('\n'.join(lines[-nr_of_ending_lines:]))
             except Exception as e:
                 logging.error(e)
             return logs
