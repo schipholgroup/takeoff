@@ -71,6 +71,8 @@ class LoadTester(DeploymentStep):
         current_fn = 'current.tsv'
         previous_fn = 'previous.tsv'
 
+        logging.info(f"Downloading {current} as current and {previous} as previous")
+
         UploadToBlob._download_from_blob(blob_service, current, current_fn, CONTAINER_NAME)
         UploadToBlob._download_from_blob(blob_service, previous, previous_fn, CONTAINER_NAME)
 
