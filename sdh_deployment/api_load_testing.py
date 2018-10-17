@@ -1,8 +1,10 @@
 import logging
+import sys
 from datetime import datetime
 from glob import glob
 
 import docker
+import pandas as pd
 from docker import DockerClient
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
@@ -14,6 +16,7 @@ from sdh_deployment.util import get_docker_credentials, CosmosCredentials, KeyVa
 logger = logging.getLogger(__name__)
 
 VSTS_WORKING_DIR = '/home/vsts/work/1/s/'
+CONTAINER_NAME = 'load-testing'
 
 
 class LoadTester(DeploymentStep):
@@ -52,6 +55,54 @@ class LoadTester(DeploymentStep):
 
         UploadToBlob._upload_file_to_blob(blob_service, self.simulation_log, blob_simulation_path, 'load-testing')
         UploadToBlob._upload_file_to_blob(blob_service, 'results/current.csv', blob_csv_path, 'load-testing')
+
+    def download_metrics(self):
+        build_definition_name = get_application_name()
+        blob_service = get_shared_blob_service()
+
+        blobs = [_.name for _ in blob_service.list_blobs(container_name=CONTAINER_NAME,
+                                                         prefix=f"{build_definition_name}/results")]
+
+        current = blobs[-1]
+        previous = blobs[-2]
+        if len(blobs) == 1:
+            previous = current
+
+        current_fn = 'current.tsv'
+        previous_fn = 'previous.tsv'
+
+        UploadToBlob._download_from_blob(blob_service, current, current_fn, CONTAINER_NAME)
+        UploadToBlob._download_from_blob(blob_service, previous, previous_fn, CONTAINER_NAME)
+
+        return previous_fn, current_fn
+
+    def compare_to_previous(self):
+        logging.info("------------- comparing load tests --------------")
+
+        def read_file(fn):
+            return (
+                pd
+                    .read_csv(fn, sep='\t')
+                    .loc[lambda x: x['request'] == '_all']
+                    .drop(['simulation', 'scenario', 'maxUsers', 'request', 'start',
+                           'startDate', 'end', 'rating'], axis=1)
+            )
+
+        def log_diff(message, column, increase_pct=10):
+            increase = diff[column][0] * 100
+            if increase >= increase_pct:
+                logging.error(message.format(increase=increase, current=current['avg'][0]))
+                sys.exit(1)
+
+        previous_fn, current_fn = self.download_metrics()
+        previous = read_file(previous_fn)
+        current = read_file(current_fn)
+
+        diff = (current - previous) / previous
+
+        log_diff("The average response time has gone up by {increase}% to {current} ms", 'avg')
+        log_diff("The error count has gone up by {increase}% to {current}", 'errorCount')
+        logging.info("'S all good man!!")
 
     @docker_logging(26)
     def _run_scenario(self, client, scenario, image):
@@ -114,3 +165,5 @@ class LoadTester(DeploymentStep):
                          image=f'{repository}:{version}')
 
         self.upload_results()
+
+        self.compare_to_previous()
