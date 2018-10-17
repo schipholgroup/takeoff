@@ -82,10 +82,10 @@ class LoadTester(DeploymentStep):
         def read_file(fn):
             return (
                 pd
-                    .read_csv(fn, sep='\t')
-                    .loc[lambda x: x['request'] == '_all']
-                    .drop(['simulation', 'scenario', 'maxUsers', 'request', 'start',
-                           'startDate', 'end', 'rating'], axis=1)
+                .read_csv(fn, sep='\t')
+                .loc[lambda x: x['request'] == '_all']
+                .drop(['simulation', 'scenario', 'maxUsers', 'request', 'start',
+                       'startDate', 'end', 'rating'], axis=1)
             )
 
         def log_diff(message, column, increase_pct=10):
