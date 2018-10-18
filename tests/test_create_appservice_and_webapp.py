@@ -22,7 +22,7 @@ from sdh_deployment.util import SHARED_REGISTRY
 ENV = ApplicationVersion("env", "ver", 'branch')
 
 VALID_SITE_CONFIG = SiteConfig(
-    linux_fx_version=f"DOCKER|{SHARED_REGISTRY}/my-app:{ENV.docker_tag}",
+    linux_fx_version=f"DOCKER|{SHARED_REGISTRY}/my-app:{ENV.artifact_tag}",
     http_logging_enabled=True,
     always_on=True,
     app_settings=[

@@ -61,7 +61,7 @@ class UploadToBlob(DeploymentStep):
         blob_service = get_shared_blob_service()
 
         filename_library = (
-            f"{build_definition_name}/{build_definition_name}-{self.env.version}"
+            f"{build_definition_name}/{build_definition_name}-{self.env.artifact_tag}"
         )
 
         if "lang" in self.config.keys() and self.config["lang"] in {"maven", "sbt"}:
@@ -73,7 +73,7 @@ class UploadToBlob(DeploymentStep):
             # it's an egg!
             filename_library += ".egg"
             filename_main = (
-                f"{build_definition_name}/{build_definition_name}-main-{self.env.version}.py"
+                f"{build_definition_name}/{build_definition_name}-main-{self.env.artifact_tag}.py"
             )
 
             egg = UploadToBlob._get_egg()

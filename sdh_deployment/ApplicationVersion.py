@@ -14,7 +14,7 @@ class ApplicationVersion(object):
         return True if tag_pattern.match(self.version) else False
 
     @property
-    def docker_tag(self) -> str:
+    def artifact_tag(self) -> str:
         if self.on_feature_branch:
             return self.branch
         else:
