@@ -24,7 +24,8 @@ class LoadTester(DeploymentStep):
         super().__init__(env, config)
 
     def get_env_variables(self) -> dict:
-        keyvault_env_variables = {s.env_key: s.val for s in KeyVaultSecrets.get_keyvault_secrets('dev')}
+        keyvault_env_variables = {s.env_key: s.val
+                                  for s in KeyVaultSecrets.get_keyvault_secrets(self.env.environment.lower())}
 
         custom_env_variables = self.config['env']
 
