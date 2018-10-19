@@ -134,7 +134,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             tag_config.update({
                 'registry': SHARED_REGISTRY,
                 'application_name': get_application_name(),
-                'tag': self.env.docker_tag
+                'tag': self.env.artifact_tag
             })
 
             rendered_compose = render_string_with_jinja(compose_config['filename'], tag_config)
@@ -143,7 +143,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             return "DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
                 registry_url=SHARED_REGISTRY,
                 build_definition_name=get_application_name(),
-                tag=self.env.docker_tag,
+                tag=self.env.artifact_tag,
             )
 
     def _build_site_config(self, existing_properties: dict) -> SiteConfig:
@@ -154,7 +154,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
         new_properties = {
             'DOCKER_ENABLE_CI': 'true',
-            'BUILD_VERSION': self.env.version,
+            'BUILD_VERSION': self.env.artifact_tag,
             'DOCKER_REGISTRY_SERVER_URL': "https://" + SHARED_REGISTRY,
             'DOCKER_REGISTRY_SERVER_USERNAME': docker_registry_username,
             "DOCKER_REGISTRY_SERVER_PASSWORD": docker_registry_password,

@@ -41,7 +41,7 @@ class DockerImageBuilder(DeploymentStep):
                docker_client):
         application_name = get_application_name()
         for df in dockerfiles:
-            tag = self.env.docker_tag
+            tag = self.env.artifact_tag
 
             # only append a postfix if there is one provided
             if df.postfix:

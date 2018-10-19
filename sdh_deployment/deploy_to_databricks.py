@@ -60,9 +60,9 @@ class DeployToDatabricks(DeploymentStep):
         job_config = DeployToDatabricks._construct_job_config(
             config_file_fn=config_file_fn,
             name=application_name,
-            version=self.env.version,
-            egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{self.env.version}.egg",
-            python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{self.env.version}.py",
+            version=self.env.artifact_tag,
+            egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{self.env.artifact_tag}.egg",
+            python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
         )
 
         databricks_client = get_databricks_client(self.env.environment)
