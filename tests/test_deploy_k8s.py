@@ -1,6 +1,6 @@
-from sdh_deployment.deploy_to_k8s import DeployToK8s as victim
-
 import unittest
+
+from sdh_deployment.deploy_to_k8s import DeployToK8s as victim
 
 
 class TestDeployToK8s(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestDeployToK8s(unittest.TestCase):
         }
         needle = 'my-needle'
 
-        self.assertTrue(victim._k8s_resource_exists(needle, haystack))
+        self.assertTrue(victim._find_needle(needle, haystack))
 
     def test_k8s_resource_does_not_exist(self):
         haystack = {
@@ -31,4 +31,4 @@ class TestDeployToK8s(unittest.TestCase):
         }
         needle = 'my-unfindable-needle'
 
-        self.assertFalse(victim._k8s_resource_exists(needle, haystack))
+        self.assertFalse(victim._find_needle(needle, haystack))

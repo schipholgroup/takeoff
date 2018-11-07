@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 
@@ -6,8 +7,8 @@ from azure.mgmt.containerservice.container_service_client import ContainerServic
 from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes import client, config
 from kubernetes.client import CoreV1Api
-from kubernetes.client.apis import ExtensionsV1beta1Api
 
+from sdh_deployment import util
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.util import (
@@ -30,8 +31,12 @@ class DeployToK8s(DeploymentStep):
         service_ip = self.config["service_ips"][self.env.environment.lower()]
 
         # load some k8s config
-        k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"], {"docker_tag": self.env.artifact_tag}, yaml.load)
-        k8s_service = render_file_with_jinja(self.config["service_config_path"], {"service_ip": service_ip}, yaml.load)
+        k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"],
+                                                {"docker_tag": self.env.artifact_tag},
+                                                yaml.load)
+        k8s_service = render_file_with_jinja(self.config["service_config_path"],
+                                             {"service_ip": service_ip},
+                                             yaml.load)
 
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
@@ -69,10 +74,10 @@ class DeployToK8s(DeploymentStep):
         credential_results = client.managed_clusters.list_cluster_user_credentials(resource_group_name=resource_group,
                                                                                    resource_name=k8s_name)
 
-        DeployToK8s._write_kube_config(credential_results)
+        self._write_kube_config(credential_results)
 
     @staticmethod
-    def _k8s_resource_exists(needle, haystack):
+    def _find_needle(needle, haystack):
         # Helper method to abstract away checking for existence of a k8s entity
         # this assumes the k8s structure of entities (i.e. items->metadata->name
         for dep in haystack['items']:
@@ -80,60 +85,85 @@ class DeployToK8s(DeploymentStep):
                 return True
         return False
 
-    @staticmethod
-    def _k8s_deployment_exists(deployment_name: str, namespace: str, api_client: ExtensionsV1beta1Api) -> bool:
-        existing_deployments = api_client.list_namespaced_deployment(namespace=namespace).to_dict()
-        return DeployToK8s._k8s_resource_exists(deployment_name, existing_deployments)
+    def _k8s_resource_exists(self, resource_name, namespace, list_function):
+        existing_services = list_function(namespace=namespace).to_dict()
+        return self._find_needle(resource_name, existing_services)
 
-    @staticmethod
-    def _k8s_namespace_exists(namespace: str, api_client: CoreV1Api):
+    def _k8s_namespace_exists(self, namespace: str, api_client: CoreV1Api):
         existing_namespaces = api_client.list_namespace().to_dict()
-        return DeployToK8s._k8s_resource_exists(namespace, existing_namespaces)
+        return DeployToK8s._find_needle(namespace, existing_namespaces)
 
-    @staticmethod
-    def _k8s_service_exists(service_name: str, namespace: str, api_client: CoreV1Api):
-        existing_services = api_client.list_namespaced_service(namespace=namespace).to_dict()
-        return DeployToK8s._k8s_resource_exists(service_name, existing_services)
-
-    @staticmethod
-    def _create_namespace_if_not_exists(api_client: CoreV1Api, k8s_namespace: str):
+    def _create_namespace_if_not_exists(self, api_client: CoreV1Api, k8s_namespace: str):
         # very simple way to ensure the namespace exists
-        if not DeployToK8s._k8s_namespace_exists(k8s_namespace, api_client):
+        if not self._k8s_namespace_exists(k8s_namespace, api_client):
             logger.info(f"No k8s namespace for this application. Creating namespace: {k8s_namespace}")
             namespace_to_create = client.V1Namespace(metadata={"name": k8s_namespace})
             api_client.create_namespace(body=namespace_to_create)
 
-    @staticmethod
-    def _create_or_patch_service(api_client: CoreV1Api, service_config: dict, k8s_namespace: str):
-        service_name = service_config['metadata']['name']
-        if DeployToK8s._k8s_service_exists(service_name, k8s_namespace, api_client):
-            # we need to patch the existing service
-            logger.info(f"Found existing k8s service: {service_name} in namespace {k8s_namespace}")
-            api_client.patch_namespaced_service(name=service_name,
-                                                namespace=k8s_namespace,
-                                                body=service_config)
-        else:
-            # the service doesn't exist, we need to create it
-            logger.info(f"No existing k8s service found, creating service: {service_name} in namespace {k8s_namespace}")
-            api_client.create_namespaced_service(namespace=k8s_namespace,
-                                                 body=service_config)
+    def _create_or_patch_resource(self,
+                                  client,
+                                  resource_type: str,
+                                  name: str,
+                                  namespace: str,
+                                  resource_config: dict):
+        list_function = getattr(client, f'list_namespaced_{resource_type}')
+        patch_function = getattr(client, f'patch_namespaced_{resource_type}')
+        create_function = getattr(client, f'create_namespaced_{resource_type}')
 
-    def _create_or_patch_deployment(self, deployment: dict, application_name: str, k8s_namespace: str):
-        api_instance = client.ExtensionsV1beta1Api()
-        # to patch or not to patch
-        if DeployToK8s._k8s_deployment_exists(application_name, k8s_namespace, api_instance):
-            logger.info(f"Found existing k8s deployment: {application_name} in namespace {k8s_namespace}")
-            api_instance.patch_namespaced_deployment(name=application_name,
-                                                     namespace=k8s_namespace,
-                                                     body=deployment)
+        if self._k8s_resource_exists(name, namespace, list_function):
+            # we need to patch the existing resource
+            logger.info(f"Found existing k8s resource: {name} in namespace {namespace}")
+            patch_function(name=name,
+                           namespace=namespace,
+                           body=resource_config)
         else:
-            logger.info(f"No existing k8s deployment found, creating deployment: {application_name} in namespace {k8s_namespace}")
-            api_instance.create_namespaced_deployment(namespace=k8s_namespace,
-                                                      body=deployment)
+            # the resource doesn't exist, we need to create it
+            logger.info(f"No existing k8s resource found, creating resource: {name} in namespace {namespace}")
+            create_function(namespace=namespace,
+                            body=resource_config)
+
+    def _create_or_patch_service(self, api_client: CoreV1Api, service_config: dict, k8s_namespace: str):
+        service_name = service_config['metadata']['name']
+        self._create_or_patch_resource(
+            client=CoreV1Api(),
+            resource_type="service",
+            name=service_name,
+            namespace=k8s_namespace,
+            resource_config=service_config
+        )
+
+    def _create_or_patch_deployment(self, deployment: dict, k8s_namespace: str):
+        api_instance = client.ExtensionsV1beta1Api()
+        self._create_or_patch_resource(
+            client=api_instance,
+            resource_type="deployment",
+            name=get_application_name(),
+            namespace=k8s_namespace,
+            resource_config=deployment
+        )
+
+    def _create_or_patch_secrets(self, k8s_namespace):
+        secrets = util.KeyVaultSecrets.get_keyvault_secrets(self.env.environment)
+        api_instance = client.CoreV1Api()
+        application_name = get_application_name()
+        secret_name = f"{application_name}-secret"
+
+        secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
+                                 type="Opaque",
+                                 data={_.env_key: base64.b64encode(_.val) for _ in secrets})
+
+        self._create_or_patch_resource(
+            client=api_instance,
+            resource_type="secret",
+            name=get_application_name(),
+            namespace=k8s_namespace,
+            resource_config=secret.to_dict()
+        )
 
     def deploy_to_k8s(self, deployment_config: dict, service_config: dict):
-        application_name = get_application_name()
         k8s_namespace = f"{application_name}-{self.env.environment.lower()}"
+
+        application_name = get_application_name()
 
         # 1: get kubernetes credentials with azure credentials for vsts user
         self._authenticate_with_k8s()
@@ -148,8 +178,11 @@ class DeployToK8s(DeploymentStep):
         # 2: verify that the namespace exists, if not: create it
         self._create_namespace_if_not_exists(core_api_client, k8s_namespace)
 
-        # 3: create OR patch kubernetes deployment
-        self._create_or_patch_deployment(deployment_config, application_name, k8s_namespace)
+        # 3: create kubernetes secrets from azure keyvault
+        self._create_or_patch_secrets(k8s_namespace)
 
-        # 4: create OR patch kubernetes service
+        # 4: create OR patch kubernetes deployment
+        self._create_or_patch_deployment(deployment_config, k8s_namespace)
+
+        # 5: create OR patch kubernetes service
         self._create_or_patch_service(core_api_client, service_config, k8s_namespace)
