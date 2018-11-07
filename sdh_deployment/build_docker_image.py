@@ -67,4 +67,4 @@ class DockerImageBuilder(DeploymentStep):
             logger.info(f"Uploading docker image for {df.dockerfile}")
 
             logs = docker_client.images.push(repository=repository, tag=tag)
-            print(logs.decode())
+            print(logs)
