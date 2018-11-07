@@ -37,6 +37,9 @@ class DockerImageBuilder(DeploymentStep):
 
     @docker_logging()
     def build_image(self, docker_file, docker_client, tag):
+        """
+        Returns the log generator, as per https://docker-py.readthedocs.io/en/stable/images.html
+        """
         logger.info(f"Building docker image for {docker_file}")
         image = docker_client.images.build(
             path="/root",
@@ -63,4 +66,5 @@ class DockerImageBuilder(DeploymentStep):
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
 
-            docker_client.images.push(repository=repository, tag=tag)
+            logs = docker_client.images.push(repository=repository, tag=tag)
+            print(logs)

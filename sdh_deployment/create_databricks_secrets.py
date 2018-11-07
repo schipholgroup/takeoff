@@ -7,10 +7,10 @@ from databricks_cli.secrets.api import SecretApi
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
+from sdh_deployment.KeyVaultSecrets import KeyVaultSecrets, Secret
 from sdh_deployment.util import (
     get_application_name,
-    get_databricks_client,
-    KeyVaultSecrets, Secret)
+    get_databricks_client)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

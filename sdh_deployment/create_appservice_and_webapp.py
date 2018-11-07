@@ -9,6 +9,7 @@ from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConf
 from msrestazure.azure_exceptions import CloudError
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.CosmosCredentials import CosmosCredentials
 from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.create_application_insights import CreateApplicationInsights
 from sdh_deployment.util import (
@@ -18,7 +19,7 @@ from sdh_deployment.util import (
     AZURE_LOCATION,
     get_application_name,
     SHARED_REGISTRY,
-    render_string_with_jinja, CosmosCredentials)
+    render_string_with_jinja)
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
