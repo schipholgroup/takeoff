@@ -6,9 +6,7 @@ from unittest.mock import Mock
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.create_appservice_and_webapp import (
-    CreateAppserviceAndWebapp as victim,
-    CosmosCredentials,
-)
+    CreateAppserviceAndWebapp as victim)
 from sdh_deployment.create_appservice_and_webapp import (
     SiteConfig,
     AppService,
@@ -17,7 +15,7 @@ from sdh_deployment.create_appservice_and_webapp import (
     Site,
     RESOURCE_GROUP,
 )
-from sdh_deployment.util import SHARED_REGISTRY
+from sdh_deployment.util import SHARED_REGISTRY, CosmosCredentials
 
 ENV = ApplicationVersion("env", "ver", 'branch')
 
@@ -44,7 +42,7 @@ class TestDeployToWebApp(unittest.TestCase):
         "sdh_deployment.create_application_insights.CreateApplicationInsights.create_application_insights"
     )
     @mock.patch(
-        "sdh_deployment.create_appservice_and_webapp.CreateAppserviceAndWebapp._get_cosmos_credentials"
+        "sdh_deployment.util.CosmosCredentials.get_cosmos_read_only_credentials"
     )
     @mock.patch.dict(
         os.environ,
@@ -101,7 +99,7 @@ class TestDeployToWebApp(unittest.TestCase):
         "sdh_deployment.create_appservice_and_webapp.CreateAppserviceAndWebapp._build_site_config"
     )
     @mock.patch(
-        "sdh_deployment.create_appservice_and_webapp.CreateAppserviceAndWebapp._get_cosmos_credentials"
+        "sdh_deployment.util.CosmosCredentials.get_cosmos_read_only_credentials"
     )
     @mock.patch.dict(
         os.environ,
@@ -113,10 +111,10 @@ class TestDeployToWebApp(unittest.TestCase):
         },
     )
     def test_get_webapp_to_create(
-            self, _get_cosmos_credentials_mock, get_site_config_mock
+            self, get_cosmos_credentials_mock, get_site_config_mock
     ):
         get_site_config_mock.return_value = VALID_SITE_CONFIG
-        _get_cosmos_credentials_mock.return_value = CosmosCredentials(
+        get_cosmos_credentials_mock.return_value = CosmosCredentials(
             "https://localhost:443", "secretcosmoskey"
         )
 

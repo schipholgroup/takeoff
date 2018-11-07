@@ -20,7 +20,10 @@ class UploadToBlob(DeploymentStep):
         self.upload_application_to_blob()
 
     @staticmethod
-    def _upload_file_to_blob(client: BlockBlobService, source: str, destination: str):
+    def _upload_file_to_blob(client: BlockBlobService,
+                             source: str,
+                             destination: str,
+                             container=BLOB_CONTAINER_NAME):
         logger.info(
             f"""uploading artifact from
          | from ${source}
@@ -28,7 +31,18 @@ class UploadToBlob(DeploymentStep):
         )
 
         client.create_blob_from_path(
-            container_name=BLOB_CONTAINER_NAME, blob_name=destination, file_path=source
+            container_name=container, blob_name=destination, file_path=source
+        )
+
+    @staticmethod
+    def _download_from_blob(client: BlockBlobService,
+                            blob_name: str,
+                            local_file_path: str,
+                            container: str):
+        client.get_blob_to_path(
+            container_name=container,
+            blob_name=blob_name,
+            file_path=local_file_path,
         )
 
     @staticmethod

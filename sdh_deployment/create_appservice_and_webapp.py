@@ -4,7 +4,6 @@ import os
 import sys
 from dataclasses import dataclass
 
-from azure.mgmt.cosmosdb import CosmosDB
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConfig
 from msrestazure.azure_exceptions import CloudError
@@ -19,7 +18,7 @@ from sdh_deployment.util import (
     AZURE_LOCATION,
     get_application_name,
     SHARED_REGISTRY,
-    render_string_with_jinja)
+    render_string_with_jinja, CosmosCredentials)
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -53,12 +52,6 @@ class WebApp(object):
     site: Site
 
 
-@dataclass(frozen=True)
-class CosmosCredentials(object):
-    uri: str
-    key: str
-
-
 class CreateAppserviceAndWebapp(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
@@ -86,22 +79,6 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         )
         result = service_plan_async_operation.result()
         return result.id
-
-    def _get_cosmos_credentials(self, dtap: str) -> CosmosCredentials:
-        cosmos = self._get_cosmos_management_client(dtap)
-
-        cosmos_instance = {
-            "resource_group_name": f"sdh{dtap}".format(dtap=dtap),
-            "account_name": f"sdhcosmos{dtap}".format(dtap=dtap),
-        }
-
-        endpoint = cosmos.database_accounts.get(**cosmos_instance).document_endpoint
-
-        key = cosmos.database_accounts.list_read_only_keys(
-            **cosmos_instance
-        ).primary_readonly_master_key
-
-        return CosmosCredentials(endpoint, key)
 
     def _parse_appservice_parameters(self, dtap: str) -> AppService:
         """
@@ -150,7 +127,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         docker_registry_username = os.environ["REGISTRY_USERNAME"]
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
 
-        cosmos_credentials = self._get_cosmos_credentials(self.env.environment.lower())
+        cosmos_credentials = CosmosCredentials.get_cosmos_read_only_credentials(self.env.environment.lower())
         application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
         new_properties = {
             'DOCKER_ENABLE_CI': 'true',
@@ -229,12 +206,6 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         credentials = get_azure_user_credentials(dtap)
 
         return WebSiteManagementClient(credentials, subscription_id)
-
-    def _get_cosmos_management_client(self, dtap) -> CosmosDB:
-        subscription_id = get_subscription_id()
-        credentials = get_azure_user_credentials(dtap)
-
-        return CosmosDB(credentials, subscription_id)
 
     def create_appservice_and_webapp(self) -> Site:
         formatted_dtap = self.env.environment.lower()
