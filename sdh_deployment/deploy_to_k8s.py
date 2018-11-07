@@ -8,9 +8,9 @@ from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes import client, config
 from kubernetes.client import CoreV1Api
 
-from sdh_deployment import util
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
+from sdh_deployment.KeyVaultSecrets import KeyVaultSecrets
 from sdh_deployment.util import (
     get_subscription_id,
     get_azure_user_credentials,
@@ -143,7 +143,7 @@ class DeployToK8s(DeploymentStep):
         )
 
     def _create_or_patch_secrets(self, k8s_namespace):
-        secrets = util.KeyVaultSecrets.get_keyvault_secrets(self.env.environment)
+        secrets = KeyVaultSecrets.get_keyvault_secrets(self.env.environment)
         api_instance = client.CoreV1Api()
         application_name = get_application_name()
         secret_name = f"{application_name}-secret"
