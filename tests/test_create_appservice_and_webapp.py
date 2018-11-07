@@ -5,6 +5,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
+from sdh_deployment.CosmosCredentials import CosmosCredentials
 from sdh_deployment.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp as victim)
 from sdh_deployment.create_appservice_and_webapp import (
@@ -15,7 +16,7 @@ from sdh_deployment.create_appservice_and_webapp import (
     Site,
     RESOURCE_GROUP,
 )
-from sdh_deployment.util import SHARED_REGISTRY, CosmosCredentials
+from sdh_deployment.util import SHARED_REGISTRY
 
 ENV = ApplicationVersion("env", "ver", 'branch')
 
@@ -42,7 +43,7 @@ class TestDeployToWebApp(unittest.TestCase):
         "sdh_deployment.create_application_insights.CreateApplicationInsights.create_application_insights"
     )
     @mock.patch(
-        "sdh_deployment.util.CosmosCredentials.get_cosmos_read_only_credentials"
+        "sdh_deployment.CosmosCredentials.CosmosCredentials.get_cosmos_read_only_credentials"
     )
     @mock.patch.dict(
         os.environ,
@@ -99,7 +100,7 @@ class TestDeployToWebApp(unittest.TestCase):
         "sdh_deployment.create_appservice_and_webapp.CreateAppserviceAndWebapp._build_site_config"
     )
     @mock.patch(
-        "sdh_deployment.util.CosmosCredentials.get_cosmos_read_only_credentials"
+        "sdh_deployment.CosmosCredentials.CosmosCredentials.get_cosmos_read_only_credentials"
     )
     @mock.patch.dict(
         os.environ,

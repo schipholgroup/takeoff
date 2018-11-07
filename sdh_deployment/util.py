@@ -1,13 +1,9 @@
 import logging
 import os
-import re
 from dataclasses import dataclass
-from typing import Pattern, Callable, List
+from typing import Pattern, Callable
 
 from azure.common.credentials import UserPassCredentials, ServicePrincipalCredentials
-from azure.keyvault import KeyVaultClient
-from azure.keyvault.models import SecretBundle
-from azure.mgmt.cosmosdb import CosmosDB
 from azure.storage.blob import BlockBlobService
 from databricks_cli.sdk import ApiClient
 from git import Repo
@@ -32,74 +28,6 @@ class DockerCredentials(object):
     username: str
     password: str
     registry: str
-
-
-@dataclass(frozen=True)
-class Secret:
-    key: str
-    val: str
-
-    @property
-    def env_key(self):
-        return self.key.upper().replace('-', '_')
-
-
-@dataclass(frozen=True)
-class CosmosCredentials(object):
-    uri: str
-    key: str
-
-    @staticmethod
-    def _get_cosmos_management_client(dtap: str) -> CosmosDB:
-        subscription_id = get_subscription_id()
-        credentials = get_azure_user_credentials(dtap)
-
-        return CosmosDB(credentials, subscription_id)
-
-    @staticmethod
-    def _get_cosmos_instance(dtap: str) -> dict:
-        return {
-            "resource_group_name": f"sdh{dtap}".format(dtap=dtap),
-            "account_name": f"sdhcosmos{dtap}".format(dtap=dtap),
-        }
-
-    @staticmethod
-    def _get_cosmos_endpoint(cosmos: CosmosDB, cosmos_instance: dict):
-        return (cosmos
-                .database_accounts
-                .get(**cosmos_instance)
-                .document_endpoint
-                )
-
-    @staticmethod
-    def get_cosmos_write_credentials(dtap: str) -> 'CosmosCredentials':
-        formatted_dtap = dtap.lower()
-        cosmos = CosmosCredentials._get_cosmos_management_client(formatted_dtap)
-        cosmos_instance = CosmosCredentials._get_cosmos_instance(formatted_dtap)
-        endpoint = CosmosCredentials._get_cosmos_endpoint(cosmos, cosmos_instance)
-
-        key = (cosmos
-               .database_accounts
-               .list_keys(**cosmos_instance)
-               .primary_master_key
-               )
-
-        return CosmosCredentials(endpoint, key)
-
-    @staticmethod
-    def get_cosmos_read_only_credentials(dtap: str) -> 'CosmosCredentials':
-        formatted_dtap = dtap.lower()
-        cosmos = CosmosCredentials._get_cosmos_management_client(formatted_dtap)
-        cosmos_instance = CosmosCredentials._get_cosmos_instance(formatted_dtap)
-        endpoint = CosmosCredentials._get_cosmos_endpoint(cosmos, cosmos_instance)
-
-        key = (cosmos
-               .database_accounts
-               .list_read_only_keys(**cosmos_instance)
-               .primary_readonly_master_key
-               )
-
-        return CosmosCredentials(endpoint, key)
 
 
 def render_string_with_jinja(path: str, params: dict) -> str:
@@ -209,7 +137,7 @@ def load_yaml(path: str) -> dict:
     return load(config_file)
 
 
-def docker_logging(nr_of_ending_lines=0):
+def docker_logging(nr_of_ending_lines=25):
     def decorator(f):
         def wrap(self, *args, **kwargs):
             logs = f(self, *args, **kwargs)
@@ -220,69 +148,7 @@ def docker_logging(nr_of_ending_lines=0):
             except Exception as e:
                 logging.error(e)
             return logs
+
         return wrap
+
     return decorator
-
-
-@dataclass(frozen=True)
-class IdAndKey:
-    keyvault_id: str
-    databricks_secret_key: str
-
-
-@dataclass
-class KeyVaultSecrets:
-    secrets: List[Secret]
-
-    @staticmethod
-    def _extract_keyvault_ids_from(secrets: List[SecretBundle]) -> List[str]:
-        """The returned json from Azure KeyVault contains the ids for each secrets, prepended with
-        the vault url.
-
-        This functions extracts only the actual key from the url/id
-
-        https://sdhkeyvaultdev.vault.azure.net/secrets/flights-arrivals-cosmos-collection
-        to
-        flights-arrivals-cosmos-collection
-        """
-        return [_.id.split("/")[-1] for _ in secrets]
-
-    @staticmethod
-    def _filter_keyvault_ids(keyvault_ids: List[str], application_name) -> List[IdAndKey]:
-        """Extracts the actual keys from the prefixed ids
-
-        flights-arrivals-cosmos-collection
-        to
-        (flights-arrivals-cosmos-collection, cosmos-collection)
-        """
-        pattern = re.compile(rf"^({application_name})-([-A-z0-9]+)*")
-
-        return [
-            IdAndKey(_, get_matching_group(_, pattern, 1))
-            for _ in keyvault_ids
-            if has_prefix_match(_, application_name, pattern)
-        ]
-
-    @staticmethod
-    def _retrieve_secrets(client: KeyVaultClient,
-                          vault: str,
-                          application_name: str) -> List[Secret]:
-        secrets = list(client.get_secrets(vault))
-        secrets_ids = KeyVaultSecrets._extract_keyvault_ids_from(secrets)
-        secrets_filtered = KeyVaultSecrets._filter_keyvault_ids(secrets_ids, application_name)
-
-        app_secrets = [
-            Secret(
-                _.databricks_secret_key,
-                client.get_secret(vault, _.keyvault_id, "").value,
-            )
-            for _ in secrets_filtered
-        ]
-
-        return app_secrets
-
-    def get_keyvault_secrets(dtap: str):
-        application_name = get_application_name()
-        keyvault_client = KeyVaultClient(get_azure_sp_credentials(dtap))
-        vault = f"https://sdhkeyvault{dtap.lower()}.vault.azure.net/"
-        return KeyVaultSecrets._retrieve_secrets(keyvault_client, vault, application_name)

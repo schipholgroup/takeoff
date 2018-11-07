@@ -35,17 +35,6 @@ class UploadToBlob(DeploymentStep):
         )
 
     @staticmethod
-    def _download_from_blob(client: BlockBlobService,
-                            blob_name: str,
-                            local_file_path: str,
-                            container: str):
-        client.get_blob_to_path(
-            container_name=container,
-            blob_name=blob_name,
-            file_path=local_file_path,
-        )
-
-    @staticmethod
     def _get_jar(lang: str) -> str:
         if lang == "sbt":
             jars = glob.glob("/root/target/scala-2.*/*-assembly-*.jar")
