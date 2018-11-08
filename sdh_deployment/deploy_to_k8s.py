@@ -76,8 +76,7 @@ class DeployToK8s(DeploymentStep):
 
         self._write_kube_config(credential_results)
 
-    @staticmethod
-    def _find_needle(needle, haystack):
+    def _find_needle(self, needle, haystack):
         # Helper method to abstract away checking for existence of a k8s entity
         # this assumes the k8s structure of entities (i.e. items->metadata->name
         for dep in haystack['items']:
@@ -85,13 +84,13 @@ class DeployToK8s(DeploymentStep):
                 return True
         return False
 
-    def _k8s_resource_exists(self, resource_name, namespace, list_function):
-        existing_services = list_function(namespace=namespace).to_dict()
+    def _k8s_resource_exists(self, resource_name: str, namespace: str, k8s_resource_listing_function):
+        existing_services = k8s_resource_listing_function(namespace=namespace).to_dict()
         return self._find_needle(resource_name, existing_services)
 
     def _k8s_namespace_exists(self, namespace: str, api_client: CoreV1Api):
         existing_namespaces = api_client.list_namespace().to_dict()
-        return DeployToK8s._find_needle(namespace, existing_namespaces)
+        return self._find_needle(namespace, existing_namespaces)
 
     def _create_namespace_if_not_exists(self, api_client: CoreV1Api, k8s_namespace: str):
         # very simple way to ensure the namespace exists
@@ -112,7 +111,7 @@ class DeployToK8s(DeploymentStep):
 
         if self._k8s_resource_exists(name, namespace, list_function):
             # we need to patch the existing resource
-            logger.info(f"Found existing k8s resource: {name} in namespace {namespace}")
+            logger.info(f"Found existing k8s resource, patching resource {name} in namespace {namespace}")
             patch_function(name=name,
                            namespace=namespace,
                            body=resource_config)
