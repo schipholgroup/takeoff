@@ -161,9 +161,8 @@ class DeployToK8s(DeploymentStep):
         )
 
     def deploy_to_k8s(self, deployment_config: dict, service_config: dict):
-        k8s_namespace = f"{application_name}-{self.env.environment.lower()}"
-
         application_name = get_application_name()
+        k8s_namespace = f"{application_name}-{self.env.environment.lower()}"
 
         # 1: get kubernetes credentials with azure credentials for vsts user
         self._authenticate_with_k8s()
