@@ -1,3 +1,4 @@
+import logging
 import os
 from dataclasses import dataclass
 from typing import Pattern, Callable
@@ -134,3 +135,20 @@ def load_yaml(path: str) -> dict:
     with open(path, "r") as f:
         config_file = f.read()
     return load(config_file)
+
+
+def docker_logging(nr_of_ending_lines=25):
+    def decorator(f):
+        def wrap(self, *args, **kwargs):
+            logs = f(self, *args, **kwargs)
+            try:
+                lines = logs.decode().split('\n')
+                logging.info("--------- DOCKER LOGS ------------")
+                logging.info('\n'.join(lines[-nr_of_ending_lines:]))
+            except Exception as e:
+                logging.error(e)
+            return logs
+
+        return wrap
+
+    return decorator
