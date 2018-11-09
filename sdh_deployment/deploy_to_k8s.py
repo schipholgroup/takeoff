@@ -108,7 +108,7 @@ class DeployToK8s(DeploymentStep):
         list_function = getattr(client, f'list_namespaced_{resource_type}')
         patch_function = getattr(client, f'patch_namespaced_{resource_type}')
         create_function = getattr(client, f'create_namespaced_{resource_type}')
-
+        print(list_function)
         if self._k8s_resource_exists(name, namespace, list_function):
             # we need to patch the existing resource
             logger.info(f"Found existing k8s resource, patching resource {name} in namespace {namespace}")
