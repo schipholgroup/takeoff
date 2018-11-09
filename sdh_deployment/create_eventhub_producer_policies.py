@@ -64,7 +64,7 @@ class CreateEventhubProducerPolicies(DeploymentStep):
             eventhub_client.event_hubs.create_or_update_authorization_rule(
                 resource_group,
                 eventhub_namespace,
-                policy.eventhub_entity,
+                policy.eventhub_entity + formatted_dtap,
                 f"{get_application_name()}-send-policy",
                 [AccessRights.send],
             )
@@ -72,7 +72,7 @@ class CreateEventhubProducerPolicies(DeploymentStep):
             connection_string = eventhub_client.event_hubs.list_keys(
                 resource_group,
                 eventhub_namespace,
-                policy.eventhub_entity,
+                policy.eventhub_entity + formatted_dtap,
                 f"{get_application_name()}-send-policy",
             ).primary_connection_string
 
