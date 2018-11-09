@@ -48,6 +48,10 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         logger.info(f"Using Azure resource group: {RESOURCE_GROUP}")
         logger.info(f"Using Azure namespace: {EVENTHUB_NAMESPACE}")
 
+        formatted_dtap = self.env.environment.lower()
+        eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=formatted_dtap)
+        resource_group = RESOURCE_GROUP.format(dtap=formatted_dtap)
+
         credentials = get_azure_user_credentials(self.env.environment)
         eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
 
@@ -58,16 +62,16 @@ class CreateEventhubProducerPolicies(DeploymentStep):
 
         for policy in producer_policies:
             eventhub_client.event_hubs.create_or_update_authorization_rule(
-                f"{RESOURCE_GROUP}",
-                f"{EVENTHUB_NAMESPACE}",
+                resource_group,
+                eventhub_namespace,
                 policy.eventhub_entity,
                 f"{get_application_name()}-send-policy",
                 [AccessRights.send],
             )
 
             connection_string = eventhub_client.event_hubs.list_keys(
-                f"{RESOURCE_GROUP}",
-                f"{EVENTHUB_NAMESPACE}",
+                resource_group,
+                eventhub_namespace,
                 policy.eventhub_entity,
                 f"{get_application_name()}-send-policy",
             ).primary_connection_string
