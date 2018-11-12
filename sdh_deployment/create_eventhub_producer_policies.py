@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from typing import List
 
 from azure.mgmt.eventhub import EventHubManagementClient
