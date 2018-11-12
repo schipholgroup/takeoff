@@ -45,24 +45,25 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         logger.info(f"Using Azure namespace: {eventhub_namespace}")
 
         for policy in producer_policies:
-            common_azure_parameters = [
-                f"resource_group_name={resource_group}",
-                f"namespace_name={eventhub_namespace}",
-                f"event_hub_name={policy + formatted_dtap}",
-                f"authorization_rule_name={get_application_name()}-send-policy",
-            ]
+            common_azure_parameters = {
+                'resource_group_name': resource_group,
+                'namespace_name': eventhub_namespace,
+                'event_hub_name': policy + formatted_dtap,
+                'authorization_rule_name': f"{get_application_name()}-send-policy",
+            }
 
             try:
                 eventhub_client.event_hubs.create_or_update_authorization_rule(
-                    *common_azure_parameters,
-                    f"rights={[AccessRights.send]}",
+                    **common_azure_parameters,
+                    rights=[AccessRights.send],
                 )
 
                 connection_string = eventhub_client.event_hubs.list_keys(
-                    *common_azure_parameters
+                    **common_azure_parameters
                 ).primary_connection_string
             except Exception as e:
                 logger.info("Could not create connection String. Make sure the Eventhub exists.")
+                raise
 
             secret = Secret(
                 f"{policy}-connection-string",
