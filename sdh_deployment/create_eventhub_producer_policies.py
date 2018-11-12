@@ -53,14 +53,18 @@ class CreateEventhubProducerPolicies(DeploymentStep):
                 policy + formatted_dtap,
                 f"{get_application_name()}-send-policy",
             ]
-            eventhub_client.event_hubs.create_or_update_authorization_rule(
-                *common_azure_parameters,
-                [AccessRights.send],
-            )
 
-            connection_string = eventhub_client.event_hubs.list_keys(
-                *common_azure_parameters
-            ).primary_connection_string
+            try:
+                eventhub_client.event_hubs.create_or_update_authorization_rule(
+                    *common_azure_parameters,
+                    [AccessRights.send],
+                )
+
+                connection_string = eventhub_client.event_hubs.list_keys(
+                    *common_azure_parameters
+                ).primary_connection_string
+            except Exception as e:
+                print("Could not create connection String. Make sure the Eventhub exists.")
 
             secret = Secret(
                 f"{policy}-connection-string",
