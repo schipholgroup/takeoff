@@ -26,7 +26,7 @@ class CreateEventhubProducerPolicies(DeploymentStep):
 
     def run(self):
         policies = [
-            policy for policy in self.config["policies"]
+            policy["eventhubEntity"] for policy in self.config["policies"]
         ]
         self.create_eventhub_producer_policies(policies)
 
