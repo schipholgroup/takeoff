@@ -31,9 +31,6 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         self.create_eventhub_producer_policies(policies)
 
     def create_eventhub_producer_policies(self, producer_policies: List[str]):
-        logger.info(f"Using Azure resource group: {RESOURCE_GROUP}")
-        logger.info(f"Using Azure namespace: {EVENTHUB_NAMESPACE}")
-
         formatted_dtap = self.env.environment.lower()
         eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=formatted_dtap)
         resource_group = RESOURCE_GROUP.format(dtap=formatted_dtap)
@@ -44,27 +41,28 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         databricks_client = get_databricks_client(self.env.environment)
         application_name = get_application_name()
 
-        CreateDatabricksSecrets._create_scope(databricks_client, application_name)
+        logger.info(f"Using Azure resource group: {resource_group}")
+        logger.info(f"Using Azure namespace: {eventhub_namespace}")
 
         for policy in producer_policies:
             common_azure_parameters = [
-                resource_group,
-                eventhub_namespace,
-                policy + formatted_dtap,
-                f"{get_application_name()}-send-policy",
+                f"resource_group_name={resource_group}",
+                f"namespace_name={eventhub_namespace}",
+                f"event_hub_name={policy + formatted_dtap}",
+                f"authorization_rule_name={get_application_name()}-send-policy",
             ]
 
             try:
                 eventhub_client.event_hubs.create_or_update_authorization_rule(
                     *common_azure_parameters,
-                    [AccessRights.send],
+                    f"rights={[AccessRights.send]}",
                 )
 
                 connection_string = eventhub_client.event_hubs.list_keys(
                     *common_azure_parameters
                 ).primary_connection_string
             except Exception as e:
-                print("Could not create connection String. Make sure the Eventhub exists.")
+                logger.info("Could not create connection String. Make sure the Eventhub exists.")
 
             secret = Secret(
                 f"{policy}-connection-string",
