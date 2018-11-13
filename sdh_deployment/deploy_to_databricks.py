@@ -69,7 +69,8 @@ class DeployToDatabricks(DeploymentStep):
 
         is_streaming = self._job_is_streaming(job_config)
         logger.info("Removing old job")
-        self.__remove_job(databricks_client, application_name, is_streaming=is_streaming)
+
+        self.__remove_job(databricks_client, application_name, self.env.branch, is_streaming=is_streaming)
 
         logger.info("Submitting new job with configuration:")
         logger.info(str(job_config))
@@ -95,7 +96,7 @@ class DeployToDatabricks(DeploymentStep):
         return job_config
 
     @staticmethod
-    def __remove_job(client, application_name: str, is_streaming: bool):
+    def __remove_job(client, application_name: str, branch: str, is_streaming: bool):
         """
         Removes the existing job and cancels any running job_run if the application is streaming.
         If the application is batch, it'll let the batch job finish but it will remove the job,
@@ -108,7 +109,7 @@ class DeployToDatabricks(DeploymentStep):
             JobConfig(_["settings"]["name"], _["job_id"])
             for _ in jobs_api.list_jobs()["jobs"]
         ]
-        job_id = DeployToDatabricks._application_job_id(application_name, job_configs)
+        job_id = DeployToDatabricks._application_job_id(application_name, branch, job_configs)
 
         if job_id:
             if is_streaming:
@@ -116,11 +117,10 @@ class DeployToDatabricks(DeploymentStep):
             jobs_api.delete_job(job_id)
 
     @staticmethod
-    def _application_job_id(application_name: str, jobs: List[JobConfig]) -> int:
+    def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> int:
         snapshot = "SNAPSHOT"
         tag = "\d+\.\d+\.\d+|"
-        git_hash = "[a-f0-9]{7}"
-        pattern = re.compile(rf"^({application_name})-({snapshot}|{tag}|{git_hash})$")
+        pattern = re.compile(rf"^({application_name})-({snapshot}|{tag}|{branch})$")
 
         return next(
             (
