@@ -1,0 +1,7 @@
+- task: deployToK8s
+  deployment_config_path: "deploy_to_aks_k8s_config/deployment.yaml.j2"
+  service_config_path: "deploy_to_aks_k8s_config/service.yaml.j2"
+  service_ips:
+    dev: "some_ip_in_cluster_range"
+    acp: "some_ip_in_cluster_range"
+    prd: "some_ip_in_cluster_range"

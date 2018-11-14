@@ -1,0 +1,19 @@
+- script: docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
+  displayName: Login to registry
+
+- task: DockerCompose@0
+  displayName: Build Docker image and deploy on k8s
+  inputs:
+    dockerComposeCommand: |
+      run --rm python run_deployment
+  env:
+    AZURE_SP_TENANTID: ${azure_sp_tenantid}
+    SUBSCRIPTION_ID: ${subscription_id}
+    AZURE_USERNAME_DEV: ${azure_username_dev}
+    AZURE_PASSWORD_DEV: ${azure_password_dev}
+    AZURE_USERNAME_ACP: ${azure_username_acp}
+    AZURE_PASSWORD_ACP: ${azure_password_acp}
+    AZURE_USERNAME_PRD: ${azure_username_prd}
+    AZURE_PASSWORD_PRD: ${azure_password_prd}
+    REGISTRY_USERNAME: ${REGISTRY_USERNAME}
+    REGISTRY_PASSWORD: ${REGISTRY_PASSWORD}

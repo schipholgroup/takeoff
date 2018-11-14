@@ -1,0 +1,41 @@
+version: "3.3"
+services:
+  pyspark:
+    image: sdhcontainerregistryshared.azurecr.io/sdh-deployment:4.1.1-pyspark
+    working_dir: /root/
+    volumes:
+    - type: bind
+      source: ./
+      target: /root
+    tty: true
+  python:
+    image: sdhcontainerregistryshared.azurecr.io/sdh-deployment:4.1.1-python
+    working_dir: /root/
+    volumes:
+    - type: bind
+      source: ./
+      target: /root
+    tty: true
+    environment:
+    - SUBSCRIPTION_ID
+    - BUILD_SOURCEBRANCHNAME
+    - BUILD_DEFINITIONNAME
+    - AZURE_USERNAME_DEV
+    - AZURE_PASSWORD_DEV
+    - AZURE_USERNAME_ACP
+    - AZURE_PASSWORD_ACP
+    - AZURE_USERNAME_PRD
+    - AZURE_PASSWORD_PRD
+    - AZURE_DATABRICKS_HOST
+    - AZURE_DATABRICKS_TOKEN_DEV
+    - AZURE_DATABRICKS_TOKEN_ACP
+    - AZURE_DATABRICKS_TOKEN_PRD
+    - AZURE_SHARED_BLOB_USERNAME
+    - AZURE_SHARED_BLOB_PASSWORD
+    - AZURE_SP_TENANTID
+    - AZURE_SP_USERNAME_DEV
+    - AZURE_SP_PASSWORD_DEV
+    - AZURE_SP_USERNAME_ACP
+    - AZURE_SP_PASSWORD_ACP
+    - AZURE_SP_USERNAME_PRD
+    - AZURE_SP_PASSWORD_PRD

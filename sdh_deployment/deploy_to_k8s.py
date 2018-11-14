@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 import os
 
@@ -10,21 +11,25 @@ from kubernetes.client import CoreV1Api
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.KeyVaultSecrets import KeyVaultSecrets
+from sdh_deployment.KeyVaultSecrets import KeyVaultSecrets, Secret
 from sdh_deployment.util import (
     get_subscription_id,
     get_azure_user_credentials,
     get_application_name,
-    render_file_with_jinja
-)
+    render_file_with_jinja,
+    get_docker_credentials)
 
 logger = logging.getLogger(__name__)
 
+K8S_NAME = "sdhkubernetes{dtap}"
+K8S_VNET_NAME = "sdh-kubernetes"
+
 
 # assumes kubectl is available
-class DeployToK8s(DeploymentStep):
-    def __init__(self, env: ApplicationVersion, config: dict):
+class BaseDeployToK8s(DeploymentStep):
+    def __init__(self, env: ApplicationVersion, config: dict, fixed_env):
         super().__init__(env, config)
+        self.fixed_env = fixed_env
 
     def run(self):
         # get the ip address for this environment
@@ -58,13 +63,10 @@ class DeployToK8s(DeploymentStep):
         logger.info("Kubeconfig successfully written")
 
     def _authenticate_with_k8s(self):
-        resource_group = os.getenv('RESOURCE_GROUP', f'sdh{self.env.environment}')
-        k8s_name = os.getenv('K8S_RESOURCE_NAME', 'sdh-kubernetes')
+        resource_group = f'sdh{self.fixed_env}'
 
         # get azure container service client
-        # For now, get the prd credentials by default, because we only have a single k8s cluster now
-        credentials = get_azure_user_credentials(os.getenv('AZURE_CREDENTIALS_ENV', 'prd'))
-
+        credentials = get_azure_user_credentials(self.fixed_env)
         client = ContainerServiceClient(
             credentials=credentials,
             subscription_id=get_subscription_id()
@@ -72,7 +74,7 @@ class DeployToK8s(DeploymentStep):
 
         # authenticate with k8s
         credential_results = client.managed_clusters.list_cluster_user_credentials(resource_group_name=resource_group,
-                                                                                   resource_name=k8s_name)
+                                                                                   resource_name=self.cluster_name)
 
         self._write_kube_config(credential_results)
 
@@ -141,28 +143,24 @@ class DeployToK8s(DeploymentStep):
             resource_config=deployment
         )
 
-    def _create_or_patch_secrets(self, k8s_namespace):
-        secrets = KeyVaultSecrets.get_keyvault_secrets(self.env.environment)
+    def _create_or_patch_secrets(self, secrets, k8s_namespace, name: str = None):
         api_instance = client.CoreV1Api()
         application_name = get_application_name()
-        secret_name = f"{application_name}-secret"
+        secret_name = f"{application_name}-secret" if not name else name
 
         secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
                                  type="Opaque",
-                                 data={_.env_key: base64.b64encode(_.val) for _ in secrets})
+                                 data={_.env_key: base64.b64encode(_.val.encode()).decode() for _ in secrets})
 
         self._create_or_patch_resource(
             client=api_instance,
             resource_type="secret",
-            name=get_application_name(),
+            name=secret_name,
             namespace=k8s_namespace,
             resource_config=secret.to_dict()
         )
 
     def deploy_to_k8s(self, deployment_config: dict, service_config: dict):
-        application_name = get_application_name()
-        k8s_namespace = f"{application_name}-{self.env.environment.lower()}"
-
         # 1: get kubernetes credentials with azure credentials for vsts user
         self._authenticate_with_k8s()
 
@@ -174,13 +172,56 @@ class DeployToK8s(DeploymentStep):
         core_api_client = CoreV1Api()
 
         # 2: verify that the namespace exists, if not: create it
-        self._create_namespace_if_not_exists(core_api_client, k8s_namespace)
+        self._create_namespace_if_not_exists(core_api_client, self.k8s_namespace)
 
         # 3: create kubernetes secrets from azure keyvault
-        self._create_or_patch_secrets(k8s_namespace)
+        secrets = KeyVaultSecrets.get_keyvault_secrets(self.fixed_env)
+        self._create_or_patch_secrets(secrets, self.k8s_namespace)
+        # 3.1: create kubernetes secrets for docker registry
+        docker_credentials = get_docker_credentials()
+        secrets = [Secret(
+            key=".dockerconfigjson",
+            val=json.dumps({"auths": {docker_credentials.registry: {"username": docker_credentials.username,
+                                                                    "password": docker_credentials.password}}})
+        )]
+        self._create_or_patch_secrets(secrets, self.k8s_namespace, name="acr-auth")
 
         # 4: create OR patch kubernetes deployment
-        self._create_or_patch_deployment(deployment_config, k8s_namespace)
+        self._create_or_patch_deployment(deployment_config, self.k8s_namespace)
 
         # 5: create OR patch kubernetes service
-        self._create_or_patch_service(core_api_client, service_config, k8s_namespace)
+        self._create_or_patch_service(core_api_client, service_config, self.k8s_namespace)
+
+    @property
+    def k8s_namespace(self):
+        raise NotImplementedError()
+
+    @property
+    def cluster_name(self):
+        raise NotImplementedError()
+
+
+class DeployToVnetK8s(BaseDeployToK8s):
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config, "prd")
+
+    @property
+    def k8s_namespace(self):
+        return f"{get_application_name()}-{self.env.environment.lower()}"
+
+    @property
+    def cluster_name(self):
+        return K8S_VNET_NAME
+
+
+class DeployToK8s(BaseDeployToK8s):
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config, env.environment.lower())
+
+    @property
+    def k8s_namespace(self):
+        return get_application_name()
+
+    @property
+    def cluster_name(self):
+        return f"{K8S_NAME}{self.fixed_env}"
