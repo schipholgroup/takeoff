@@ -236,4 +236,4 @@ class DeployToK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return f"{K8S_NAME}{self.fixed_env}"
+        return K8S_NAME.format(dtap=self.fixed_env)
