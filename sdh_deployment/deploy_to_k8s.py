@@ -154,12 +154,6 @@ class BaseDeployToK8s(DeploymentStep):
         application_name = get_application_name()
         secret_name = f"{application_name}-secret" if not name else name
 
-        if self.add_application_insights:
-            application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
-            secrets.append(Secret('INSTRUMENTATION_KEY', application_insights.instrumentation_key))
-
-        secrets.append(Secret('BUILD_VERSION', self.env.artifact_tag))
-
         secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
                                  type="Opaque",
                                  data={_.env_key: base64.b64encode(_.val.encode()).decode() for _ in secrets})
@@ -188,7 +182,12 @@ class BaseDeployToK8s(DeploymentStep):
 
         # 3: create kubernetes secrets from azure keyvault
         secrets = KeyVaultSecrets.get_keyvault_secrets(self.fixed_env)
+        if self.add_application_insights:
+            application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
+            secrets.append(Secret('INSTRUMENTATION_KEY', application_insights.instrumentation_key))
+        secrets.append(Secret('BUILD_VERSION', self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.k8s_namespace)
+
         # 3.1: create kubernetes secrets for docker registry
         docker_credentials = get_docker_credentials()
         secrets = [Secret(
