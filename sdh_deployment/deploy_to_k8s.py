@@ -150,13 +150,13 @@ class BaseDeployToK8s(DeploymentStep):
             resource_config=deployment
         )
 
-    def _create_or_patch_secrets(self, secrets, k8s_namespace, name: str = None):
+    def _create_or_patch_secrets(self, secrets, k8s_namespace, name: str = None, secret_type: str = "Opaque"):
         api_instance = client.CoreV1Api()
         application_name = get_application_name()
         secret_name = f"{application_name}-secret" if not name else name
 
         secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
-                                 type="Opaque",
+                                 type=secret_type,
                                  data={_.env_key: base64.b64encode(_.val.encode()).decode() for _ in secrets})
 
         self._create_or_patch_resource(
@@ -197,7 +197,8 @@ class BaseDeployToK8s(DeploymentStep):
                                                                     "password": docker_credentials.password,
                                                                     "auth": f"{docker_credentials.username}:{docker_credentials.password}"}}})
         )]
-        self._create_or_patch_secrets(secrets, self.k8s_namespace, name="acr-auth")
+        secret_type = "kubernetes.io/dockerconfigjson"
+        self._create_or_patch_secrets(secrets, self.k8s_namespace, name="acr-auth", secret_type=secret_type)
 
         # 4: create OR patch kubernetes deployment
         self._create_or_patch_deployment(deployment_config, self.k8s_namespace)
