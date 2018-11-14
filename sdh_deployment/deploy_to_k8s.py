@@ -42,11 +42,13 @@ class BaseDeployToK8s(DeploymentStep):
         # load some k8s config
         k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"],
                                                 {"docker_tag": self.env.artifact_tag,
-                                                 "namespace": self.k8s_namespace},
+                                                 "namespace": self.k8s_namespace,
+                                                 "application_name": get_application_name()},
                                                 yaml.load)
         k8s_service = render_file_with_jinja(self.config["service_config_path"],
                                              {"service_ip": service_ip,
-                                              "namespace": self.k8s_namespace},
+                                              "namespace": self.k8s_namespace,
+                                              "application_name": get_application_name()},
                                              yaml.load)
 
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
@@ -116,7 +118,6 @@ class BaseDeployToK8s(DeploymentStep):
         list_function = getattr(client, f'list_namespaced_{resource_type}')
         patch_function = getattr(client, f'patch_namespaced_{resource_type}')
         create_function = getattr(client, f'create_namespaced_{resource_type}')
-        print(list_function)
         if self._k8s_resource_exists(name, namespace, list_function):
             # we need to patch the existing resource
             logger.info(f"Found existing k8s resource, patching resource {name} in namespace {namespace}")
