@@ -35,6 +35,7 @@ class BaseDeployToK8s(DeploymentStep):
 
     def run(self):
         # get the ip address for this environment
+        service_ip = None
         if "service_ips" in self.config:
             service_ip = self.config["service_ips"][self.env.environment.lower()]
 
