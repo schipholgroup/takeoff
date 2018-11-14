@@ -41,10 +41,12 @@ class BaseDeployToK8s(DeploymentStep):
 
         # load some k8s config
         k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"],
-                                                {"docker_tag": self.env.artifact_tag},
+                                                {"docker_tag": self.env.artifact_tag,
+                                                 "namespace": self.k8s_namespace},
                                                 yaml.load)
         k8s_service = render_file_with_jinja(self.config["service_config_path"],
-                                             {"service_ip": service_ip},
+                                             {"service_ip": service_ip,
+                                              "namespace": self.k8s_namespace},
                                              yaml.load)
 
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
