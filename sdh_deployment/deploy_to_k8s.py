@@ -12,6 +12,7 @@ from kubernetes.client import CoreV1Api
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
 from sdh_deployment.KeyVaultSecrets import KeyVaultSecrets, Secret
+from sdh_deployment.create_application_insights import CreateApplicationInsights
 from sdh_deployment.util import (
     get_subscription_id,
     get_azure_user_credentials,
@@ -30,10 +31,12 @@ class BaseDeployToK8s(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict, fixed_env):
         super().__init__(env, config)
         self.fixed_env = fixed_env
+        self.add_application_insights = self.config.get('add_application_insights', False)
 
     def run(self):
         # get the ip address for this environment
-        service_ip = self.config["service_ips"][self.env.environment.lower()]
+        if "service_ips" in self.config:
+            service_ip = self.config["service_ips"][self.env.environment.lower()]
 
         # load some k8s config
         k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"],
@@ -147,6 +150,12 @@ class BaseDeployToK8s(DeploymentStep):
         api_instance = client.CoreV1Api()
         application_name = get_application_name()
         secret_name = f"{application_name}-secret" if not name else name
+
+        if self.add_application_insights:
+            application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
+            secrets.append(Secret('INSTRUMENTATION_KEY', application_insights.instrumentation_key))
+
+        secrets.append(Secret('BUILD_VERSION', self.env.artifact_tag))
 
         secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
                                  type="Opaque",
