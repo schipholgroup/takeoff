@@ -193,7 +193,8 @@ class BaseDeployToK8s(DeploymentStep):
         secrets = [Secret(
             key=".dockerconfigjson",
             val=json.dumps({"auths": {docker_credentials.registry: {"username": docker_credentials.username,
-                                                                    "password": docker_credentials.password}}})
+                                                                    "password": docker_credentials.password,
+                                                                    "auth": f"{docker_credentials.username}:{docker_credentials.password}"}}})
         )]
         self._create_or_patch_secrets(secrets, self.k8s_namespace, name="acr-auth")
 
