@@ -1,3 +1,6 @@
+pool:
+  vmImage: ubuntu-16.04
+
 steps:
 - task: DockerCompose@0
   displayName: Run python linting
