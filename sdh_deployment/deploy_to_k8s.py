@@ -156,7 +156,7 @@ class BaseDeployToK8s(DeploymentStep):
 
         secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
                                  type=secret_type,
-                                 data={_.env_key: b64_encode(_.val) for _ in secrets})
+                                 data={_.key: b64_encode(_.val) for _ in secrets})
 
         self._create_or_patch_resource(
             client=api_instance,
