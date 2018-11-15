@@ -1,7 +1,24 @@
+import sys
+
 from setuptools import setup
 
 with open("README.md", "r") as f:
     long_description = f.read()
+
+setup_dependencies = []
+test_dependencies = ["pytest==3.8.2",
+                     "pytest-cov==2.6.0",
+                     "pyspark==2.3.1",
+                     "databricks-cli==0.7.2",
+                     "gitpython==2.1.10",
+                     "py4j==0.10.7",
+                     "azure==4.0.0",
+                     "kubernetes==7.0.0",
+                     "jinja2==2.10"]
+if {'pytest', 'test'}.intersection(sys.argv):
+    setup_dependencies = ['pytest-runner==4.2']
+elif {'pep8', 'flake8'}.intersection(sys.argv):
+    setup_dependencies = ['flake8==3.5.0']
 
 setup(
     name="sdh-deployment",
@@ -22,16 +39,10 @@ setup(
         "jinja2==2.10"
     ],
     extras_require={
-        "test": {
-            "pytest==3.8.2",
-            "databricks-cli==0.7.2",
-            "gitpython==2.1.10",
-            "py4j==0.10.7",
-            "azure==4.0.0",
-            "kubernetes==7.0.0",
-            "jinja2==2.10"
-        },
-        "lint": {"flake8==3.5.0"},
+        "test": test_dependencies,
+        "lint": ["flake8==3.5.0"],
     },
+    setup_requires=setup_dependencies,
+    tests_require=test_dependencies,
     scripts=["scripts/run_deployment", "scripts/run_linting", "scripts/run_tests"],
 )
