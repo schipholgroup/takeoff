@@ -96,6 +96,7 @@ def get_shared_blob_service() -> BlockBlobService:
         account_key=os.environ["AZURE_SHARED_BLOB_PASSWORD"],
     )
 
+
 def b64_encode(s: str):
     return base64.b64encode(s.encode()).decode()
 
