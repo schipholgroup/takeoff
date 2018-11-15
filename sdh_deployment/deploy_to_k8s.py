@@ -184,8 +184,8 @@ class BaseDeployToK8s(DeploymentStep):
         secrets = KeyVaultSecrets.get_keyvault_secrets(self.fixed_env)
         if self.add_application_insights:
             application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
-            secrets.append(Secret('INSTRUMENTATION_KEY', application_insights.instrumentation_key))
-        secrets.append(Secret('BUILD_VERSION', self.env.artifact_tag))
+            secrets.append(Secret('instrumentation-key', application_insights.instrumentation_key))
+        secrets.append(Secret('build-version', self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.k8s_namespace)
 
         # 3.1: create kubernetes secrets for docker registry
