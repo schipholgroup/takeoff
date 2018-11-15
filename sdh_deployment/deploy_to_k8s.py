@@ -1,4 +1,3 @@
-import base64
 import json
 import logging
 import os
@@ -18,7 +17,7 @@ from sdh_deployment.util import (
     get_azure_user_credentials,
     get_application_name,
     render_file_with_jinja,
-    get_docker_credentials)
+    get_docker_credentials, b64_encode)
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +156,7 @@ class BaseDeployToK8s(DeploymentStep):
 
         secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
                                  type=secret_type,
-                                 data={_.env_key: base64.b64encode(_.val.encode()).decode() for _ in secrets})
+                                 data={_.env_key: b64_encode(_.val) for _ in secrets})
 
         self._create_or_patch_resource(
             client=api_instance,
@@ -195,7 +194,10 @@ class BaseDeployToK8s(DeploymentStep):
             key=".dockerconfigjson",
             val=json.dumps({"auths": {docker_credentials.registry: {"username": docker_credentials.username,
                                                                     "password": docker_credentials.password,
-                                                                    "auth": f"{docker_credentials.username}:{docker_credentials.password}"}}})
+                                                                    "auth": b64_encode(
+                                                                        f"{docker_credentials.username}:{docker_credentials.password}")
+                                                                    }}
+                            })
         )]
         secret_type = "kubernetes.io/dockerconfigjson"
         self._create_or_patch_secrets(secrets, self.k8s_namespace, name="acr-auth", secret_type=secret_type)
