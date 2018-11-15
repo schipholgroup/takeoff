@@ -17,7 +17,8 @@ from sdh_deployment.util import (
     get_azure_user_credentials,
     get_application_name,
     render_file_with_jinja,
-    get_docker_credentials, b64_encode)
+    get_docker_credentials,
+    b64_encode)
 
 logger = logging.getLogger(__name__)
 
