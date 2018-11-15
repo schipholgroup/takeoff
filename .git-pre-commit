@@ -1,4 +1,5 @@
 #!/bin/bash
 set -e
 
-flake8
+# run tests and check coverage
+python setup.py pep8

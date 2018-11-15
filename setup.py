@@ -32,7 +32,7 @@ setup(
         "gitpython==2.1.10",
         "databricks-cli==0.7.2",
         "pytest==3.8.2",
-        "pytest-cov==2.5.1",
+        "pytest-cov==2.6.0",
         "flake8==3.5.0",
         "PyYAML==3.13",
         "docker==3.5.0",
