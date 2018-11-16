@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from pprint import pprint
 
 import yaml
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
@@ -50,6 +51,10 @@ class BaseDeployToK8s(DeploymentStep):
                                               "namespace": self.k8s_namespace,
                                               "application_name": get_application_name()},
                                              yaml.load)
+        logging.info("Deploying ----------------------------------------")
+        pprint(k8s_deployment)
+        pprint(k8s_service)
+        logging.info("--------------------------------------------------")
 
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
