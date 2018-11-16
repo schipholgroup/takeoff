@@ -1,15 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: my_app_name-service
-  annotations:
-    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+  name: {{application_name}}-service
+  namespace: {{namespace}}
 spec:
   ports:
-  - port: 8080
+  - port: 8433
     protocol: TCP
-    targetPort: 8080
+    targetPort: 8433
   selector:
-    app: my_app_name
+    app: {{application_name}}
   type: LoadBalancer
   loadBalancerIP: {{service_ip}}
