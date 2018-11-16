@@ -16,7 +16,8 @@ steps:
                                                          --cov-report xml \
                                                          --cov-report html \
                                                          --junitxml /root/testresults.xml \
-                                                         tests"
+                                                         tests \
+                                                      && find . -name '*__pycache__' -exec rm -rf {} \+"
 
 - task: DockerCompose@0
   displayName: Run Docker linting
