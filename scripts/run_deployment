@@ -1,4 +1,9 @@
 #!/usr/bin/python3
+import shutil
+import glob
+
+for _ in glob.glob("**/__pycache__", recursive=True):
+    shutil.rmtree(_)
 
 from sdh_deployment.run_deployment import main
 
