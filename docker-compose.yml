@@ -17,6 +17,7 @@ services:
       target: /root
     tty: true
   dockerception:
+    user: root
     image: dockerception
     build:
       context: ./

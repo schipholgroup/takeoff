@@ -40,7 +40,6 @@ steps:
   displayName: Login to registry
 
 - task: DockerCompose@0
-  user: root
   displayName: Deploy to Azure and Databricks
   inputs:
     dockerComposeCommand: |
