@@ -43,7 +43,7 @@ steps:
   displayName: Deploy to Azure and Databricks
   inputs:
     dockerComposeCommand: |
-      run --rm dockerception run_deployment
+      run --rm dockerception sudo run_deployment
   env:
     REGISTRY_USERNAME: ${REGISTRY_USERNAME}
     REGISTRY_PASSWORD: ${REGISTRY_PASSWORD}
