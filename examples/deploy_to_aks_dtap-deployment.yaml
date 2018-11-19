@@ -5,3 +5,4 @@
     dev: "some_ip_in_cluster_range"
     acp: "some_ip_in_cluster_range"
     prd: "some_ip_in_cluster_range"
+  add_application_insights: true

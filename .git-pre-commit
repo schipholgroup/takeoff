@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+# run tests and check coverage
+python setup.py pep8
+python setup.py test

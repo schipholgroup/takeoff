@@ -1,3 +1,7 @@
+pool:
+  vmImage: ubuntu-16.04
+
+steps:
 - script: docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
   displayName: Login to registry
 
@@ -17,3 +21,11 @@
     AZURE_PASSWORD_PRD: ${azure_password_prd}
     REGISTRY_USERNAME: ${REGISTRY_USERNAME}
     REGISTRY_PASSWORD: ${REGISTRY_PASSWORD}
+    AZURE_SP_USERNAME_DEV: $(azure_sp_username_dev)
+    AZURE_SP_PASSWORD_DEV: $(azure_sp_password_dev)
+    AZURE_SP_USERNAME_ACP: $(azure_sp_username_acp)
+    AZURE_SP_PASSWORD_ACP: $(azure_sp_password_acp)
+    AZURE_SP_USERNAME_PRD: $(azure_sp_username_prd)
+    AZURE_SP_PASSWORD_PRD: $(azure_sp_password_prd)
+    AZURE_SHARED_BLOB_USERNAME: $(azure_shared_blob_username)
+    AZURE_SHARED_BLOB_PASSWORD: $(azure_shared_blob_password)

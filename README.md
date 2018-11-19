@@ -238,9 +238,22 @@ In your `.vsts-ci.yaml` you can use additional steps and docker commands to (cho
 
 # Local development
 
+Install the pre-commit hook with
+
+```bash
+cp .git-pre-commit .git/hooks/pre-commit
+```
+
 Make sure you have installed and updated docker
 
-Run linting and tests with:
+Either enable a python3.7 environment on your machine and run
+
+```bash
+python setup.py flake8
+python setup.py test
+```
+
+or use docker and run linting and tests with:
 
 ```bash
 docker-compose run --rm python bash -c "pip install -e .[lint] && flake8"

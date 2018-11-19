@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 from dataclasses import dataclass
@@ -94,6 +95,10 @@ def get_shared_blob_service() -> BlockBlobService:
         account_name=os.environ["AZURE_SHARED_BLOB_USERNAME"],
         account_key=os.environ["AZURE_SHARED_BLOB_PASSWORD"],
     )
+
+
+def b64_encode(s: str):
+    return base64.b64encode(s.encode()).decode()
 
 
 def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
