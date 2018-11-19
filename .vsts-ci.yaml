@@ -18,6 +18,8 @@ steps:
                                                          --junitxml /root/testresults.xml \
                                                          tests \
                                                       && find . -name '*__pycache__' -exec rm -rf {} \+"
+      # the find cache removal is there to remove the pytest cache from the docker container,
+      # otherwise the new Azure Devops vm starts complaining about access rights... f*cking MSFT
 
 - task: DockerCompose@0
   displayName: Run Docker linting
