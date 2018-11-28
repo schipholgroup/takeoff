@@ -17,8 +17,15 @@ class PublishArtifact(DeploymentStep):
         self.publish_package()
 
     def publish_package(self):
-        p = subprocess.Popen(['twine', 'upload', '/root/dist/*',
-                              '--username', os.environ['ARTIFACT_STORE_USERNAME'],
-                              '--password', os.environ['ARTIFACT_STORE_USERNAME'],
-                              '--repository-url', os.environ['ARTIFACT_STORE_URL']], stdout=subprocess.PIPE)
+        logging.info("ARTIFACT_STORE CREDENTIALS")
+        logging.info(os.environ['ARTIFACT_STORE_USERNAME'])
+        logging.info(os.environ['ARTIFACT_STORE_PASSWORD'])
+        logging.info(os.environ['ARTIFACT_STORE_URL'])
+        cmd = ['twine', 'upload', '/root/dist/*',
+               '--username', os.environ['ARTIFACT_STORE_USERNAME'],
+               '--password', os.environ['ARTIFACT_STORE_USERNAME'],
+               '--repository-url', os.environ['ARTIFACT_STORE_URL']]
+
+        logging.info("CMD: {0}".format(" ".join(cmd)))
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         logging.info(p.communicate())
