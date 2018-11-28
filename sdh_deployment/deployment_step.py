@@ -7,6 +7,7 @@ from sdh_deployment.create_eventhub_producer_policies import CreateEventhubProdu
 from sdh_deployment.deploy_to_databricks import DeployToDatabricks
 from sdh_deployment.deploy_to_k8s import DeployToK8s, DeployToVnetK8s
 from sdh_deployment.upload_to_blob import UploadToBlob
+from sdh_deployment.publish_artifact import PublishArtifact
 
 deployment_steps = {
     "uploadToBlob": UploadToBlob,

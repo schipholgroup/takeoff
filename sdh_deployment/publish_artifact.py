@@ -18,7 +18,7 @@ class PublishArtifact(DeploymentStep):
 
     def publish_package(self):
         p = subprocess.Popen(['twine', 'upload', '/root/dist/*',
-                         '--username', os.environ['ARTIFACT_STORE_USERNAME'],
-                         '--password', os.environ['ARTIFACT_STORE_USERNAME'],
-                         '--repository-url', os.environ['ARTIFACT_STORE_URL']], stdout=subprocess.PIPE)
+                              '--username', os.environ['ARTIFACT_STORE_USERNAME'],
+                              '--password', os.environ['ARTIFACT_STORE_USERNAME'],
+                              '--repository-url', os.environ['ARTIFACT_STORE_URL']], stdout=subprocess.PIPE)
         logging.info(p.communicate())
