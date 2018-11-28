@@ -18,5 +18,6 @@ deployment_steps = {
     "createEventhubProducerPolicies": CreateEventhubProducerPolicies,
     "deployToDatabricks": DeployToDatabricks,
     "deployToK8s": DeployToK8s,
-    "deployToVnetK8s": DeployToVnetK8s
+    "deployToVnetK8s": DeployToVnetK8s,
+    "publishArtifact": PublishArtifact
 }
