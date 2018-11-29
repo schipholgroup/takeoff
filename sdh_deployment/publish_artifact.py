@@ -23,7 +23,7 @@ class PublishArtifact(DeploymentStep):
         logging.info(os.environ['ARTIFACT_STORE_URL'])
         cmd = ['twine', 'upload', '/root/dist/*',
                '--username', os.environ['ARTIFACT_STORE_USERNAME'],
-               '--password', os.environ['ARTIFACT_STORE_USERNAME'],
+               '--password', os.environ['ARTIFACT_STORE_PASSWORD'],
                '--repository-url', os.environ['ARTIFACT_STORE_URL']]
 
         logging.info("CMD: {0}".format(" ".join(cmd)))
