@@ -14,18 +14,23 @@ class PublishArtifact(DeploymentStep):
         super().__init__(env, config)
 
     def run(self):
+        self.build_package()
         self.publish_package()
 
+    def build_package(self):
+        # First make sure the correct version number is used.
+        with open('/root/version.py', 'w+') as f:
+            f.write("__version__='0.0.3'")
+        cmd = ['cd', '/root/', '&&', 'python', 'setup.py', 'bdist_wheel']
+
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        logging.info(p.communicate())
+
     def publish_package(self):
-        logging.info("ARTIFACT_STORE CREDENTIALS")
-        logging.info(os.environ['ARTIFACT_STORE_USERNAME'])
-        logging.info(os.environ['ARTIFACT_STORE_PASSWORD'])
-        logging.info(os.environ['ARTIFACT_STORE_URL'])
         cmd = ['twine', 'upload', '/root/dist/*',
                '--username', os.environ['ARTIFACT_STORE_USERNAME'],
                '--password', os.environ['ARTIFACT_STORE_PASSWORD'],
                '--repository-url', os.environ['ARTIFACT_STORE_URL']]
 
-        logging.info("CMD: {0}".format(" ".join(cmd)))
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         logging.info(p.communicate())
