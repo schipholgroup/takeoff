@@ -9,18 +9,20 @@ logger = logging.getLogger(__name__)
 
 
 class PublishArtifact(DeploymentStep):
-    # this will assume the python package has already been built.
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 
     def run(self):
-        self.build_package()
-        self.publish_package()
+        if self.env.on_feature_branch:
+            logging.info("Not on a release tag, not publishing an artifact.")
+        else:
+            self.build_package()
+            self.publish_package()
 
     def build_package(self):
         # First make sure the correct version number is used.
         with open('/root/version.py', 'w+') as f:
-            f.write("__version__='0.0.3'")
+            f.write(f"__version__='{self.env.version}'")
         cmd = ['python', 'setup.py', 'bdist_wheel']
 
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd='/root/')
