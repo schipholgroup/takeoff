@@ -21,9 +21,9 @@ class PublishArtifact(DeploymentStep):
         # First make sure the correct version number is used.
         with open('/root/version.py', 'w+') as f:
             f.write("__version__='0.0.3'")
-        cmd = ['cd', '/root/', '&&', 'python', 'setup.py', 'bdist_wheel']
+        cmd = ['python', 'setup.py', 'bdist_wheel']
 
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd='/root/')
         logging.info(p.communicate())
 
     def publish_package(self):
