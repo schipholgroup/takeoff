@@ -32,7 +32,7 @@ class PublishArtifact(DeploymentStep):
         cmd = ['twine', 'upload', '/root/dist/*',
                '--username', os.environ['ARTIFACT_STORE_USERNAME'],
                '--password', os.environ['ARTIFACT_STORE_PASSWORD'],
-               '--repository-url', os.environ['ARTIFACT_STORE_URL']]
+               '--repository-url', f'{os.environ["ARTIFACT_STORE_URL"]}/upload']
 
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         logging.info(p.communicate())
