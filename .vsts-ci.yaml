@@ -21,11 +21,11 @@ steps:
       # the find cache removal is there to remove the pytest cache from the docker container,
       # otherwise the new Azure Devops vm starts complaining about access rights... f*cking MSFT
 
-- task: DockerCompose@0
-  displayName: Run Docker linting
-  inputs:
-    dockerComposeCommand: |
-      run --rm hadolint bash -c "hadolint Dockerfile_python && hadolint Dockerfile_pyspark"
+#- task: DockerCompose@0
+#  displayName: Run Docker linting
+#  inputs:
+#    dockerComposeCommand: |
+#      run --rm hadolint bash -c "hadolint Dockerfile_python && hadolint Dockerfile_pyspark"
 
 - task: PublishTestResults@2
   inputs:

@@ -1,4 +1,5 @@
 import logging
+import os
 from dataclasses import dataclass
 from typing import List
 
@@ -41,11 +42,18 @@ class DockerImageBuilder(DeploymentStep):
         Returns the log generator, as per https://docker-py.readthedocs.io/en/stable/images.html
         """
         logger.info(f"Building docker image for {docker_file}")
+        env_args = {
+            'ARTIFACT_STORE_USERNAME': os.getenv('ARTIFACT_STORE_USERNAME'),
+            'ARTIFACT_STORE_PASSWORD': os.getenv('ARTIFACT_STORE_PASSWORD'),
+            'ARTIFACT_STORE_URL': os.getenv('ARTIFACT_STORE_URL')
+        }
+        logging.info("DOCKER ARGS: {0}".format(env_args))
         image = docker_client.images.build(
             path="/root",
             tag=tag,
             dockerfile=f"/root/{docker_file}",
-            buildargs={'DANIEL': 'HELLODANIEL'}
+            buildargs=env_args,
+            quiet=False
         )
         return image[1]
 
