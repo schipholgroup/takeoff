@@ -13,7 +13,8 @@ class PublishArtifact(DeploymentStep):
         super().__init__(env, config)
 
     def run(self):
-        if self.env.on_feature_branch:
+        # TODO: debugging with inverted check here
+        if not self.env.on_feature_branch:
             logging.info("Not on a release tag, not publishing an artifact.")
         else:
             self.build_package()
@@ -32,7 +33,7 @@ class PublishArtifact(DeploymentStep):
         cmd = ['twine', 'upload', '/root/dist/*',
                '--username', os.environ['ARTIFACT_STORE_USERNAME'],
                '--password', os.environ['ARTIFACT_STORE_PASSWORD'],
-               '--repository-url', f'{os.environ["ARTIFACT_STORE_URL"]}/upload']
+               '--repository-url', f'https://{os.environ["ARTIFACT_STORE_URL"]}/upload']
 
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         logging.info(p.communicate())
