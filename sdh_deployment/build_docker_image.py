@@ -71,7 +71,8 @@ class DockerImageBuilder(DeploymentStep):
 
             repository = f"{docker_credentials.registry}/{application_name}"
 
-            self.build_image(df.dockerfile, docker_client, f"{repository}:{tag}")
+            res = self.build_image(df.dockerfile, docker_client, f"{repository}:{tag}")
+            logger.info(res)
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
 
