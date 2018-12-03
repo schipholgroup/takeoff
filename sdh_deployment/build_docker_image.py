@@ -55,7 +55,8 @@ class DockerImageBuilder(DeploymentStep):
             buildargs=env_args,
             quiet=False
         )
-        return image[1]
+        logging.info(image)
+        # return image
 
     def deploy(self,
                dockerfiles: List[DockerFile],
@@ -71,8 +72,7 @@ class DockerImageBuilder(DeploymentStep):
 
             repository = f"{docker_credentials.registry}/{application_name}"
 
-            res = self.build_image(df.dockerfile, docker_client, f"{repository}:{tag}")
-            logger.info(res)
+            self.build_image(df.dockerfile, docker_client, f"{repository}:{tag}")
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
 
