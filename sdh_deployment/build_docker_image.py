@@ -56,7 +56,7 @@ class DockerImageBuilder(DeploymentStep):
             quiet=False
         )
         logging.info(image)
-        # return image
+        return image[1]
 
     def deploy(self,
                dockerfiles: List[DockerFile],
