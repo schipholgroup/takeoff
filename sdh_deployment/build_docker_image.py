@@ -43,12 +43,11 @@ class DockerImageBuilder(DeploymentStep):
         """
         logger.info(f"Building docker image for {docker_file}")
         env_args = {
-            'ARTIFACT_STORE_USERNAME': os.getenv('ARTIFACT_STORE_USERNAME'),
-            'ARTIFACT_STORE_PASSWORD': os.getenv('ARTIFACT_STORE_PASSWORD'),
-            'ARTIFACT_STORE_URL': os.getenv('ARTIFACT_STORE_URL'),
-            'DANIEL': 'is_awesome'
+            'DANIEL_USERNAME': 'python_artifacts',
+            'DANIEL_PASSWORD': os.environ['ARTIFACT_STORE_PASSWORD'],
+            'DANIEL_URL': 'schiphol-hub.pkgs.visualstudio.com/_packaging/python_artifacts/pypi'
         }
-        logging.info("DOCKER ARGS: {0}".format(env_args))
+        logger.info("DOCKER ARGS: {0}".format(env_args))
         image = docker_client.images.build(
             path="/root",
             tag=tag,
@@ -57,9 +56,9 @@ class DockerImageBuilder(DeploymentStep):
             quiet=False,
             nocache=True
         )
-        logging.info(image)
+        logger.info(image)
         for el in image[1]:
-            logging.info(el)
+            logger.info(el)
         return image[1]
 
     def deploy(self,

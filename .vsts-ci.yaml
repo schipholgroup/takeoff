@@ -2,11 +2,11 @@ pool:
   vmImage: ubuntu-16.04
 
 steps:
-- task: DockerCompose@0
-  displayName: Run python linting
-  inputs:
-    dockerComposeCommand: |
-      run --rm python bash -c "pip install -e .[lint] && flake8"
+#- task: DockerCompose@0
+#  displayName: Run python linting
+#  inputs:
+#    dockerComposeCommand: |
+#      run --rm python bash -c "pip install -e .[lint] && flake8"
 #- task: DockerCompose@0
 #  displayName: Run python tests
 #  inputs:
