@@ -53,7 +53,8 @@ class DockerImageBuilder(DeploymentStep):
             tag=tag,
             dockerfile=f"/root/{docker_file}",
             buildargs=env_args,
-            quiet=False
+            quiet=False,
+            nocache=True
         )
         logging.info(image)
         return image[1]
