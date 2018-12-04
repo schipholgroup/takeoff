@@ -8,7 +8,7 @@ from docker import DockerClient
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_application_name, get_docker_credentials, docker_logging
+from sdh_deployment.util import get_application_name, get_docker_credentials  # , docker_logging
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class DockerImageBuilder(DeploymentStep):
         ]
         self.deploy(dockerfiles, docker_credentials, client)
 
-    @docker_logging()
+    # @docker_logging()
     def build_image(self, docker_file, docker_client, tag):
         """
         Returns the log generator, as per https://docker-py.readthedocs.io/en/stable/images.html
@@ -45,7 +45,8 @@ class DockerImageBuilder(DeploymentStep):
         env_args = {
             'ARTIFACT_STORE_USERNAME': os.getenv('ARTIFACT_STORE_USERNAME'),
             'ARTIFACT_STORE_PASSWORD': os.getenv('ARTIFACT_STORE_PASSWORD'),
-            'ARTIFACT_STORE_URL': os.getenv('ARTIFACT_STORE_URL')
+            'ARTIFACT_STORE_URL': os.getenv('ARTIFACT_STORE_URL'),
+            'DANIEL': 'is_awesome'
         }
         logging.info("DOCKER ARGS: {0}".format(env_args))
         image = docker_client.images.build(
@@ -57,6 +58,8 @@ class DockerImageBuilder(DeploymentStep):
             nocache=True
         )
         logging.info(image)
+        for el in image[1]:
+            logging.info(el)
         return image[1]
 
     def deploy(self,

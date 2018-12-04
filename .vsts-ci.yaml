@@ -7,19 +7,19 @@ steps:
   inputs:
     dockerComposeCommand: |
       run --rm python bash -c "pip install -e .[lint] && flake8"
-- task: DockerCompose@0
-  displayName: Run python tests
-  inputs:
-    dockerComposeCommand: |
-      run --rm python bash -c "pip install -e .[test] && pytest -vv \
-                                                         --cov=sdh_deployment \
-                                                         --cov-report xml \
-                                                         --cov-report html \
-                                                         --junitxml /root/testresults.xml \
-                                                         tests \
-                                                      && find . -name '*__pycache__' -exec rm -rf {} \+"
-      # the find cache removal is there to remove the pytest cache from the docker container,
-      # otherwise the new Azure Devops vm starts complaining about access rights... f*cking MSFT
+#- task: DockerCompose@0
+#  displayName: Run python tests
+#  inputs:
+#    dockerComposeCommand: |
+#      run --rm python bash -c "pip install -e .[test] && pytest -vv \
+#                                                         --cov=sdh_deployment \
+#                                                         --cov-report xml \
+#                                                         --cov-report html \
+#                                                         --junitxml /root/testresults.xml \
+#                                                         tests \
+#                                                      && find . -name '*__pycache__' -exec rm -rf {} \+"
+#      # the find cache removal is there to remove the pytest cache from the docker container,
+#      # otherwise the new Azure Devops vm starts complaining about access rights... f*cking MSFT
 
 #- task: DockerCompose@0
 #  displayName: Run Docker linting
@@ -27,17 +27,17 @@ steps:
 #    dockerComposeCommand: |
 #      run --rm hadolint bash -c "hadolint Dockerfile_python && hadolint Dockerfile_pyspark"
 
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: $(System.DefaultWorkingDirectory)/testresults.xml
-
-- task: PublishCodeCoverageResults@1
-  displayName: 'Publish coverage results'
-  inputs:
-    codeCoverageTool: 'cobertura'
-    summaryFileLocation: $(System.DefaultWorkingDirectory)/coverage.xml
-    reportDirectory: $(System.DefaultWorkingDirectory)/htmlcov
-    failIfCoverageEmpty: true
+#- task: PublishTestResults@2
+#  inputs:
+#    testResultsFiles: $(System.DefaultWorkingDirectory)/testresults.xml
+#
+#- task: PublishCodeCoverageResults@1
+#  displayName: 'Publish coverage results'
+#  inputs:
+#    codeCoverageTool: 'cobertura'
+#    summaryFileLocation: $(System.DefaultWorkingDirectory)/coverage.xml
+#    reportDirectory: $(System.DefaultWorkingDirectory)/htmlcov
+#    failIfCoverageEmpty: true
 
 - script: docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
   displayName: Login to registry
