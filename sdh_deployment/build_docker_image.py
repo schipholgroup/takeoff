@@ -8,7 +8,7 @@ from docker import DockerClient
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_application_name, get_docker_credentials  # , docker_logging
+from sdh_deployment.util import get_application_name, get_docker_credentials, log_docker  # , docker_logging
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,6 @@ class DockerImageBuilder(DeploymentStep):
         ]
         self.deploy(dockerfiles, docker_credentials, client)
 
-    # @docker_logging()
     def build_image(self, docker_file, docker_client, tag):
         """
         Returns the log generator, as per https://docker-py.readthedocs.io/en/stable/images.html
@@ -48,18 +47,20 @@ class DockerImageBuilder(DeploymentStep):
             'DANIEL_URL': 'schiphol-hub.pkgs.visualstudio.com/_packaging/python_artifacts/pypi'
         }
         logger.info("DOCKER ARGS: {0}".format(env_args))
-        image = docker_client.images.build(
-            path="/root",
-            tag=tag,
-            dockerfile=f"/root/{docker_file}",
-            buildargs=env_args,
-            quiet=False,
-            nocache=True
-        )
-        logger.info(image)
-        for el in image[1]:
-            logger.info(el)
-        return image[1]
+        try:
+            image = docker_client.images.build(
+                path="/root",
+                tag=tag,
+                dockerfile=f"/root/{docker_file}",
+                buildargs=env_args,
+                quiet=False,
+                nocache=True
+            )
+            log_docker(image[1])
+
+        except docker.errors.BuildError as e:
+            log_docker(e.build_logs)
+            raise e
 
     def deploy(self,
                dockerfiles: List[DockerFile],
@@ -79,5 +80,4 @@ class DockerImageBuilder(DeploymentStep):
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
 
-            logs = docker_client.images.push(repository=repository, tag=tag)
-            print(logs)
+            docker_client.images.push(repository=repository, tag=tag)

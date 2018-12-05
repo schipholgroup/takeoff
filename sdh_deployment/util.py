@@ -1,5 +1,4 @@
 import base64
-import logging
 import os
 from dataclasses import dataclass
 from typing import Pattern, Callable
@@ -141,17 +140,17 @@ def load_yaml(path: str) -> dict:
         config_file = f.read()
     return load(config_file)
 
+def log_docker(logs_iter):
+    from pprint import pprint
+    for line in logs_iter:
+        pprint(line)
 
-def docker_logging(nr_of_ending_lines=25):
+
+def docker_logging():
     def decorator(f):
         def wrap(self, *args, **kwargs):
             logs = f(self, *args, **kwargs)
-            try:
-                lines = logs.decode().split('\n')
-                logging.info("--------- DOCKER LOGS ------------")
-                logging.info('\n'.join(lines[-nr_of_ending_lines:]))
-            except Exception as e:
-                logging.error(e)
+            log_docker(logs)
             return logs
 
         return wrap
