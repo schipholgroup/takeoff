@@ -60,7 +60,7 @@ class DockerImageBuilder(DeploymentStep):
             log_docker(image[1])
 
         except docker.errors.BuildError as e:
-            log_docker(e.build_logs)
+            log_docker(e.build_log)
             raise e
 
     def deploy(self,
