@@ -42,9 +42,9 @@ class DockerImageBuilder(DeploymentStep):
         """
         logger.info(f"Building docker image for {docker_file}")
         env_args = {
-            'DANIEL_USERNAME': 'python_artifacts',
-            'DANIEL_PASSWORD': os.environ['ARTIFACT_STORE_PASSWORD'],
-            'DANIEL_URL': 'schiphol-hub.pkgs.visualstudio.com/_packaging/python_artifacts/pypi'
+            'ARTIFACT_STORE_USERNAME': os.environ['ARTIFACT_STORE_USERNAME'],
+            'ARTIFACT_STORE_PASSWORD': os.environ['ARTIFACT_STORE_PASSWORD'],
+            'ARTIFACT_STORE_URL': os.environ['ARTIFACT_STORE_URL']
         }
         logger.info("DOCKER ARGS: {0}".format(env_args))
         try:
