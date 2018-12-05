@@ -140,6 +140,7 @@ def load_yaml(path: str) -> dict:
         config_file = f.read()
     return load(config_file)
 
+
 def log_docker(logs_iter):
     from pprint import pprint
     for line in logs_iter:

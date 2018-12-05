@@ -8,10 +8,6 @@ services:
       source: ./
       target: /root
     tty: true
-#    environment:
-#      - ARTIFACT_STORE_USERNAME_E
-#      - ARTIFACT_STORE_PASSWORD_E
-#      - ARTIFACT_STORE_URL_E
 
   hadolint:
     image: hadolint/hadolint:latest-debian

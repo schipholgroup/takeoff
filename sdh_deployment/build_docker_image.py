@@ -41,18 +41,19 @@ class DockerImageBuilder(DeploymentStep):
         Returns the log generator, as per https://docker-py.readthedocs.io/en/stable/images.html
         """
         logger.info(f"Building docker image for {docker_file}")
-        env_args = {
+
+        # Set these environment variables at build time only, they should not be available at runtime
+        build_args = {
             'ARTIFACT_STORE_USERNAME': os.environ['ARTIFACT_STORE_USERNAME'],
             'ARTIFACT_STORE_PASSWORD': os.environ['ARTIFACT_STORE_PASSWORD'],
             'ARTIFACT_STORE_URL': os.environ['ARTIFACT_STORE_URL']
         }
-        logger.info("DOCKER ARGS: {0}".format(env_args))
         try:
             image = docker_client.images.build(
                 path="/root",
                 tag=tag,
                 dockerfile=f"/root/{docker_file}",
-                buildargs=env_args,
+                buildargs=build_args,
                 quiet=False,
                 nocache=True
             )
