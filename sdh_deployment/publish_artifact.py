@@ -13,8 +13,7 @@ class PublishArtifact(DeploymentStep):
         super().__init__(env, config)
 
     def run(self):
-        # TODO: debugging with inverted check here
-        if not self.env.on_feature_branch:
+        if self.env.on_feature_branch:
             logging.info("Not on a release tag, not publishing an artifact.")
         else:
             self.build_package()
@@ -22,9 +21,8 @@ class PublishArtifact(DeploymentStep):
 
     def build_package(self):
         # First make sure the correct version number is used.
-        # TODO: temporarily disabled
-        # with open('/root/version.py', 'w+') as f:
-        #     f.write(f"__version__='{self.env.version}'")
+        with open('/root/version.py', 'w+') as f:
+            f.write(f"__version__='{self.env.version}'")
         cmd = ['python', 'setup.py', 'bdist_wheel']
 
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd='/root/')
