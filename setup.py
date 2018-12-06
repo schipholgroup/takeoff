@@ -28,6 +28,7 @@ setup(
     author_email="SDH-Support@schiphol.nl",
     packages=["runway"],
     install_requires=[
+        "azure==4.0.0"
         "gitpython==2.1.10",
         "databricks-cli==0.7.2",
         "pytest==3.8.2",
