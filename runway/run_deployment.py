@@ -2,8 +2,8 @@ import logging
 
 from yaml import load
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.util import get_tag, get_branch, get_short_hash
+from runway.ApplicationVersion import ApplicationVersion
+from runway.util import get_tag, get_branch, get_short_hash
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +45,7 @@ def main():
 
 
 def run_task(env: ApplicationVersion, task: str, task_config):
-    from sdh_deployment.deployment_step import deployment_steps
+    from runway.deployment_step import deployment_steps
     if task not in deployment_steps:
         raise ValueError(
             f"Deployment step {task} is unknown, please check the config"

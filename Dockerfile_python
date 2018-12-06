@@ -5,7 +5,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY setup.py /
 COPY README.md /
 COPY scripts /scripts
-COPY sdh_deployment /sdh_deployment
+COPY runway /runway
 
 RUN python setup.py install
 RUN pip install azure==4.0.0

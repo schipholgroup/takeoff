@@ -4,8 +4,8 @@ from unittest import mock
 from kubernetes.client import CoreV1Api
 from kubernetes.client import V1SecretList
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.deploy_to_k8s import DeployToK8s
+from runway.ApplicationVersion import ApplicationVersion
+from runway.deploy_to_k8s import DeployToK8s
 
 
 class TestDeployToK8s(unittest.TestCase):

@@ -6,18 +6,13 @@ steps:
   displayName: Run python linting
   inputs:
     dockerComposeCommand: |
-      run --rm python bash -c "pip install -e .[lint] && flake8"
+      run --rm python bash -c "python setup.py flake8"
+
 - task: DockerCompose@0
   displayName: Run python tests
   inputs:
     dockerComposeCommand: |
-      run --rm python bash -c "pip install -e .[test] && pytest -vv \
-                                                         --cov=sdh_deployment \
-                                                         --cov-report xml \
-                                                         --cov-report html \
-                                                         --junitxml /root/testresults.xml \
-                                                         tests \
-                                                      && find . -name '*__pycache__' -exec rm -rf {} \+"
+      run --rm python bash -c "python setup.py test && find . -name '*__pycache__' -exec rm -rf {} \+"
       # the find cache removal is there to remove the pytest cache from the docker container,
       # otherwise the new Azure Devops vm starts complaining about access rights... f*cking MSFT
 
@@ -46,7 +41,7 @@ steps:
   displayName: Deploy to Azure and Databricks
   inputs:
     dockerComposeCommand: |
-      run --rm dockerception run_deployment
+      run --rm dockerception runway
   env:
     REGISTRY_USERNAME: ${REGISTRY_USERNAME}
     REGISTRY_PASSWORD: ${REGISTRY_PASSWORD}

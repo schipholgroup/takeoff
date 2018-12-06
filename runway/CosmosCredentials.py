@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from azure.mgmt.cosmosdb import CosmosDB
 
-from sdh_deployment.util import get_subscription_id, get_azure_user_credentials
+from runway.util import get_subscription_id, get_azure_user_credentials
 
 
 @dataclass(frozen=True)

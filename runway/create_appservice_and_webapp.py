@@ -8,11 +8,11 @@ from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConfig
 from msrestazure.azure_exceptions import CloudError
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.CosmosCredentials import CosmosCredentials
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.create_application_insights import CreateApplicationInsights
-from sdh_deployment.util import (
+from runway.ApplicationVersion import ApplicationVersion
+from runway.CosmosCredentials import CosmosCredentials
+from runway.DeploymentStep import DeploymentStep
+from runway.create_application_insights import CreateApplicationInsights
+from runway.util import (
     get_subscription_id,
     get_azure_user_credentials,
     RESOURCE_GROUP,

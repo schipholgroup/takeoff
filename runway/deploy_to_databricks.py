@@ -9,10 +9,10 @@ from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
 
-from sdh_deployment import util
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import (
+from runway import util
+from runway.ApplicationVersion import ApplicationVersion
+from runway.DeploymentStep import DeploymentStep
+from runway.util import (
     get_application_name,
     get_databricks_client,
     has_prefix_match,
