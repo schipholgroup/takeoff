@@ -44,9 +44,6 @@ class DockerImageBuilder(DeploymentStep):
 
         # Set these environment variables at build time only, they should not be available at runtime
         build_args = {
-            'ARTIFACT_STORE_USERNAME': os.getenv('ARTIFACT_STORE_USERNAME'),
-            'ARTIFACT_STORE_PASSWORD': os.getenv('ARTIFACT_STORE_PASSWORD'),
-            'ARTIFACT_STORE_URL': os.getenv('ARTIFACT_STORE_URL'),
             'PIP_EXTRA_INDEX_URL': os.getenv('PIP_EXTRA_INDEX_URL')
         }
         try:
