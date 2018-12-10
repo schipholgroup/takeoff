@@ -1,4 +1,3 @@
-import os
 import logging
 import subprocess
 
@@ -16,9 +15,9 @@ class PublishArtifact(DeploymentStep):
         super().__init__(env, config)
 
     def run(self):
-        if self.env.on_feature_branch:
+        # TODO: debugging
+        if not self.env.on_feature_branch:
             logging.info("Not on a release tag, not publishing an artifact.")
-            logging.info(os.environ['ARTIFACT_STORE_USERNAME'])
         else:
             self.build_package()
             self.publish_package()
