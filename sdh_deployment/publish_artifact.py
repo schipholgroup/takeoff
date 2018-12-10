@@ -5,7 +5,7 @@ from twine.commands.upload import upload
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_artifact_store_settings
+from sdh_deployment.util import get_artifact_store_settings, log_docker
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,11 @@ class PublishArtifact(DeploymentStep):
             f.write(f"__version__='{self.env.version}'")
         cmd = ['python', 'setup.py', 'bdist_wheel']
 
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd='/root/')
-        logging.info(p.communicate())
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd='/root/')
+        log_docker(iter(p.stdout.readline, ''))
+        return_code = p.wait()
+
+        assert return_code == 0
 
     def publish_package(self):
         upload(upload_settings=get_artifact_store_settings(), dists=['/root/dist/*'])
