@@ -15,8 +15,7 @@ class PublishArtifact(DeploymentStep):
         super().__init__(env, config)
 
     def run(self):
-        # TODO: debugging
-        if not self.env.on_feature_branch:
+        if self.env.on_feature_branch:
             logging.info("Not on a release tag, not publishing an artifact.")
         else:
             self.build_package()
