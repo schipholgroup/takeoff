@@ -46,7 +46,8 @@ class DockerImageBuilder(DeploymentStep):
         build_args = {
             'ARTIFACT_STORE_USERNAME': os.getenv('ARTIFACT_STORE_USERNAME'),
             'ARTIFACT_STORE_PASSWORD': os.getenv('ARTIFACT_STORE_PASSWORD'),
-            'ARTIFACT_STORE_URL': os.getenv('ARTIFACT_STORE_URL')
+            'ARTIFACT_STORE_URL': os.getenv('ARTIFACT_STORE_URL'),
+            'PIP_EXTRA_INDEX_URL': os.getenv('PIP_EXTRA_INDEX_URL')
         }
         try:
             image = docker_client.images.build(
