@@ -6,4 +6,5 @@ COPY README.md /
 COPY scripts /scripts
 COPY runway /runway
 
+RUN pip install requests==2.20.0
 RUN python setup.py install
