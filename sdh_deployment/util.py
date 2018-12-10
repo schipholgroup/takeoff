@@ -8,6 +8,7 @@ from azure.storage.blob import BlockBlobService
 from databricks_cli.sdk import ApiClient
 from git import Repo
 from jinja2 import Template
+from twine.settings import Settings
 from yaml import load
 
 RESOURCE_GROUP = "sdh{dtap}"
@@ -111,6 +112,12 @@ def get_databricks_client(dtap: str) -> ApiClient:
     databricks_token = os.environ[f"AZURE_DATABRICKS_TOKEN_{dtap.upper()}"]
     databricks_host = os.environ["AZURE_DATABRICKS_HOST"]
     return ApiClient(host=databricks_host, token=databricks_token)
+
+
+def get_artifact_store_settings() -> Settings:
+    return Settings(repository_url=os.environ['ARTIFACT_STORE_UPLOAD_URL'],
+                    username=os.environ['ARTIFACT_STORE_USERNAME'],
+                    password=os.environ['ARTIFACT_STORE_PASSWORD'])
 
 
 def get_matching_group(find_in: str, pattern: Pattern[str], group: int):

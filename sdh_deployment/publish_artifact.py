@@ -1,9 +1,12 @@
-import logging
 import os
+import logging
 import subprocess
+
+from twine.commands.upload import upload
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
+from sdh_deployment.util import get_artifact_store_settings
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +18,7 @@ class PublishArtifact(DeploymentStep):
     def run(self):
         if self.env.on_feature_branch:
             logging.info("Not on a release tag, not publishing an artifact.")
+            logging.info(os.environ['ARTIFACT_STORE_USERNAME'])
         else:
             self.build_package()
             self.publish_package()
@@ -29,10 +33,4 @@ class PublishArtifact(DeploymentStep):
         logging.info(p.communicate())
 
     def publish_package(self):
-        cmd = ['twine', 'upload', '/root/dist/*',
-               '--username', os.environ['ARTIFACT_STORE_USERNAME'],
-               '--password', os.environ['ARTIFACT_STORE_PASSWORD'],
-               '--repository-url', f'https://{os.environ["ARTIFACT_STORE_URL"]}/upload']
-
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        logging.info(p.communicate())
+        upload(upload_settings=get_artifact_store_settings(), dists=['/root/dist/*'])
