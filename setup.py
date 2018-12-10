@@ -44,7 +44,5 @@ setup(
     },
     setup_requires=setup_dependencies,
     tests_require=test_dependencies,
-    scripts=["scripts/runway",
-             "scripts/run_linting",
-             "scripts/run_tests"],
+    scripts=["scripts/runway"],
 )

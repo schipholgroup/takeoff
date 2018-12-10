@@ -8,7 +8,7 @@ COPY scripts /scripts
 COPY runway /runway
 
 RUN python setup.py install
-RUN pip install azure==4.0.0
+RUN pip install azure==4.0.0 --force-reinstall
 
 RUN pip install azure-mgmt-containerservice==4.2.2 kubernetes==7.0.0
 
