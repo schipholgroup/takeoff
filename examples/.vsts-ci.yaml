@@ -9,7 +9,7 @@ steps:
   displayName: Build Docker image and deploy on k8s
   inputs:
     dockerComposeCommand: |
-      run --rm python run_deployment
+      run --rm python runway
   env:
     AZURE_SP_TENANTID: ${azure_sp_tenantid}
     SUBSCRIPTION_ID: ${subscription_id}
