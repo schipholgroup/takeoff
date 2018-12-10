@@ -42,6 +42,8 @@ class DockerImageBuilder(DeploymentStep):
         """
         logger.info(f"Building docker image for {docker_file}")
 
+        logger.info(self.config)
+
         # Set these environment variables at build time only, they should not be available at runtime
         build_args = {
             'ARTIFACT_STORE_USERNAME': os.environ['ARTIFACT_STORE_USERNAME'],
