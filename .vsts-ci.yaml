@@ -12,7 +12,7 @@ steps:
   displayName: Run python tests
   inputs:
     dockerComposeCommand: |
-      run --rm python bash -c "python setup.py test && find . -name '*__pycache__' -exec rm -rf {} \+"
+      run --rm dockerception bash -c "python setup.py test && find . -name '*__pycache__' -exec rm -rf {} \+"
       # the find cache removal is there to remove the pytest cache from the docker container,
       # otherwise the new Azure Devops vm starts complaining about access rights... f*cking MSFT
 
