@@ -8,7 +8,7 @@ from docker import DockerClient
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_application_name, get_docker_credentials, log_docker  # , docker_logging
+from sdh_deployment.util import get_application_name, get_docker_credentials, log_docker
 
 logger = logging.getLogger(__name__)
 

@@ -152,15 +152,3 @@ def log_docker(logs_iter):
     from pprint import pprint
     for line in logs_iter:
         pprint(line)
-
-
-def docker_logging():
-    def decorator(f):
-        def wrap(self, *args, **kwargs):
-            logs = f(self, *args, **kwargs)
-            log_docker(logs)
-            return logs
-
-        return wrap
-
-    return decorator
