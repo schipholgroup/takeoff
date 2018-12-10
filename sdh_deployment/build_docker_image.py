@@ -42,13 +42,11 @@ class DockerImageBuilder(DeploymentStep):
         """
         logger.info(f"Building docker image for {docker_file}")
 
-        logger.info(self.config)
-
         # Set these environment variables at build time only, they should not be available at runtime
         build_args = {
-            'ARTIFACT_STORE_USERNAME': os.environ['ARTIFACT_STORE_USERNAME'],
-            'ARTIFACT_STORE_PASSWORD': os.environ['ARTIFACT_STORE_PASSWORD'],
-            'ARTIFACT_STORE_URL': os.environ['ARTIFACT_STORE_URL']
+            'ARTIFACT_STORE_USERNAME': os.getenv('ARTIFACT_STORE_USERNAME'),
+            'ARTIFACT_STORE_PASSWORD': os.getenv('ARTIFACT_STORE_PASSWORD'),
+            'ARTIFACT_STORE_URL': os.getenv('ARTIFACT_STORE_URL')
         }
         try:
             image = docker_client.images.build(
