@@ -38,5 +38,4 @@ def test_common_credentials(_):
     res = victim.common_credentials('dev')
     assert len(res) == 13
     assert type(res) == dict
-    assert res[victim.CommonCredentials.subscription_id].key == 'subscription-id'
-    assert res[victim.CommonCredentials.subscription_id].val == 1
+    assert res[victim.CommonCredentials.subscription_id] == 1
