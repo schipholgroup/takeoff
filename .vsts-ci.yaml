@@ -43,8 +43,10 @@ steps:
     dockerComposeCommand: |
       run --rm dockerception runway
   env:
-    REGISTRY_USERNAME: ${REGISTRY_USERNAME}
-    REGISTRY_PASSWORD: ${REGISTRY_PASSWORD}
-    ARTIFACT_STORE_USERNAME: ${ARTIFACT_STORE_USERNAME}
-    ARTIFACT_STORE_PASSWORD: ${ARTIFACT_STORE_PASSWORD}
-    ARTIFACT_STORE_URL: ${ARTIFACT_STORE_URL}
+    AZURE_TENANTID: ${azure_tenantid}
+    AZURE_KEYVAULT_USERNAME_DEV: $(azure_keyvault_username_dev)
+    AZURE_KEYVAULT_PASSWORD_DEV: $(azure_keyvault_password_dev)
+    AZURE_KEYVAULT_USERNAME_ACP: $(azure_keyvault_username_acp)
+    AZURE_KEYVAULT_PASSWORD_ACP: $(azure_keyvault_password_acp)
+    AZURE_KEYVAULT_USERNAME_PRD: $(azure_keyvault_username_prd)
+    AZURE_KEYVAULT_PASSWORD_PRD: $(azure_keyvault_password_prd)
