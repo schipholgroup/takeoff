@@ -11,6 +11,8 @@ from jinja2 import Template
 from twine.settings import Settings
 from yaml import load
 
+from runway.credentials import common_credentials, CommonCredentials
+
 RESOURCE_GROUP = "sdh{dtap}"
 EVENTHUB_NAMESPACE = "sdheventhub{dtap}"
 AZURE_LOCATION = "west europe"  # default to this Azure location
@@ -63,15 +65,17 @@ def get_application_name() -> str:
 
 
 def get_docker_credentials() -> DockerCredentials:
+    creds = common_credentials('dev')
     return DockerCredentials(
-        username=os.environ["REGISTRY_USERNAME"],
-        password=os.environ["REGISTRY_PASSWORD"],
+        username=creds[CommonCredentials.registry_username],
+        password=creds[CommonCredentials.registry_password],
         registry=SHARED_REGISTRY,
     )
 
 
 def get_subscription_id() -> str:
-    return os.environ["SUBSCRIPTION_ID"]
+    creds = common_credentials('dev')
+    return creds[CommonCredentials.subscription_id]
 
 
 def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
@@ -83,17 +87,18 @@ def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
 
 
 def read_azure_sp(dtap: str) -> AzureSp:
-    azure_sp_tenantid = os.environ["AZURE_SP_TENANTID"]
-    azure_sp_username = os.environ[f"AZURE_SP_USERNAME_{dtap.upper()}"]
-    azure_sp_password = os.environ[f"AZURE_SP_PASSWORD_{dtap.upper()}"]
+    azure_sp_tenantid = os.environ["AZURE_TENANTID"]
+    azure_sp_username = os.environ[f"AZURE_KEYVAULT_USERNAME_{dtap.upper()}"]
+    azure_sp_password = os.environ[f"AZURE_KEYVAULT_PASSWORD_{dtap.upper()}"]
 
     return AzureSp(azure_sp_tenantid, azure_sp_username, azure_sp_password)
 
 
 def get_shared_blob_service() -> BlockBlobService:
+    creds = common_credentials('dev')
     return BlockBlobService(
-        account_name=os.environ["AZURE_SHARED_BLOB_USERNAME"],
-        account_key=os.environ["AZURE_SHARED_BLOB_PASSWORD"],
+        account_name=creds[CommonCredentials.azure_shared_blob_username],
+        account_key=creds[CommonCredentials.azure_shared_blob_password],
     )
 
 
@@ -102,15 +107,17 @@ def b64_encode(s: str):
 
 
 def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
+    creds = common_credentials(dtap)
     return UserPassCredentials(
-        os.environ[f"AZURE_USERNAME_{dtap.upper()}"],
-        os.environ[f"AZURE_PASSWORD_{dtap.upper()}"],
+        creds[CommonCredentials.azure_username],
+        creds[CommonCredentials.azure_password]
     )
 
 
 def get_databricks_client(dtap: str) -> ApiClient:
-    databricks_token = os.environ[f"AZURE_DATABRICKS_TOKEN_{dtap.upper()}"]
-    databricks_host = os.environ["AZURE_DATABRICKS_HOST"]
+    creds = common_credentials(dtap)
+    databricks_token = creds[CommonCredentials.azure_databricks_token]
+    databricks_host = creds[CommonCredentials.azure_databricks_host]
     return ApiClient(host=databricks_host, token=databricks_token)
 
 
