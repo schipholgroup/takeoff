@@ -21,14 +21,14 @@ elif {'pep8', 'flake8'}.intersection(sys.argv):
     setup_dependencies = ['flake8==3.5.0']
 
 setup(
-    name="sdh-deployment",
-    version="0.0.1",
-    description="A package to bundle deployment scripts",
+    name="Runway",
+    description="A package to bundle deployment scripts for Microsoft Azure",
     author="Schiphol Data Hub",
     long_description=long_description,
     author_email="SDH-Support@schiphol.nl",
-    packages=["sdh_deployment"],
+    packages=["runway"],
     install_requires=[
+        "azure==4.0.0",
         "gitpython==2.1.10",
         "databricks-cli==0.7.2",
         "pytest==3.8.2",
@@ -45,5 +45,5 @@ setup(
     },
     setup_requires=setup_dependencies,
     tests_require=test_dependencies,
-    scripts=["scripts/run_deployment", "scripts/run_linting", "scripts/run_tests"],
+    scripts=["scripts/runway"],
 )

@@ -1,7 +1,3 @@
-pool:
-  vmImage: ubuntu-16.04
-
-steps:
 - task: DockerCompose@0
   displayName: Run python linting
   inputs:
@@ -33,18 +29,3 @@ steps:
     summaryFileLocation: $(System.DefaultWorkingDirectory)/coverage.xml
     reportDirectory: $(System.DefaultWorkingDirectory)/htmlcov
     failIfCoverageEmpty: true
-
-- script: docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
-  displayName: Login to registry
-
-- task: DockerCompose@0
-  displayName: Deploy to Azure and Databricks
-  inputs:
-    dockerComposeCommand: |
-      run --rm dockerception runway
-  env:
-    REGISTRY_USERNAME: ${REGISTRY_USERNAME}
-    REGISTRY_PASSWORD: ${REGISTRY_PASSWORD}
-    ARTIFACT_STORE_USERNAME: ${ARTIFACT_STORE_USERNAME}
-    ARTIFACT_STORE_PASSWORD: ${ARTIFACT_STORE_PASSWORD}
-    ARTIFACT_STORE_UPLOAD_URL: ${ARTIFACT_STORE_UPLOAD_URL}

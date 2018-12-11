@@ -1,6 +1,6 @@
 import unittest
 
-from sdh_deployment.deploy_to_databricks import JobConfig, DeployToDatabricks as victim
+from runway.deploy_to_databricks import JobConfig, DeployToDatabricks as victim
 
 jobs = [
     JobConfig("foo-SNAPSHOT", 1),

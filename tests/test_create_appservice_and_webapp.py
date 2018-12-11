@@ -4,11 +4,11 @@ import unittest
 from unittest import mock
 from unittest.mock import Mock
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.CosmosCredentials import CosmosCredentials
-from sdh_deployment.create_appservice_and_webapp import (
+from runway.ApplicationVersion import ApplicationVersion
+from runway.CosmosCredentials import CosmosCredentials
+from runway.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp as victim)
-from sdh_deployment.create_appservice_and_webapp import (
+from runway.create_appservice_and_webapp import (
     SiteConfig,
     AppService,
     AppServiceSKU,
@@ -16,7 +16,7 @@ from sdh_deployment.create_appservice_and_webapp import (
     Site,
     RESOURCE_GROUP,
 )
-from sdh_deployment.util import SHARED_REGISTRY
+from runway.util import SHARED_REGISTRY
 
 ENV = ApplicationVersion("env", "ver", 'branch')
 
@@ -40,10 +40,10 @@ VALID_SITE_CONFIG = SiteConfig(
 
 class TestDeployToWebApp(unittest.TestCase):
     @mock.patch(
-        "sdh_deployment.create_application_insights.CreateApplicationInsights.create_application_insights"
+        "runway.create_application_insights.CreateApplicationInsights.create_application_insights"
     )
     @mock.patch(
-        "sdh_deployment.CosmosCredentials.CosmosCredentials.get_cosmos_read_only_credentials"
+        "runway.CosmosCredentials.CosmosCredentials.get_cosmos_read_only_credentials"
     )
     @mock.patch.dict(
         os.environ,
@@ -97,10 +97,10 @@ class TestDeployToWebApp(unittest.TestCase):
         assert expected_appservice_config == result
 
     @mock.patch(
-        "sdh_deployment.create_appservice_and_webapp.CreateAppserviceAndWebapp._build_site_config"
+        "runway.create_appservice_and_webapp.CreateAppserviceAndWebapp._build_site_config"
     )
     @mock.patch(
-        "sdh_deployment.CosmosCredentials.CosmosCredentials.get_cosmos_read_only_credentials"
+        "runway.CosmosCredentials.CosmosCredentials.get_cosmos_read_only_credentials"
     )
     @mock.patch.dict(
         os.environ,

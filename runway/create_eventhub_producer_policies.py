@@ -4,10 +4,10 @@ from typing import List
 from azure.mgmt.eventhub import EventHubManagementClient
 from azure.mgmt.relay.models import AccessRights
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.create_databricks_secrets import Secret, CreateDatabricksSecrets
-from sdh_deployment.util import (
+from runway.ApplicationVersion import ApplicationVersion
+from runway.DeploymentStep import DeploymentStep
+from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
+from runway.util import (
     get_azure_user_credentials,
     RESOURCE_GROUP,
     EVENTHUB_NAMESPACE,

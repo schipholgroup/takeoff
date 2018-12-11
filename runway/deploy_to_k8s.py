@@ -9,11 +9,11 @@ from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes import client, config
 from kubernetes.client import CoreV1Api
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.KeyVaultSecrets import KeyVaultSecrets, Secret
-from sdh_deployment.create_application_insights import CreateApplicationInsights
-from sdh_deployment.util import (
+from runway.ApplicationVersion import ApplicationVersion
+from runway.DeploymentStep import DeploymentStep
+from runway.KeyVaultSecrets import KeyVaultSecrets, Secret
+from runway.create_application_insights import CreateApplicationInsights
+from runway.util import (
     get_subscription_id,
     get_azure_user_credentials,
     get_application_name,

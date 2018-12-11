@@ -1,6 +1,6 @@
 import abc
 
-from sdh_deployment import ApplicationVersion
+from runway import ApplicationVersion
 
 
 class DeploymentStep(object):

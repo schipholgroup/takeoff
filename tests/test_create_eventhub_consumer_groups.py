@@ -2,8 +2,8 @@ import os
 import unittest
 from unittest import mock
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.create_eventhub_consumer_groups import (
+from runway.ApplicationVersion import ApplicationVersion
+from runway.create_eventhub_consumer_groups import (
     ConsumerGroup,
     EventHubConsumerGroup,
     CreateEventhubConsumerGroups as victim,

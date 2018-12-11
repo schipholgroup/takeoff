@@ -1,0 +1,4 @@
+#!/usr/bin/python3
+from runway.run_deployment import main
+
+main()

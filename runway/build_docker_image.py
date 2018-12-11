@@ -6,9 +6,9 @@ from typing import List
 import docker
 from docker import DockerClient
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_application_name, get_docker_credentials, log_docker
+from runway.ApplicationVersion import ApplicationVersion
+from runway.DeploymentStep import DeploymentStep
+from runway.util import get_application_name, get_docker_credentials, log_docker
 
 logger = logging.getLogger(__name__)
 

@@ -4,6 +4,7 @@ FROM fokkodriesprong/docker-pyspark:latest
 COPY setup.py /
 COPY README.md /
 COPY scripts /scripts
-COPY sdh_deployment /sdh_deployment
+COPY runway /runway
 
-RUN pip install -e .
+RUN pip install requests==2.20.0
+RUN python setup.py install

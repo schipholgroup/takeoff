@@ -3,9 +3,9 @@ import logging
 
 from azure.storage.blob import BlockBlobService
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_application_name, get_shared_blob_service
+from runway.ApplicationVersion import ApplicationVersion
+from runway.DeploymentStep import DeploymentStep
+from runway.util import get_application_name, get_shared_blob_service
 
 BLOB_CONTAINER_NAME = "libraries"
 

@@ -2,7 +2,7 @@ import importlib
 import pytest
 import re
 
-from sdh_deployment import util as victim
+from runway import util as victim
 
 
 class TestPatternMatching(object):
@@ -41,7 +41,7 @@ class TestPatternMatching(object):
 def test_get_eventhub_namespace():
     # Make sure that the python module cache is flushed
     importlib.reload(victim)
-    from sdh_deployment.util import EVENTHUB_NAMESPACE
+    from runway.util import EVENTHUB_NAMESPACE
 
     assert EVENTHUB_NAMESPACE == "sdheventhub{dtap}"
 
@@ -49,6 +49,6 @@ def test_get_eventhub_namespace():
 def test_get_eventhub_resource_group():
     # Make sure that the python module cache is flushed
     importlib.reload(victim)
-    from sdh_deployment.util import RESOURCE_GROUP
+    from runway.util import RESOURCE_GROUP
 
     assert RESOURCE_GROUP == "sdh{dtap}"

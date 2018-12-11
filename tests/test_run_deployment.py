@@ -4,15 +4,15 @@ from unittest import mock
 import pytest
 from yaml import load
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.create_appservice_and_webapp import CreateAppserviceAndWebapp
-from sdh_deployment.create_databricks_secrets import CreateDatabricksSecrets
-from sdh_deployment.create_eventhub_consumer_groups import (
+from runway.ApplicationVersion import ApplicationVersion
+from runway.DeploymentStep import DeploymentStep
+from runway.create_appservice_and_webapp import CreateAppserviceAndWebapp
+from runway.create_databricks_secrets import CreateDatabricksSecrets
+from runway.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
 )
-from sdh_deployment.deploy_to_databricks import DeployToDatabricks
-from sdh_deployment.run_deployment import run_task
+from runway.deploy_to_databricks import DeployToDatabricks
+from runway.run_deployment import run_task
 
 environment_variables = {
     "WEBAPP_NAME": "my-app",
@@ -32,8 +32,8 @@ def test_no_run_task():
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("sdh_deployment.run_deployment.get_environment")
-@mock.patch("sdh_deployment.run_deployment.load_yaml")
+@mock.patch("runway.run_deployment.get_environment")
+@mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateAppserviceAndWebapp, 'run', return_value=None)
 def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
@@ -44,7 +44,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from sdh_deployment.run_deployment import main
+    from runway.run_deployment import main
 
     with mock.patch.object(CreateAppserviceAndWebapp, "__init__", return_value=None) as mock_task:
         main()
@@ -52,8 +52,8 @@ steps:
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("sdh_deployment.run_deployment.get_environment")
-@mock.patch("sdh_deployment.run_deployment.load_yaml")
+@mock.patch("runway.run_deployment.get_environment")
+@mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateEventhubConsumerGroups, 'run', return_value=None)
 def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
@@ -69,7 +69,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from sdh_deployment.run_deployment import main
+    from runway.run_deployment import main
 
     with mock.patch.object(CreateEventhubConsumerGroups, "__init__", return_value=None) as mock_task:
         main()
@@ -86,8 +86,8 @@ steps:
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("sdh_deployment.run_deployment.get_environment")
-@mock.patch("sdh_deployment.run_deployment.load_yaml")
+@mock.patch("runway.run_deployment.get_environment")
+@mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateDatabricksSecrets, 'run', return_value=None)
 def test_create_databricks_secret(_, mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
@@ -98,7 +98,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from sdh_deployment.run_deployment import main
+    from runway.run_deployment import main
 
     with mock.patch.object(CreateDatabricksSecrets, "__init__", return_value=None) as mock_task:
         main()
@@ -106,8 +106,8 @@ steps:
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("sdh_deployment.run_deployment.get_environment")
-@mock.patch("sdh_deployment.run_deployment.load_yaml")
+@mock.patch("runway.run_deployment.get_environment")
+@mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(DeployToDatabricks, 'run', return_value=None)
 def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version):
     mock_load_yaml.return_value = load(
@@ -119,7 +119,7 @@ steps:
     )
     mock_get_version.return_value = env
 
-    from sdh_deployment.run_deployment import main
+    from runway.run_deployment import main
 
     with mock.patch.object(
             DeployToDatabricks, "__init__", return_value=None
@@ -152,9 +152,9 @@ class MockedClass(DeploymentStep):
         return 'yeah, science!'
 
 
-@mock.patch.dict('sdh_deployment.deployment_step.deployment_steps', {'mocked': MockedClass})
+@mock.patch.dict('runway.deployment_step.deployment_steps', {'mocked': MockedClass})
 def test_run_task():
-    from sdh_deployment.run_deployment import run_task
+    from runway.run_deployment import run_task
     res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})
 
     assert res == 'yeah, science!'

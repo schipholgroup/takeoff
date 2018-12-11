@@ -5,10 +5,10 @@ from typing import List
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.KeyVaultSecrets import KeyVaultSecrets, Secret
-from sdh_deployment.util import (
+from runway.ApplicationVersion import ApplicationVersion
+from runway.DeploymentStep import DeploymentStep
+from runway.KeyVaultSecrets import KeyVaultSecrets, Secret
+from runway.util import (
     get_application_name,
     get_databricks_client)
 
