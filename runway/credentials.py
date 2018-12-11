@@ -30,4 +30,4 @@ def find_secret(common, secrets: Dict[str, Secret]):
 def common_credentials(dtap):
     secrets = KeyVaultSecrets.get_keyvault_secrets(dtap, 'common')
     indexed = {_.key: _ for _ in secrets}
-    return {_: find_secret(_, indexed) for _ in CommonCredentials}
+    return {_: find_secret(_.name.replace('_', '-'), indexed) for _ in CommonCredentials}
