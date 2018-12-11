@@ -32,8 +32,6 @@ services:
      - "/var/run/docker.sock:/var/run/docker.sock"
     tty: true
     environment:
-      - REGISTRY_USERNAME
-      - REGISTRY_PASSWORD
       - BUILD_SOURCEBRANCHNAME
       - BUILD_DEFINITIONNAME
       - ARTIFACT_STORE_USERNAME
