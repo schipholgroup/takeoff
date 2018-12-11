@@ -32,8 +32,5 @@ services:
      - "/var/run/docker.sock:/var/run/docker.sock"
     tty: true
     environment:
-      - BUILD_SOURCEBRANCHNAME
-      - BUILD_DEFINITIONNAME
-      - ARTIFACT_STORE_USERNAME
-      - ARTIFACT_STORE_PASSWORD
-      - ARTIFACT_STORE_UPLOAD_URL
+    - BUILD_SOURCEBRANCHNAME
+    - BUILD_DEFINITIONNAME

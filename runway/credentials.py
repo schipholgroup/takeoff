@@ -20,13 +20,14 @@ class CommonCredentials(Enum):
     artifact_store_index_url = auto()
     artifact_store_upload_url = auto()
 
+
 def find_secret(common, secrets: Dict[str, Secret]):
     if common not in secrets:
         raise ValueError(f"Could not find required key {common}")
     return secrets[common]
 
+
 def common_credentials(dtap):
     secrets = KeyVaultSecrets.get_keyvault_secrets(dtap, 'common')
     indexed = {_.key: _ for _ in secrets}
     return {_: find_secret(_, indexed) for _ in CommonCredentials}
-
