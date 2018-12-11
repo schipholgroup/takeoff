@@ -8,7 +8,7 @@ from docker import DockerClient
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.util import get_application_name, get_docker_credentials, docker_logging
+from runway.util import get_application_name, get_docker_credentials, log_docker
 
 logger = logging.getLogger(__name__)
 
