@@ -31,7 +31,7 @@ class PublishArtifact(DeploymentStep):
         log_docker(iter(p.stdout.readline, ''))
         return_code = p.wait()
 
-        assert return_code == 0
+        assert return_code == 0, 'Could not build the package for some reason!'
 
     def publish_package(self):
         upload(upload_settings=get_artifact_store_settings(), dists=['/root/dist/*'])
