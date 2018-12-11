@@ -24,7 +24,7 @@ class CommonCredentials(Enum):
 def find_secret(common, secrets: Dict[str, Secret]):
     if common not in secrets:
         raise ValueError(f"Could not find required key {common}")
-    return secrets[common]
+    return secrets[common].val
 
 
 def common_credentials(dtap):
