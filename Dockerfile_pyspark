@@ -6,4 +6,4 @@ COPY README.md /
 COPY scripts /scripts
 COPY sdh_deployment /sdh_deployment
 
-RUN python setup.py install
+RUN pip install -e .

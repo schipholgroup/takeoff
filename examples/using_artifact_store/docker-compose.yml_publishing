@@ -1,0 +1,33 @@
+version: "3.3"
+services:
+  python:
+    image: sdhcontainerregistryshared.azurecr.io/sdh-deployment:5.1-python
+    working_dir: /root/
+    volumes:
+      - type: bind
+        source: ./
+        target: /root
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    tty: true
+    environment:
+      - SUBSCRIPTION_ID
+      - AZURE_SP_PASSWORD_DEV
+      - AZURE_SP_USERNAME_DEV
+      - AZURE_SP_PASSWORD_ACP
+      - AZURE_SP_USERNAME_ACP
+      - AZURE_SP_PASSWORD_PRD
+      - AZURE_SP_USERNAME_PRD
+      - AZURE_DATABRICKS_TOKEN
+      - AZURE_DATABRICKS_HOST
+      - AZURE_TENANT_ID
+      - AZURE_SP_TENANTID
+      - BUILD_SOURCEBRANCHNAME
+      - BUILD_DEFINITIONNAME
+      - REGISTRY_USERNAME
+      - REGISTRY_PASSWORD
+      - RESOURCE_GROUP
+      - AZURE_SHARED_BLOB_USERNAME
+      - AZURE_SHARED_BLOB_PASSWORD
+      - ARTIFACT_STORE_USERNAME
+      - ARTIFACT_STORE_PASSWORD
+      - ARTIFACT_STORE_UPLOAD_URL

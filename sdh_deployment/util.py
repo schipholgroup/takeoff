@@ -1,5 +1,4 @@
 import base64
-import logging
 import os
 from dataclasses import dataclass
 from typing import Pattern, Callable
@@ -9,6 +8,7 @@ from azure.storage.blob import BlockBlobService
 from databricks_cli.sdk import ApiClient
 from git import Repo
 from jinja2 import Template
+from twine.settings import Settings
 from yaml import load
 
 RESOURCE_GROUP = "sdh{dtap}"
@@ -114,6 +114,12 @@ def get_databricks_client(dtap: str) -> ApiClient:
     return ApiClient(host=databricks_host, token=databricks_token)
 
 
+def get_artifact_store_settings() -> Settings:
+    return Settings(repository_url=os.environ['ARTIFACT_STORE_UPLOAD_URL'],
+                    username=os.environ['ARTIFACT_STORE_USERNAME'],
+                    password=os.environ['ARTIFACT_STORE_PASSWORD'])
+
+
 def get_matching_group(find_in: str, pattern: Pattern[str], group: int):
     match = pattern.search(find_in)
 
@@ -142,18 +148,7 @@ def load_yaml(path: str) -> dict:
     return load(config_file)
 
 
-def docker_logging(nr_of_ending_lines=25):
-    def decorator(f):
-        def wrap(self, *args, **kwargs):
-            logs = f(self, *args, **kwargs)
-            try:
-                lines = logs.decode().split('\n')
-                logging.info("--------- DOCKER LOGS ------------")
-                logging.info('\n'.join(lines[-nr_of_ending_lines:]))
-            except Exception as e:
-                logging.error(e)
-            return logs
-
-        return wrap
-
-    return decorator
+def log_docker(logs_iter):
+    from pprint import pprint
+    for line in logs_iter:
+        pprint(line)

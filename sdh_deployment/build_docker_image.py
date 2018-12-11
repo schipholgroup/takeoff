@@ -1,4 +1,5 @@
 import logging
+import os
 from dataclasses import dataclass
 from typing import List
 
@@ -7,7 +8,7 @@ from docker import DockerClient
 
 from sdh_deployment.ApplicationVersion import ApplicationVersion
 from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_application_name, get_docker_credentials, docker_logging
+from sdh_deployment.util import get_application_name, get_docker_credentials, log_docker
 
 logger = logging.getLogger(__name__)
 
@@ -35,18 +36,30 @@ class DockerImageBuilder(DeploymentStep):
         ]
         self.deploy(dockerfiles, docker_credentials, client)
 
-    @docker_logging()
     def build_image(self, docker_file, docker_client, tag):
         """
         Returns the log generator, as per https://docker-py.readthedocs.io/en/stable/images.html
         """
         logger.info(f"Building docker image for {docker_file}")
-        image = docker_client.images.build(
-            path="/root",
-            tag=tag,
-            dockerfile=f"/root/{docker_file}"
-        )
-        return image[1]
+
+        # Set these environment variables at build time only, they should not be available at runtime
+        build_args = {
+            'PIP_EXTRA_INDEX_URL': os.getenv('PIP_EXTRA_INDEX_URL')
+        }
+        try:
+            image = docker_client.images.build(
+                path="/root",
+                tag=tag,
+                dockerfile=f"/root/{docker_file}",
+                buildargs=build_args,
+                quiet=False,
+                nocache=True
+            )
+            log_docker(image[1])
+
+        except docker.errors.BuildError as e:
+            log_docker(e.build_log)
+            raise e
 
     def deploy(self,
                dockerfiles: List[DockerFile],
@@ -66,5 +79,4 @@ class DockerImageBuilder(DeploymentStep):
 
             logger.info(f"Uploading docker image for {df.dockerfile}")
 
-            logs = docker_client.images.push(repository=repository, tag=tag)
-            print(logs)
+            docker_client.images.push(repository=repository, tag=tag)
