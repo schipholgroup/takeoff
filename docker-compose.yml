@@ -8,6 +8,7 @@ services:
       source: ./
       target: /root
     tty: true
+
   hadolint:
     image: hadolint/hadolint:latest-debian
     working_dir: /root/
@@ -35,3 +36,6 @@ services:
       - REGISTRY_PASSWORD
       - BUILD_SOURCEBRANCHNAME
       - BUILD_DEFINITIONNAME
+      - ARTIFACT_STORE_USERNAME
+      - ARTIFACT_STORE_PASSWORD
+      - ARTIFACT_STORE_URL

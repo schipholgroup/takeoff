@@ -36,7 +36,8 @@ setup(
         "flake8==3.5.0",
         "PyYAML==3.13",
         "docker==3.5.0",
-        "jinja2==2.10"
+        "jinja2==2.10",
+        "twine==1.12.1"
     ],
     extras_require={
         "test": test_dependencies,
