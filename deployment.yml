@@ -5,3 +5,4 @@ steps:
     postfix: -python
   - file: Dockerfile_pyspark
     postfix: -pyspark
+- task: publishArtifact
