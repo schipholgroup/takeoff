@@ -15,6 +15,10 @@ class CommonCredentials(Enum):
     azure_shared_blob_password = auto()
     registry_username = auto()
     registry_password = auto()
+    artifact_store_username = auto()
+    artifact_store_password = auto()
+    artifact_store_index_url = auto()
+    artifact_store_upload_url = auto()
 
 def find_secret(common, secrets: Dict[str, Secret]):
     if common not in secrets:
