@@ -3,9 +3,9 @@ import subprocess
 
 from twine.commands.upload import upload
 
-from sdh_deployment.ApplicationVersion import ApplicationVersion
-from sdh_deployment.DeploymentStep import DeploymentStep
-from sdh_deployment.util import get_artifact_store_settings, log_docker
+from runway.ApplicationVersion import ApplicationVersion
+from runway.DeploymentStep import DeploymentStep
+from runway.util import get_artifact_store_settings, log_docker
 
 logger = logging.getLogger(__name__)
 

@@ -7,6 +7,7 @@ from runway.create_eventhub_producer_policies import CreateEventhubProducerPolic
 from runway.deploy_to_databricks import DeployToDatabricks
 from runway.deploy_to_k8s import DeployToK8s, DeployToVnetK8s
 from runway.upload_to_blob import UploadToBlob
+from runway.publish_artifact import PublishArtifact
 
 deployment_steps = {
     "uploadToBlob": UploadToBlob,
@@ -18,5 +19,6 @@ deployment_steps = {
     "createEventhubProducerPolicies": CreateEventhubProducerPolicies,
     "deployToDatabricks": DeployToDatabricks,
     "deployToK8s": DeployToK8s,
-    "deployToVnetK8s": DeployToVnetK8s
+    "deployToVnetK8s": DeployToVnetK8s,
+    "publishArtifact": PublishArtifact,
 }
