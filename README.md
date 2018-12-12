@@ -1,4 +1,4 @@
-# ![runway](img/runway.svg) Runway
+# ![runway](img/runway.png) Runway
 
 This package is used as dependency in other project to consolidate deployment of any application in the Azure Cloud.
 
