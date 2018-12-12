@@ -89,8 +89,8 @@ def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
 
 def read_azure_sp(dtap: str) -> AzureSp:
     azure_sp_tenantid = os.environ["AZURE_TENANTID"]
-    azure_sp_username = os.environ[f"AZURE_KEYVAULT_USERNAME_{dtap.upper()}"]
-    azure_sp_password = os.environ[f"AZURE_KEYVAULT_PASSWORD_{dtap.upper()}"]
+    azure_sp_username = os.environ[f"AZURE_KEYVAULT_SP_USERNAME_{dtap.upper()}"]
+    azure_sp_password = os.environ[f"AZURE_KEYVAULT_SP_PASSWORD_{dtap.upper()}"]
 
     return AzureSp(azure_sp_tenantid, azure_sp_username, azure_sp_password)
 
