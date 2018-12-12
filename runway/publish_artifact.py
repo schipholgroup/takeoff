@@ -5,7 +5,7 @@ from twine.commands.upload import upload
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.util import get_artifact_store_settings, log_docker
+from runway.util import get_artifact_store_settings, log_docker, get_tag
 
 logger = logging.getLogger(__name__)
 
@@ -15,11 +15,12 @@ class PublishArtifact(DeploymentStep):
         super().__init__(env, config)
 
     def run(self):
-        if not self.env.on_feature_branch:
-            logging.info("Not on a release tag, not publishing an artifact.")
-        else:
+        # if there's a tag, we're on a release.
+        if get_tag():
             self.build_package()
             self.publish_package()
+        else:
+            logging.info("Not on a release tag, not publishing an artifact.")
 
     def build_package(self):
         # First make sure the correct version number is used.
