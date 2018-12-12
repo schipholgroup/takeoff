@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="117px" xmlns="http://www.w3.org/2000/svg">
+  <rect x="55.05" y="208.972" width="389.899" height="160.303" style="fill: rgb(50, 212, 220);"/>
+  <rect x="55.05" y="368.797" width="389.899" height="130.725" style="fill: rgb(157, 194, 25);"/>
+  <circle style="fill: rgb(216, 216, 216);" cx="234.733" cy="148.855" r="0"/>
+  <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" d="M 160.305 345.42"/>
+  <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" d="M 195.611 344.466"/>
+  <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" d="M 250 444.656" transform="matrix(-1, 0, 0, -1, 500, 889.312012)"/>
+  <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" d="M 250 444.656" transform="matrix(-1, 0, 0, -1, 500, 889.312012)"/>
+  <g transform="matrix(1, 0, 0, 0.902484, 0, 35.44643)">
+    <path style="fill: rgb(95, 94, 94); stroke: rgb(255, 233, 164); stroke-width: 0px;" d="M 183.205 365.545 L 106.87 514.313 L 393.13 514.313 L 317.748 364.505 L 183.205 365.545 Z"/>
+    <g transform="matrix(1.420976, 0, 0, 1.425762, -894.65094, -178.28566)">
+      <polygon style="stroke-opacity: 0; stroke: rgb(255, 255, 255); fill: rgb(255, 255, 255);" points="803.197 401.691 802.208 431.22 810.121 431.22 809.131 401.832"/>
+      <polygon style="stroke-opacity: 0; stroke: rgb(255, 255, 255); fill: rgb(255, 255, 255);" points="801.502 453.622 800.387 485.798 812.037 485.793 810.898 453.601" transform=""/>
+      <polygon style="stroke-opacity: 0; stroke: rgb(255, 255, 255); fill: rgb(255, 255, 255);" points="765.061 380.664 711.238 485.798 720.5 485.798 769.758 380.964"/>
+      <polygon style="stroke-opacity: 0; stroke: rgb(255, 255, 255); fill: rgb(255, 255, 255);" points="897.422 487.16 844.222 381.158 853.484 381.158 902.398 486.852" transform="matrix(-1 0 0 -1 1746.28 867.152)"/>
+      <polygon style="stroke-opacity: 0; stroke: rgb(255, 255, 255); fill: rgb(242, 235, 157);" points="757.017 379.991 698.699 485.993 707.117 486.081 761.434 380.458" transform=""/>
+      <polygon style="stroke-opacity: 0; stroke: rgb(255, 255, 255); fill: rgb(242, 235, 157);" points="910.711 487.159 853.424 381.352 861.327 381.467 915.128 486.683" transform="matrix(-1 0 0 -1 1767.52 867.15)"/>
+    </g>
+  </g>
+  <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" d="M 802.481 403.626"/>
+  <polygon style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(104, 104, 104);" points="800.965 341.491"/>
+  <polygon style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(104, 104, 104);" points="799.418 339.502"/>
+  <g transform="matrix(1, 0, 0, 1, 0.899447, -2.70391)">
+    <g transform="matrix(1, 0, 0, 1, 7.633015, 20.43359)">
+      <circle cx="233.779" cy="139.313" r="26.408" transform="matrix(1.036133, 0, 0, 1.090333, 0.140696, 189.2285)" style="stroke-opacity: 0; fill: rgb(247, 244, 244);"/>
+      <path style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(247, 244, 244);" d="M 217.319 342.558 L 46.518 337.787 L 221.136 356.871 L 217.319 342.558 Z"/>
+      <path style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(247, 244, 244);" d="M 433.445 353.055 L 263.598 357.826 L 438.216 338.742 L 433.445 353.055 Z" transform="matrix(-1, 0, 0, -1, 701.813995, 696.567993)"/>
+      <path style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(247, 244, 244);" d="M 261.928 325.382 L 321.089 326.336 L 262.882 331.107 L 261.928 325.382 Z"/>
+      <path style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(247, 244, 244);" d="M 163.645 331.107 L 222.806 330.153 L 164.599 325.382 L 163.645 331.107 Z" transform="matrix(-1, 0, 0, -1, 386.451004, 656.488983)"/>
+      <path style="stroke: rgb(0, 0, 0); fill: rgb(247, 247, 247); stroke-opacity: 0;" d="M 239.028 315.363 L 241.891 272.424 L 245.707 317.272 L 239.028 315.363 Z"/>
+      <g transform="matrix(-1, 0, 0, 1, 494.274811, -43.073666)">
+        <circle cx="110.687" cy="396.947" r="13.562" style="fill: rgb(216, 216, 216);"/>
+        <circle cx="110.687" cy="396.947" r="11.177" style="fill: rgb(52, 52, 52);"/>
+        <circle cx="250" cy="250" r="5.452" transform="matrix(0.824982, 0, 0, 0.737473, -95.558479, 212.578308)" style="fill: rgb(229, 229, 229);"/>
+      </g>
+      <g transform="matrix(-1, 0, 0, 1, 414.122101, -35.486294)">
+        <circle cx="110.687" cy="396.947" r="13.562" style="fill: rgb(216, 216, 216);"/>
+        <circle cx="110.687" cy="396.947" r="11.177" style="fill: rgb(52, 52, 52);"/>
+        <circle cx="250" cy="250" r="5.452" transform="matrix(0.824982, 0, 0, 0.737473, -95.558479, 212.578308)" style="fill: rgb(229, 229, 229);"/>
+      </g>
+      <g transform="matrix(1, 0, 0, 1, -11.450371, -42.142166)">
+        <circle cx="110.687" cy="396.947" r="13.562" style="fill: rgb(216, 216, 216);"/>
+        <circle cx="110.687" cy="396.947" r="11.177" style="fill: rgb(52, 52, 52);"/>
+        <circle cx="250" cy="250" r="5.452" transform="matrix(0.824982, 0, 0, 0.737473, -95.558479, 212.578308)" style="fill: rgb(229, 229, 229);"/>
+      </g>
+      <g transform="matrix(1, 0, 0, 1, 68.702324, -34.554787)">
+        <circle cx="110.687" cy="396.947" r="13.562" style="fill: rgb(216, 216, 216);"/>
+        <circle cx="110.687" cy="396.947" r="11.177" style="fill: rgb(52, 52, 52);"/>
+        <circle cx="250" cy="250" r="5.452" transform="matrix(0.824982, 0, 0, 0.737473, -95.558479, 212.578308)" style="fill: rgb(229, 229, 229);"/>
+      </g>
+    </g>
+    <g transform="matrix(1, 0, 0, 1, -556.150513, 11.115303)">
+      <polygon style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(73, 72, 72);" points="795.931 337.209 793.98 344.194 805.164 344.362 805.164 337.514"/>
+      <polygon style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(73, 72, 72);" points="808.99 344.415 807.039 337.43 818.307 337.262 818.307 344.11" transform="matrix(-1, 0, 0, -1, 1625.346008, 681.677002)"/>
+      <polygon style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(73, 72, 72);" points="822.097 344.04 819.392 337.139 824.459 336.887 826.219 343.819" transform="matrix(-1, 0, 0, -1, 1645.611023, 680.927002)"/>
+      <polygon style="stroke: rgb(0, 0, 0); stroke-opacity: 0; fill: rgb(73, 72, 72);" points="788.787 336.761 786.082 343.662 791.149 343.914 792.909 336.982"/>
+    </g>
+  </g>
+</svg>

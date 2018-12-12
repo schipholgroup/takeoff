@@ -26,16 +26,18 @@ services:
     working_dir: /root/
     privileged: true
     volumes:
-     - type: bind
-       source: ./
-       target: /root
-     - "/var/run/docker.sock:/var/run/docker.sock"
+    - type: bind
+      source: ./
+      target: /root
+    - "/var/run/docker.sock:/var/run/docker.sock"
     tty: true
     environment:
-      - REGISTRY_USERNAME
-      - REGISTRY_PASSWORD
-      - BUILD_SOURCEBRANCHNAME
-      - BUILD_DEFINITIONNAME
-      - ARTIFACT_STORE_USERNAME
-      - ARTIFACT_STORE_PASSWORD
-      - ARTIFACT_STORE_UPLOAD_URL
+    - BUILD_SOURCEBRANCHNAME
+    - BUILD_DEFINITIONNAME
+    - AZURE_TENANTID
+    - AZURE_KEYVAULT_SP_USERNAME_DEV
+    - AZURE_KEYVAULT_SP_PASSWORD_DEV
+    - AZURE_KEYVAULT_SP_USERNAME_ACP
+    - AZURE_KEYVAULT_SP_PASSWORD_ACP
+    - AZURE_KEYVAULT_SP_USERNAME_PRD
+    - AZURE_KEYVAULT_SP_PASSWORD_PRD
