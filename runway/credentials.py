@@ -21,13 +21,14 @@ class CommonCredentials(Enum):
     artifact_store_upload_url = auto()
 
 
-def find_secret(common, secrets: Dict[str, Secret]):
-    if common not in secrets:
-        raise ValueError(f"Could not find required key {common}")
-    return secrets[common].val
+def find_secret(secret_key, secrets: Dict[str, Secret]):
+    if secret_key not in secrets:
+        raise ValueError(f"Could not find required key {secret_key}")
+    return secrets[secret_key].val
 
 
 def common_credentials(dtap):
     secrets = KeyVaultSecrets.get_keyvault_secrets(dtap, 'common')
     indexed = {_.key: _ for _ in secrets}
+    # Keyvault does not support _ and python does not support -, hence the 'replace'
     return {_: find_secret(_.name.replace('_', '-'), indexed) for _ in CommonCredentials}

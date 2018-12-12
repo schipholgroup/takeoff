@@ -65,7 +65,7 @@ def get_application_name() -> str:
 
 def get_docker_credentials() -> DockerCredentials:
     from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials('dev')
+    creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
     return DockerCredentials(
         username=creds[CommonCredentials.registry_username],
         password=creds[CommonCredentials.registry_password],
@@ -75,7 +75,7 @@ def get_docker_credentials() -> DockerCredentials:
 
 def get_subscription_id() -> str:
     from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials('dev')
+    creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
     return creds[CommonCredentials.subscription_id]
 
 
@@ -97,7 +97,7 @@ def read_azure_sp(dtap: str) -> AzureSp:
 
 def get_shared_blob_service() -> BlockBlobService:
     from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials('dev')
+    creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
     return BlockBlobService(
         account_name=creds[CommonCredentials.azure_shared_blob_username],
         account_key=creds[CommonCredentials.azure_shared_blob_password],
@@ -127,7 +127,7 @@ def get_databricks_client(dtap: str) -> ApiClient:
 
 def get_artifact_store_settings() -> Settings:
     from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials('dev')
+    creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
     return Settings(repository_url=creds[CommonCredentials.artifact_store_upload_url],
                     username=creds[CommonCredentials.artifact_store_username],
                     password=creds[CommonCredentials.artifact_store_password])
