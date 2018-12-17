@@ -18,14 +18,6 @@ class AzureSp(object):
     username: str
     password: str
 
-
-@dataclass(frozen=True)
-class DockerCredentials(object):
-    username: str
-    password: str
-    registry: str
-
-
 def render_string_with_jinja(path: str, params: dict) -> str:
     with open(path) as file_:
         template = Template(file_.read())
@@ -57,21 +49,6 @@ def get_application_name() -> str:
     return os.environ["BUILD_DEFINITIONNAME"]
 
 
-def get_docker_credentials(registry: str) -> DockerCredentials:
-    from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
-    return DockerCredentials(
-        username=creds[CommonCredentials.registry_username],
-        password=creds[CommonCredentials.registry_password],
-        registry=registry,
-    )
-
-
-def get_subscription_id() -> str:
-    from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
-    return creds[CommonCredentials.subscription_id]
-
 
 def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
     azure_sp = read_azure_sp(dtap)
@@ -89,42 +66,9 @@ def read_azure_sp(dtap: str) -> AzureSp:
     return AzureSp(azure_sp_tenantid, azure_sp_username, azure_sp_password)
 
 
-def get_shared_blob_service() -> BlockBlobService:
-    from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
-    return BlockBlobService(
-        account_name=creds[CommonCredentials.azure_shared_blob_username],
-        account_key=creds[CommonCredentials.azure_shared_blob_password],
-    )
-
 
 def b64_encode(s: str):
     return base64.b64encode(s.encode()).decode()
-
-
-def get_azure_user_credentials(dtap: str) -> UserPassCredentials:
-    from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials(dtap)
-    return UserPassCredentials(
-        creds[CommonCredentials.azure_username],
-        creds[CommonCredentials.azure_password]
-    )
-
-
-def get_databricks_client(dtap: str) -> ApiClient:
-    from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials(dtap)
-    databricks_token = creds[CommonCredentials.azure_databricks_token]
-    databricks_host = creds[CommonCredentials.azure_databricks_host]
-    return ApiClient(host=databricks_host, token=databricks_token)
-
-
-def get_artifact_store_settings() -> Settings:
-    from runway.credentials import common_credentials, CommonCredentials
-    creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
-    return Settings(repository_url=creds[CommonCredentials.artifact_store_upload_url],
-                    username=creds[CommonCredentials.artifact_store_username],
-                    password=creds[CommonCredentials.artifact_store_password])
 
 
 def get_matching_group(find_in: str, pattern: Pattern[str], group: int):
