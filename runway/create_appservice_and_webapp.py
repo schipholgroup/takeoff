@@ -15,10 +15,7 @@ from runway.create_application_insights import CreateApplicationInsights
 from runway.util import (
     get_subscription_id,
     get_azure_user_credentials,
-    RESOURCE_GROUP,
-    AZURE_LOCATION,
     get_application_name,
-    SHARED_REGISTRY,
     render_string_with_jinja)
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -65,11 +62,11 @@ class CreateAppserviceAndWebapp(DeploymentStep):
                                      dtap: str,
                                      service_to_create: AppService) -> str:
         service_plan_async_operation = web_client.app_service_plans.create_or_update(
-            RESOURCE_GROUP.format(dtap=dtap.lower()),
+            self.config['runway_azure']['resource_group'].format(dtap=dtap.lower()),
             service_to_create.name,
             AppServicePlan(
                 app_service_plan_name=service_to_create.name,
-                location=AZURE_LOCATION,
+                location=self.config['runway_azure']['location'],
                 reserved=True,  # This is the way to specify that it's a linux app-service-plan
                 sku=SkuDescription(
                     name=service_to_create.sku.name,
@@ -110,7 +107,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             compose_config = self.config.get("compose")
             tag_config = compose_config.get("variables")
             tag_config.update({
-                'registry': SHARED_REGISTRY,
+                'registry': self.config['runway_common_keys']['shared_registry'],
                 'application_name': get_application_name(),
                 'tag': self.env.artifact_tag
             })
@@ -119,7 +116,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             return "COMPOSE|{compose}".format(compose=base64.b64encode(rendered_compose.encode()).decode())
         else:
             return "DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
-                registry_url=SHARED_REGISTRY,
+                registry_url=self.config['runway_common_keys']['shared_registry'],
                 build_definition_name=get_application_name(),
                 tag=self.env.artifact_tag,
             )
@@ -133,7 +130,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         new_properties = {
             'DOCKER_ENABLE_CI': 'true',
             'BUILD_VERSION': self.env.artifact_tag,
-            'DOCKER_REGISTRY_SERVER_URL': "https://" + SHARED_REGISTRY,
+            'DOCKER_REGISTRY_SERVER_URL': "https://" + self.config['runway_common_keys']['shared_registry'],
             'DOCKER_REGISTRY_SERVER_USERNAME': docker_registry_username,
             "DOCKER_REGISTRY_SERVER_PASSWORD": docker_registry_password,
             "WEBSITE_HTTPLOGGING_RETENTION_DAYS": 7,
@@ -169,16 +166,17 @@ class CreateAppserviceAndWebapp(DeploymentStep):
 
         existing_properties = {}
         try:
-            existing_properties = web_client.web_apps.list_application_settings(RESOURCE_GROUP.format(dtap=formatted_dtap),
-                                                                                webapp_name).properties
+            existing_properties = web_client.web_apps.list_application_settings(
+                self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap),
+                webapp_name).properties
         except CloudError:
             logging.warning(f"{webapp_name} could not be found, skipping existing properties")
 
         return WebApp(
-            resource_group=RESOURCE_GROUP.format(dtap=formatted_dtap),
+            resource_group=self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap),
             name=webapp_name,
             site=Site(
-                location=AZURE_LOCATION,
+                location=self.config['runway_azure']['location'],
                 site_config=self._build_site_config(existing_properties=existing_properties),
                 server_farm_id=appservice_id,
             ),
@@ -229,7 +227,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         # DOCKER_CI_ENABLE is kinda buggy and not documented, this assures the app is restarted for
         # sure when the deployment updates
         web_client.web_apps.restart(
-            resource_group_name=(RESOURCE_GROUP.format(dtap=formatted_dtap)),
+            resource_group_name=(self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)),
             name=webapp_to_create.name)
 
         return site

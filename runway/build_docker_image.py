@@ -25,7 +25,7 @@ class DockerImageBuilder(DeploymentStep):
 
     def run(self):
         client: DockerClient = docker.from_env()
-        docker_credentials = get_docker_credentials()
+        docker_credentials = get_docker_credentials(self.config['runway_common_keys']['shared_registry'])
         client.login(
             username=docker_credentials.username,
             password=docker_credentials.password,

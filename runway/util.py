@@ -12,12 +12,6 @@ from twine.settings import Settings
 from yaml import load
 
 
-RESOURCE_GROUP = "sdh{dtap}"
-EVENTHUB_NAMESPACE = "sdheventhub{dtap}"
-AZURE_LOCATION = "west europe"  # default to this Azure location
-SHARED_REGISTRY = "sdhcontainerregistryshared.azurecr.io"
-
-
 @dataclass(frozen=True)
 class AzureSp(object):
     tenant: str
@@ -63,13 +57,13 @@ def get_application_name() -> str:
     return os.environ["BUILD_DEFINITIONNAME"]
 
 
-def get_docker_credentials() -> DockerCredentials:
+def get_docker_credentials(registry: str) -> DockerCredentials:
     from runway.credentials import common_credentials, CommonCredentials
     creds = common_credentials('dev')  # waiting for shared keyvault. Dev for now
     return DockerCredentials(
         username=creds[CommonCredentials.registry_username],
         password=creds[CommonCredentials.registry_password],
-        registry=SHARED_REGISTRY,
+        registry=registry,
     )
 
 

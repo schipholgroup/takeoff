@@ -9,8 +9,6 @@ from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
 from runway.util import (
     get_azure_user_credentials,
-    RESOURCE_GROUP,
-    EVENTHUB_NAMESPACE,
     get_application_name,
     get_databricks_client,
     get_subscription_id,
@@ -32,8 +30,8 @@ class CreateEventhubProducerPolicies(DeploymentStep):
 
     def create_eventhub_producer_policies(self, producer_policies: List[str]):
         formatted_dtap = self.env.environment.lower()
-        eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=formatted_dtap)
-        resource_group = RESOURCE_GROUP.format(dtap=formatted_dtap)
+        eventhub_namespace = self.config['runway_common_keys']['eventhub_namespace'].format(dtap=formatted_dtap)
+        resource_group = self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)
 
         credentials = get_azure_user_credentials(self.env.environment)
         eventhub_client = EventHubManagementClient(credentials, get_subscription_id())

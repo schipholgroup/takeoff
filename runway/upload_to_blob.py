@@ -7,8 +7,6 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.util import get_application_name, get_shared_blob_service
 
-BLOB_CONTAINER_NAME = "libraries"
-
 logger = logging.getLogger(__name__)
 
 
@@ -19,11 +17,10 @@ class UploadToBlob(DeploymentStep):
     def run(self):
         self.upload_application_to_blob()
 
-    @staticmethod
-    def _upload_file_to_blob(client: BlockBlobService,
+    def _upload_file_to_blob(self, client: BlockBlobService,
                              source: str,
                              destination: str,
-                             container=BLOB_CONTAINER_NAME):
+                             container=self.config['runway_common_keys']['artifacts_shared_blob_container_name']):
         logger.info(
             f"""uploading artifact from
          | from ${source}
@@ -71,7 +68,7 @@ class UploadToBlob(DeploymentStep):
             # it's a jar!
             filename_library += ".jar"
             jar = UploadToBlob._get_jar(self.config["lang"])
-            UploadToBlob._upload_file_to_blob(blob_service, jar, filename_library)
+            self._upload_file_to_blob(blob_service, jar, filename_library)
         else:
             # it's an egg!
             filename_library += ".egg"
@@ -80,7 +77,7 @@ class UploadToBlob(DeploymentStep):
             )
 
             egg = UploadToBlob._get_egg()
-            UploadToBlob._upload_file_to_blob(blob_service, egg, filename_library)
-            UploadToBlob._upload_file_to_blob(
+            self._upload_file_to_blob(blob_service, egg, filename_library)
+            self._upload_file_to_blob(
                 blob_service, "/root/main/main.py", filename_main
             )

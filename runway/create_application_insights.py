@@ -10,8 +10,7 @@ from runway.util import (
     get_application_name,
     get_subscription_id,
     get_databricks_client,
-    get_azure_user_credentials,
-    AZURE_LOCATION,
+    get_azure_user_credentials
 )
 
 logger = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ class CreateApplicationInsights(DeploymentStep):
             logger.info("Creating new Application Insights...")
             # Create a new Application Insights
             comp = ApplicationInsightsComponent(
-                location=AZURE_LOCATION, kind=kind, application_type=application_type
+                location=self.config['runway_azure']['location'], kind=kind, application_type=application_type
             )
             insight = client.components.create_or_update(
                 f"sdh{self.env.environment.lower()}", application_name, comp

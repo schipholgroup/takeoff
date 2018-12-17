@@ -23,9 +23,6 @@ from runway.util import (
 
 logger = logging.getLogger(__name__)
 
-K8S_NAME = "sdhkubernetes{dtap}"
-K8S_VNET_NAME = "sdh-kubernetes"
-
 
 # assumes kubectl is available
 class BaseDeployToK8s(DeploymentStep):
@@ -195,7 +192,7 @@ class BaseDeployToK8s(DeploymentStep):
         self._create_or_patch_secrets(secrets, self.k8s_namespace)
 
         # 3.1: create kubernetes secrets for docker registry
-        docker_credentials = get_docker_credentials()
+        docker_credentials = get_docker_credentials(self.config['runway_common_keys']['shared_registry'])
         secrets = [Secret(
             key=".dockerconfigjson",
             val=json.dumps({"auths": {docker_credentials.registry: {"username": docker_credentials.username,
@@ -233,7 +230,7 @@ class DeployToVnetK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return K8S_VNET_NAME
+        return self.config['runway_common_keys']['k8s_vnet_name']
 
 
 class DeployToK8s(BaseDeployToK8s):
@@ -246,4 +243,4 @@ class DeployToK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return K8S_NAME.format(dtap=self.fixed_env)
+        return self.config['runway_common_keys']['k8s_name'].format(dtap=self.fixed_env)

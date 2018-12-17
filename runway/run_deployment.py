@@ -30,10 +30,12 @@ def get_environment() -> ApplicationVersion:
 
 def main():
     env = get_environment()
-    config = load_yaml("deployment.yml")
+    deployment_config = load_yaml("deployment.yml")
+    config = load_yaml("runway.config")
 
-    for step_config in config["steps"]:
-        task = step_config["task"]
+    for task_config in deployment_config["steps"]:
+        task = task_config["task"]
+        task_config.update(config)
         logger.info("*" * 76)
         logger.info(
             "{:10s} {:13s} {:40s} {:10s}".format(
@@ -41,7 +43,7 @@ def main():
             )
         )
         logger.info("*" * 76)
-        run_task(env, task, step_config)
+        run_task(env, task, task_config)
 
 
 def run_task(env: ApplicationVersion, task: str, task_config):
