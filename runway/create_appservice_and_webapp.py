@@ -9,14 +9,12 @@ from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site, SiteConf
 from msrestazure.azure_exceptions import CloudError
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.CosmosCredentials import CosmosCredentials
 from runway.DeploymentStep import DeploymentStep
 from runway.create_application_insights import CreateApplicationInsights
-from runway.util import (
-    get_subscription_id,
-    get_azure_user_credentials,
-    get_application_name,
-    render_string_with_jinja)
+from runway.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.credentials.cosmos import Cosmos
+from runway.util import get_application_name, render_string_with_jinja, subscription_id
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -125,7 +123,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         docker_registry_username = os.environ["REGISTRY_USERNAME"]
         docker_registry_password = os.environ["REGISTRY_PASSWORD"]
 
-        cosmos_credentials = CosmosCredentials.get_cosmos_read_only_credentials(self.env.environment.lower())
+        cosmos_credentials = Cosmos(self.env, self.config).get_cosmos_read_only_credentials()
         application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
         new_properties = {
             'DOCKER_ENABLE_CI': 'true',
@@ -200,17 +198,16 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             webapp_to_create.site,
         )
 
-    def _get_website_management_client(self, dtap) -> WebSiteManagementClient:
-        subscription_id = get_subscription_id()
-        credentials = get_azure_user_credentials(dtap)
+    def _get_website_management_client(self) -> WebSiteManagementClient:
+        vault, client = azure_keyvault_client(self.config, self.env)
+        credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
 
-        return WebSiteManagementClient(credentials, subscription_id)
+        return WebSiteManagementClient(credentials, subscription_id(self.config))
 
     def create_appservice_and_webapp(self) -> Site:
         formatted_dtap = self.env.environment.lower()
 
-        web_client = self._get_website_management_client(
-            dtap=formatted_dtap)
+        web_client = self._get_website_management_client()
 
         appservice_id = self._get_appservice(
             web_client=web_client,

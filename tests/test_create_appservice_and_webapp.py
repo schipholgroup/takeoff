@@ -5,7 +5,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.CosmosCredentials import CosmosCredentials
+from runway.credentials.CosmosCredentials import CosmosCredentials
 from runway.create_appservice_and_webapp import (
     CreateAppserviceAndWebapp as victim)
 from runway.create_appservice_and_webapp import (

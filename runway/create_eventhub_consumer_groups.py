@@ -9,12 +9,11 @@ from azure.mgmt.relay.models import AccessRights
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import CreateDatabricksSecrets
-from runway.credentials import aad_user
-from runway.util import (
-    get_application_name,
-    get_databricks_client,
-    get_subscription_id,
-)
+from runway.credentials.KeyVaultCredentialsMixin import Secret
+from runway.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.credentials.azure_databricks import DatabricksClient
+from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.util import get_application_name, subscription_id
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -193,13 +192,10 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     def create_eventhub_consumer_groups(self, consumer_groups: List[EventHubConsumerGroup]):
-        vault = self.config['runway_azure']['vault_name'].format(dtap = self.env.environment.lower)
-        credentials = aad_user.AzureUserCredentials(
-            vault_name=vault,
-            vault_client=
-        ).credentials(self.config)
+        vault, client = azure_keyvault_client(self.config, self.env)
+        credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
 
-        eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
+        eventhub_client = EventHubManagementClient(credentials, subscription_id(self.config))
 
         consumer_groups_to_create = self._get_requested_consumer_groups(consumer_groups)
 
@@ -218,7 +214,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
                     client=eventhub_client,
                     group=group)
 
-        databricks_client = get_databricks_client(self.env.environment)
+        databricks_client = DatabricksClient(vault, client).credentials(self.config)
         application_name = get_application_name()
 
         # For each Eventhub we have a separate connection string which is set by a shared access policy

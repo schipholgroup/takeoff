@@ -8,7 +8,8 @@ from docker import DockerClient
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials import SharedKeyvaultCredentials
+from runway.credentials.azure_container_registry import DockerRegistry
+from runway.credentials.azure_keyvault import azure_keyvault_client
 from runway.util import get_application_name, log_docker
 
 logger = logging.getLogger(__name__)
@@ -26,7 +27,8 @@ class DockerImageBuilder(DeploymentStep):
 
     def run(self):
         client: DockerClient = docker.from_env()
-        docker_credentials = SharedKeyvaultCredentials(self.config).docker_credentials()
+        vault, keyvault_client = azure_keyvault_client(self.config, self.env)
+        docker_credentials = DockerRegistry(vault, keyvault_client).credentials(self.config)
         client.login(
             username=docker_credentials.username,
             password=docker_credentials.password,

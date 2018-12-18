@@ -83,7 +83,7 @@ class KeyVaultCredentialsMixin(object):
         Returns:
             Dict[str: Secret]: A dictionary of all secrets matching the keys and prefix, indexed on the key
         """
-        secrets = self._get_keyvault_secrets(prefix)
+        secrets = self.get_keyvault_secrets(prefix)
         indexed = {_.key: _ for _ in secrets}
         # Keyvault does not support _ and python does not support -, hence the 'replace'
         return {_: self._find_secret(_, indexed) for _ in keys}
@@ -93,7 +93,7 @@ class KeyVaultCredentialsMixin(object):
             raise ValueError(f"Could not find required key {secret_key}")
         return secrets[secret_key].val
 
-    def _get_keyvault_secrets(self, prefix: str = None):
+    def get_keyvault_secrets(self, prefix: str = None):
         """
         Args:
             prefix (str, optional): A prefix to filter keyvault keys on. Default is the application name
