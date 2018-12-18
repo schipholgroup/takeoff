@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from azure.mgmt.cosmosdb import CosmosDB
 
-from runway.util import get_subscription_id, get_azure_user_credentials
+from runway.credentials import SharedKeyvaultCredentials
 
 
 @dataclass(frozen=True)
@@ -18,8 +18,8 @@ class CosmosCredentials(object):
     key: str
 
     @staticmethod
-    def _get_cosmos_management_client(dtap: str) -> CosmosDB:
-        subscription_id = get_subscription_id()
+    def _get_cosmos_management_client(dtap: str, config) -> CosmosDB:
+        subscription_id = SharedKeyvaultCredentials(config).subscription_id()
         credentials = get_azure_user_credentials(dtap)
 
         return CosmosDB(credentials, subscription_id)

@@ -3,12 +3,8 @@ import os
 from dataclasses import dataclass
 from typing import Pattern, Callable
 
-from azure.common.credentials import UserPassCredentials, ServicePrincipalCredentials
-from azure.storage.blob import BlockBlobService
-from databricks_cli.sdk import ApiClient
 from git import Repo
 from jinja2 import Template
-from twine.settings import Settings
 from yaml import load
 
 
@@ -49,24 +45,6 @@ def get_application_name() -> str:
     return os.environ["BUILD_DEFINITIONNAME"]
 
 
-
-def get_azure_sp_credentials(dtap: str) -> ServicePrincipalCredentials:
-    azure_sp = read_azure_sp(dtap)
-
-    return ServicePrincipalCredentials(
-        client_id=azure_sp.username, secret=azure_sp.password, tenant=azure_sp.tenant
-    )
-
-
-def read_azure_sp(dtap: str) -> AzureSp:
-    azure_sp_tenantid = os.environ["AZURE_TENANTID"]
-    azure_sp_username = os.environ[f"AZURE_KEYVAULT_SP_USERNAME_{dtap.upper()}"]
-    azure_sp_password = os.environ[f"AZURE_KEYVAULT_SP_PASSWORD_{dtap.upper()}"]
-
-    return AzureSp(azure_sp_tenantid, azure_sp_username, azure_sp_password)
-
-
-
 def b64_encode(s: str):
     return base64.b64encode(s.encode()).decode()
 
@@ -103,3 +81,9 @@ def log_docker(logs_iter):
     from pprint import pprint
     for line in logs_iter:
         pprint(line)
+
+def current_filename(__fn):
+    return os.path.basename(__fn).split('.')[0]
+
+def inverse_dictionary(d: dict):
+    return {v: k for k, v in d.items()}

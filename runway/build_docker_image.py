@@ -8,7 +8,8 @@ from docker import DockerClient
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.util import get_application_name, get_docker_credentials, log_docker
+from runway.credentials import SharedKeyvaultCredentials
+from runway.util import get_application_name, log_docker
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class DockerImageBuilder(DeploymentStep):
 
     def run(self):
         client: DockerClient = docker.from_env()
-        docker_credentials = get_docker_credentials(self.config['runway_common_keys']['shared_registry'])
+        docker_credentials = SharedKeyvaultCredentials(self.config).docker_credentials()
         client.login(
             username=docker_credentials.username,
             password=docker_credentials.password,

@@ -8,9 +8,9 @@ from azure.mgmt.relay.models import AccessRights
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
+from runway.create_databricks_secrets import CreateDatabricksSecrets
+from runway.credentials import aad_user
 from runway.util import (
-    get_azure_user_credentials,
     get_application_name,
     get_databricks_client,
     get_subscription_id,
@@ -193,7 +193,12 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     def create_eventhub_consumer_groups(self, consumer_groups: List[EventHubConsumerGroup]):
-        credentials = get_azure_user_credentials(self.env.environment)
+        vault = self.config['runway_azure']['vault_name'].format(dtap = self.env.environment.lower)
+        credentials = aad_user.AzureUserCredentials(
+            vault_name=vault,
+            vault_client=
+        ).credentials(self.config)
+
         eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
 
         consumer_groups_to_create = self._get_requested_consumer_groups(consumer_groups)
