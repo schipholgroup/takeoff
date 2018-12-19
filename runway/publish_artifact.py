@@ -5,7 +5,9 @@ from twine.commands.upload import upload
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.util import get_artifact_store_settings, log_docker, get_tag
+from runway.credentials.azure_devops_artifact_store import DevopsArtifactStore
+from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.util import log_docker, get_tag
 
 logger = logging.getLogger(__name__)
 
@@ -39,4 +41,6 @@ class PublishArtifact(DeploymentStep):
         assert return_code == 0, 'Could not build the package for some reason!'
 
     def publish_package(self):
-        upload(upload_settings=get_artifact_store_settings(), dists=['/root/dist/*'])
+        vault, client = azure_keyvault_client(self.config, self.env)
+        credentials = DevopsArtifactStore(vault_name=vault, vault_client=client).credentials(self.config)
+        upload(upload_settings=credentials, dists=['/root/dist/*'])

@@ -5,7 +5,9 @@ from azure.storage.blob import BlockBlobService
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.util import get_application_name, get_shared_blob_service
+from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.credentials.azure_storage_account import BlobStore
+from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +60,7 @@ class UploadToBlob(DeploymentStep):
 
     def upload_application_to_blob(self):
         build_definition_name = get_application_name()
-        blob_service = get_shared_blob_service()
+        blob_service = BlobStore(*azure_keyvault_client(self.config, self.env)).credentials(self.config)
 
         filename_library = (
             f"{build_definition_name}/{build_definition_name}-{self.env.artifact_tag}"

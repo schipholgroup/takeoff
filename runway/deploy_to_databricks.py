@@ -12,9 +12,10 @@ from databricks_cli.sdk import ApiClient
 from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
+from runway.credentials.azure_databricks import DatabricksClient
+from runway.credentials.azure_keyvault import azure_keyvault_client
 from runway.util import (
     get_application_name,
-    get_databricks_client,
     has_prefix_match,
 )
 
@@ -64,7 +65,8 @@ class DeployToDatabricks(DeploymentStep):
             python_file=f"{root_library_folder}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
         )
 
-        databricks_client = get_databricks_client(self.env.environment)
+        vault, client = azure_keyvault_client(self.config, self.env)
+        databricks_client = DatabricksClient(vault, client).credentials(self.config)
 
         is_streaming = self._job_is_streaming(job_config)
         logger.info("Removing old job")

@@ -7,12 +7,10 @@ from azure.mgmt.relay.models import AccessRights
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
-from runway.util import (
-    get_azure_user_credentials,
-    get_application_name,
-    get_databricks_client,
-    get_subscription_id,
-)
+from runway.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.credentials.azure_databricks import DatabricksClient
+from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.util import get_application_name, subscription_id
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -33,10 +31,11 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         eventhub_namespace = self.config['runway_common_keys']['eventhub_namespace'].format(dtap=formatted_dtap)
         resource_group = self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)
 
-        credentials = get_azure_user_credentials(self.env.environment)
-        eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
+        vault, client = azure_keyvault_client(self.config, self.env)
+        credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
+        eventhub_client = EventHubManagementClient(credentials, subscription_id(self.config))
 
-        databricks_client = get_databricks_client(self.env.environment)
+        databricks_client = DatabricksClient(vault, client).credentials(self.config)
         application_name = get_application_name()
 
         logger.info(f"Using Azure resource group: {resource_group}")
