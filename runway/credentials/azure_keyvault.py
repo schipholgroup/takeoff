@@ -1,5 +1,4 @@
 from azure.keyvault import KeyVaultClient
-from typing import Union
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.credentials.azure_service_principle import AzureServicePrincipleCredentials

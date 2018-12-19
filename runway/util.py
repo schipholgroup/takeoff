@@ -14,6 +14,7 @@ class AzureSp(object):
     username: str
     password: str
 
+
 def render_string_with_jinja(path: str, params: dict) -> str:
     with open(path) as file_:
         template = Template(file_.read())
@@ -82,11 +83,14 @@ def log_docker(logs_iter):
     for line in logs_iter:
         pprint(line)
 
+
 def current_filename(__fn):
     return os.path.basename(__fn).split('.')[0]
 
+
 def inverse_dictionary(d: dict):
     return {v: k for k, v in d.items()}
+
 
 def subscription_id(config: dict):
     return config['runway_azure']['subscription_id']

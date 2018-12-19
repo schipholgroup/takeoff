@@ -19,10 +19,13 @@ class UploadToBlob(DeploymentStep):
     def run(self):
         self.upload_application_to_blob()
 
-    def _upload_file_to_blob(self, client: BlockBlobService,
+    def _upload_file_to_blob(self,
+                             client: BlockBlobService,
                              source: str,
                              destination: str,
-                             container=self.config['runway_common_keys']['artifacts_shared_blob_container_name']):
+                             container: str = None):
+        if not container:
+            container = self.config['runway_common_keys']['artifacts_shared_blob_container_name']
         logger.info(
             f"""uploading artifact from
          | from ${source}
