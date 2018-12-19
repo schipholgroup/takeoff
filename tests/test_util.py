@@ -36,19 +36,3 @@ class TestPatternMatching(object):
         for string, (idx, value) in zip(self.test_strings[:2], values):
             with pytest.raises(IndexError):
                 assert victim.get_matching_group(string, self.pattern, idx) == value
-
-
-def test_get_eventhub_namespace():
-    # Make sure that the python module cache is flushed
-    importlib.reload(victim)
-    from runway.util import EVENTHUB_NAMESPACE
-
-    assert EVENTHUB_NAMESPACE == "sdheventhub{dtap}"
-
-
-def test_get_eventhub_resource_group():
-    # Make sure that the python module cache is flushed
-    importlib.reload(victim)
-    from runway.util import RESOURCE_GROUP
-
-    assert RESOURCE_GROUP == "sdh{dtap}"

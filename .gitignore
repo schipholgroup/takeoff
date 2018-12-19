@@ -114,3 +114,4 @@ spark-warehouse
 .bash_history
 
 .env
+!/runway.config

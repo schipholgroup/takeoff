@@ -11,7 +11,7 @@ def azure_keyvault_client(config: dict, env: ApplicationVersion = None, dtap: st
         dtap = env.environment.lower()
     vault = config['runway_azure']['vault_name'].format(dtap=dtap)
     keyvault_client = KeyVaultClient(
-        AzureServicePrincipleCredentials().credentials(config, env.environment)
+        AzureServicePrincipleCredentials().credentials(config, dtap)
     )
 
     return vault, keyvault_client

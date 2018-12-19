@@ -1,0 +1,2 @@
+class TestKeyVaultCredentialsMixin(object):
+    pass

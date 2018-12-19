@@ -30,7 +30,7 @@ class BaseDeployToK8s(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict, fixed_env):
         super().__init__(env, config)
         self.fixed_env = fixed_env
-        self.vault, self.vault_client = azure_keyvault_client(self.config, self.fixed_env)
+        self.vault, self.vault_client = azure_keyvault_client(config=self.config, dtap=self.fixed_env)
         self.add_application_insights = self.config.get('add_application_insights', False)
 
     def run(self):
