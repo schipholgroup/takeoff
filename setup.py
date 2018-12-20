@@ -26,7 +26,7 @@ setup(
     author="Schiphol Data Hub",
     long_description=long_description,
     author_email="SDH-Support@schiphol.nl",
-    packages=["runway"],
+    packages=["runway", "runway/credentials"],
     install_requires=[
         "azure==4.0.0",
         "gitpython==2.1.10",
