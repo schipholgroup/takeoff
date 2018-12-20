@@ -68,8 +68,8 @@ class KeyVaultCredentialsMixin(object):
 
         """
         credentials: Dict[str, Secret] = self._credentials(list(keys.values()))
-        credential_kwargs = {function_argument: credentials[keyvault_key]
-                             for function_argument, keyvault_key in inverse_dictionary(keys)}
+        credential_kwargs = {function_argument: credentials[env_variable]
+                             for env_variable, function_argument in inverse_dictionary(keys).items()}
         return credential_kwargs
 
     def _credentials(self,
