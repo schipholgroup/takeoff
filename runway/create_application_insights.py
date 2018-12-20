@@ -10,9 +10,8 @@ from runway.credentials.KeyVaultCredentialsMixin import Secret
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_databricks import DatabricksClient
 from runway.credentials.azure_keyvault import azure_keyvault_client
-from runway.util import (
-    get_application_name,
-    subscription_id)
+from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class CreateApplicationInsights(DeploymentStep):
         azure_user_credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
 
         return ApplicationInsightsManagementClient(
-            azure_user_credentials, subscription_id(self.config)
+            azure_user_credentials, AzureSubscriptionId(vault, client).credentials(self.config)
         )
 
     def __find(self, client: ApplicationInsightsManagementClient, name: str):

@@ -16,11 +16,8 @@ from runway.credentials.KeyVaultCredentialsMixin import Secret, KeyVaultCredenti
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_container_registry import DockerRegistry
 from runway.credentials.azure_keyvault import azure_keyvault_client
-from runway.util import (
-    get_application_name,
-    render_file_with_jinja,
-    b64_encode,
-    subscription_id)
+from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.util import get_application_name, render_file_with_jinja, b64_encode
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +79,7 @@ class BaseDeployToK8s(DeploymentStep):
 
         client = ContainerServiceClient(
             credentials=credentials,
-            subscription_id=subscription_id(self.config)
+            subscription_id=AzureSubscriptionId(self.vault, self.vault_client).credentials(self.config)
         )
 
         # authenticate with k8s
@@ -187,7 +184,7 @@ class BaseDeployToK8s(DeploymentStep):
         self._create_namespace_if_not_exists(core_api_client, self.k8s_namespace)
 
         # 3: create kubernetes secrets from azure keyvault
-        secrets = KeyVaultCredentialsMixin(self.vault, self.vault_client).get_keyvault_secrets()
+        secrets = KeyVaultCredentialsMixin(self.vault, self.vault_client).get_keyvault_secrets(get_application_name())
         if self.add_application_insights:
             application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
             secrets.append(Secret('instrumentation-key', application_insights.instrumentation_key))

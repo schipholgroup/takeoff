@@ -90,7 +90,3 @@ def current_filename(__fn):
 
 def inverse_dictionary(d: dict):
     return {v: k for k, v in d.items()}
-
-
-def subscription_id(config: dict):
-    return config['runway_azure']['subscription_id']

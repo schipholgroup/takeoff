@@ -13,8 +13,9 @@ from runway.DeploymentStep import DeploymentStep
 from runway.create_application_insights import CreateApplicationInsights
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.credentials.azure_subscription_id import AzureSubscriptionId
 from runway.credentials.cosmos import Cosmos
-from runway.util import get_application_name, render_string_with_jinja, subscription_id
+from runway.util import get_application_name, render_string_with_jinja
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -202,7 +203,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         vault, client = azure_keyvault_client(self.config, self.env)
         credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
 
-        return WebSiteManagementClient(credentials, subscription_id(self.config))
+        return WebSiteManagementClient(credentials, AzureSubscriptionId(vault, client).credentials(self.config))
 
     def create_appservice_and_webapp(self) -> Site:
         formatted_dtap = self.env.environment.lower()
