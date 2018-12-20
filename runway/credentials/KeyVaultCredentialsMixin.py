@@ -5,7 +5,7 @@ from typing import List, Dict
 from azure.keyvault import KeyVaultClient
 from azure.keyvault.models import SecretBundle
 
-from runway.util import get_matching_group, has_prefix_match, get_application_name, inverse_dictionary
+from runway.util import get_matching_group, has_prefix_match, inverse_dictionary
 
 
 @dataclass(frozen=True)
@@ -85,7 +85,6 @@ class KeyVaultCredentialsMixin(object):
         """
         secrets = self.get_keyvault_secrets(prefix)
         indexed = {_.key: _ for _ in secrets}
-        # Keyvault does not support _ and python does not support -, hence the 'replace'
         return {_: self._find_secret(_, indexed) for _ in keys}
 
     def _find_secret(self, secret_key, secrets: Dict[str, Secret]) -> str:
@@ -93,7 +92,7 @@ class KeyVaultCredentialsMixin(object):
             raise ValueError(f"Could not find required key {secret_key}")
         return secrets[secret_key].val
 
-    def get_keyvault_secrets(self, prefix: str = None):
+    def get_keyvault_secrets(self, prefix: str = ''):
         """
         Args:
             prefix (str, optional): A prefix to filter keyvault keys on. Default is the application name
@@ -101,8 +100,6 @@ class KeyVaultCredentialsMixin(object):
         Returns:
             List[Secret]: The list of all secrets matching the prefix
         """
-        if not prefix:
-            prefix = get_application_name()
         return self._retrieve_secrets(self.vault_client, self.vault_name, prefix)
 
     @staticmethod
@@ -126,13 +123,12 @@ class KeyVaultCredentialsMixin(object):
         to
         (flights-arrivals-cosmos-collection, cosmos-collection)
         """
-        pattern = re.compile(rf"^({prefix})-([-A-z0-9]+)*")
-
-        return [
-            IdAndKey(_, get_matching_group(_, pattern, 1))
-            for _ in keyvault_ids
-            if has_prefix_match(_, prefix, pattern)
-        ]
+        if prefix:
+            pattern = re.compile(rf"^({prefix})-([-A-z0-9]+)*")
+            return [IdAndKey(_, get_matching_group(_, pattern, 1))
+                    for _ in keyvault_ids
+                    if has_prefix_match(_, prefix, pattern)]
+        return [IdAndKey(_, _) for _ in keyvault_ids]
 
     def _retrieve_secrets(self,
                           client: KeyVaultClient,
