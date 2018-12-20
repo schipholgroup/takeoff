@@ -40,13 +40,10 @@ VALID_SITE_CONFIG = SiteConfig(
 with open('tests/test_runway.config', 'r') as f:
     runway_config = yaml.safe_load(f.read())
 
+
 class TestDeployToWebApp(unittest.TestCase):
-    @mock.patch(
-        "runway.create_application_insights.CreateApplicationInsights.create_application_insights"
-    )
-    @mock.patch(
-        "runway.credentials.cosmos.Cosmos.get_cosmos_read_only_credentials"
-    )
+    @mock.patch("runway.create_application_insights.CreateApplicationInsights.create_application_insights")
+    @mock.patch("runway.credentials.cosmos.Cosmos.get_cosmos_read_only_credentials")
     @mock.patch.dict(
         os.environ,
         {

@@ -2,6 +2,8 @@ import os
 import unittest
 from unittest import mock
 
+import yaml
+
 from runway.ApplicationVersion import ApplicationVersion
 from runway.create_eventhub_consumer_groups import (
     ConsumerGroup,
@@ -9,11 +11,14 @@ from runway.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups as victim,
 )
 
+with open('tests/test_runway.config', 'r') as f:
+    runway_config = yaml.safe_load(f.read())
+
 
 class TestCreateEventhubConsumerGroups(unittest.TestCase):
     def test_get_requested_consumer_groups(self):
         env = ApplicationVersion('DEV', 'local', 'foo')
-        consumer_groups = victim(env, {})._get_requested_consumer_groups(
+        consumer_groups = victim(env, runway_config)._get_requested_consumer_groups(
             [EventHubConsumerGroup("hub1", "my-app-group1")])
         assert len(consumer_groups) == 1
         asserting_groups = [
