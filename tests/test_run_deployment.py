@@ -12,7 +12,7 @@ from runway.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
 )
 from runway.deploy_to_databricks import DeployToDatabricks
-from runway.run_deployment import run_task
+from runway.run_deployment import run_task, load_yaml
 
 environment_variables = {
     "WEBAPP_NAME": "my-app",
@@ -36,13 +36,15 @@ def test_no_run_task():
 @mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateAppserviceAndWebapp, 'run', return_value=None)
 def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version):
-    mock_load_yaml.return_value = load(
-        """
-steps:
-- task: deployWebAppService
-    """
-    )
     mock_get_version.return_value = env
+
+    def load(s):
+        if s == 'deployment.yml':
+            return {'steps': [{'task': 'deployWebAppService'}]}
+        elif s == 'runway.config':
+            return {}
+
+    mock_load_yaml.side_effect = load
 
     from runway.run_deployment import main
 
@@ -56,17 +58,17 @@ steps:
 @mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateEventhubConsumerGroups, 'run', return_value=None)
 def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version):
-    mock_load_yaml.return_value = load(
-        """
-steps:
-- task: createEventhubConsumerGroups
-  groups:
-    - eventhubEntity: sdhdevciss
-      consumerGroup: consumerGroupName1
-    - eventhubEntity: sdhdevciss
-      consumerGroup: consumerGroupName2
-    """
-    )
+    def load(s):
+        if s == 'deployment.yml':
+            return {'steps': [{'task': 'createEventhubConsumerGroups',
+                               'groups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
+                                          {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
+                               }]}
+        elif s == 'runway.config':
+            return {}
+
+    mock_load_yaml.side_effect = load
+
     mock_get_version.return_value = env
 
     from runway.run_deployment import main
@@ -90,12 +92,13 @@ steps:
 @mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateDatabricksSecrets, 'run', return_value=None)
 def test_create_databricks_secret(_, mock_load_yaml, mock_get_version):
-    mock_load_yaml.return_value = load(
-        """
-steps:
-- task: createDatabricksSecrets
-    """
-    )
+    def load(s):
+        if s == 'deployment.yml':
+            return {'steps': [{'task': 'createDatabricksSecrets'}]}
+        elif s == 'runway.config':
+            return {}
+
+    mock_load_yaml.side_effect = load
     mock_get_version.return_value = env
 
     from runway.run_deployment import main
@@ -110,13 +113,13 @@ steps:
 @mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(DeployToDatabricks, 'run', return_value=None)
 def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version):
-    mock_load_yaml.return_value = load(
-        """
-steps:
-- task: deployToDatabricks
-  config_file_fn: databricks_job_config.json.j2
-   """
-    )
+    def load(s):
+        if s == 'deployment.yml':
+            return {'steps': [{'task': 'deployToDatabricks', 'config_file_fn': 'databricks_job_config.json.j2'}]}
+        elif s == 'runway.config':
+            return {}
+
+    mock_load_yaml.side_effect = load
     mock_get_version.return_value = env
 
     from runway.run_deployment import main

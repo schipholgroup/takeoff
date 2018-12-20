@@ -1,4 +1,5 @@
 import logging
+from pprint import pprint
 
 from yaml import load
 
@@ -31,11 +32,11 @@ def get_environment() -> ApplicationVersion:
 def main():
     env = get_environment()
     deployment_config = load_yaml("deployment.yml")
-    config = load_yaml("runway.config")
+    runway_config = load_yaml("runway.config")
 
     for task_config in deployment_config["steps"]:
         task = task_config["task"]
-        task_config.update(config)
+        task_config.update(runway_config)
         logger.info("*" * 76)
         logger.info(
             "{:10s} {:13s} {:40s} {:10s}".format(
