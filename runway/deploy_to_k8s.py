@@ -15,6 +15,7 @@ from runway.create_application_insights import CreateApplicationInsights
 from runway.credentials.KeyVaultCredentialsMixin import Secret, KeyVaultCredentialsMixin
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_container_registry import DockerRegistry
+from runway.credentials.azure_keyvault import AzureKeyvaultClient
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
 from runway.util import get_application_name, render_file_with_jinja, b64_encode
 
@@ -25,7 +26,8 @@ logger = logging.getLogger(__name__)
 class BaseDeployToK8s(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict, fixed_env):
         super().__init__(env, config)
-        self.fixed_env = fixed_env
+        # have to overwrite the default keyvault b/c of Vnet K8s cluster
+        self.vault_name, self.vault_client = AzureKeyvaultClient.credentials(self.config, dtap=fixed_env)
         self.add_application_insights = self.config.get('add_application_insights', False)
 
     def run(self):
