@@ -213,7 +213,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
                     client=eventhub_client,
                     group=group)
 
-        databricks_client = DatabricksClient(vault, client).credentials(self.config)
+        databricks_client = DatabricksClient(self.vault_name, self.vault_client).credentials(self.config)
         application_name = get_application_name()
 
         # For each Eventhub we have a separate connection string which is set by a shared access policy

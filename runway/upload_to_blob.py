@@ -28,7 +28,7 @@ class UploadToBlob(DeploymentStep):
         logger.info(
             f"""uploading artifact from
          | from ${source}
-         | to ${destination} 
+         | to ${destination}
          | in container {container}"""
         )
 

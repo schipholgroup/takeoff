@@ -26,7 +26,7 @@ class DockerImageBuilder(DeploymentStep):
 
     def run(self):
         client: DockerClient = docker.from_env()
-        docker_credentials = DockerRegistry(vault, keyvault_client).credentials(self.config)
+        docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
         client.login(
             username=docker_credentials.username,
             password=docker_credentials.password,
