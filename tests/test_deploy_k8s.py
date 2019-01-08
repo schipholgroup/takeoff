@@ -8,7 +8,7 @@ from kubernetes.client import V1SecretList
 from runway.ApplicationVersion import ApplicationVersion
 from runway.deploy_to_k8s import DeployToK8s
 
-with open('tests/test_runway.config', 'r') as f:
+with open('tests/test_runway_config.yaml', 'r') as f:
     runway_config = yaml.safe_load(f.read())
 
 env_variables = {'AZURE_TENANTID': 'David',
@@ -17,7 +17,7 @@ env_variables = {'AZURE_TENANTID': 'David',
 
 
 class TestDeployToK8s(object):
-    @mock.patch("runway.deploy_to_k8s.azure_keyvault_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
     def test_k8s_resource_exists(self, _):
         haystack = {
             'items': [
@@ -31,7 +31,7 @@ class TestDeployToK8s(object):
         victim =  DeployToK8s(ApplicationVersion("dev", "v", "branch"), runway_config)
         assert victim._find_needle('my-needle', haystack)
 
-    @mock.patch("runway.deploy_to_k8s.azure_keyvault_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
     @mock.patch.dict(os.environ, env_variables)
     def test_k8s_resource_does_not_exist(self, _):
         haystack = {
@@ -49,7 +49,7 @@ class TestDeployToK8s(object):
         assert not victim._find_needle(needle, haystack)
 
     @mock.patch.dict(os.environ, env_variables)
-    @mock.patch("runway.deploy_to_k8s.azure_keyvault_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
     @mock.patch.object(DeployToK8s, "_find_needle", return_value=False)
     def test_create_resource(self, _, __):
         victim =  DeployToK8s(ApplicationVersion("dev", "v", "branch"), runway_config)
@@ -68,7 +68,7 @@ class TestDeployToK8s(object):
                     mock_patch.assert_not_called()
 
     @mock.patch.dict(os.environ, env_variables)
-    @mock.patch("runway.deploy_to_k8s.azure_keyvault_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
     @mock.patch.object(DeployToK8s, "_find_needle", return_value=True)
     def test_patch_resource(self, _, __):
         victim =  DeployToK8s(ApplicationVersion("dev", "v", "branch"), runway_config)

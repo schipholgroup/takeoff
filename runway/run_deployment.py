@@ -31,7 +31,7 @@ def get_environment() -> ApplicationVersion:
 def main():
     env = get_environment()
     deployment_config = load_yaml("deployment.yml")
-    runway_config = load_yaml("runway.config")
+    runway_config = load_yaml("runway_config.yaml")
 
     for task_config in deployment_config["steps"]:
         task = task_config["task"]

@@ -13,7 +13,6 @@ from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.azure_databricks import DatabricksClient
-from runway.credentials.azure_keyvault import AzureKeyvaultClient
 from runway.util import (
     get_application_name,
     has_prefix_match,
@@ -56,7 +55,7 @@ class DeployToDatabricks(DeploymentStep):
         """
         application_name = get_application_name()
 
-        root_library_folder = self.config['runway_common_keys']['databricks_library_path']
+        root_library_folder = self.config['runway_common']['databricks_library_path']
         job_config = DeployToDatabricks._construct_job_config(
             config_file_fn=config_file_fn,
             name=application_name,
@@ -65,8 +64,7 @@ class DeployToDatabricks(DeploymentStep):
             python_file=f"{root_library_folder}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
         )
 
-        vault, client = AzureKeyvaultClient.credentials(self.config, self.env)
-        databricks_client = DatabricksClient(vault, client).credentials(self.config)
+        databricks_client = DatabricksClient(self.vault_name, self.vault_client).credentials(self.config)
 
         is_streaming = self._job_is_streaming(job_config)
         logger.info("Removing old job")

@@ -40,7 +40,7 @@ def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version):
     def load(s):
         if s == 'deployment.yml':
             return {'steps': [{'task': 'deployWebAppService'}]}
-        elif s == 'runway.config':
+        elif s == 'runway_config.yaml':
             return {}
 
     mock_load_yaml.side_effect = load
@@ -63,7 +63,7 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version):
                                'groups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
                                           {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
                                }]}
-        elif s == 'runway.config':
+        elif s == 'runway_config.yaml':
             return {}
 
     mock_load_yaml.side_effect = load
@@ -94,7 +94,7 @@ def test_create_databricks_secret(_, mock_load_yaml, mock_get_version):
     def load(s):
         if s == 'deployment.yml':
             return {'steps': [{'task': 'createDatabricksSecrets'}]}
-        elif s == 'runway.config':
+        elif s == 'runway_config.yaml':
             return {}
 
     mock_load_yaml.side_effect = load
@@ -115,7 +115,7 @@ def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version):
     def load(s):
         if s == 'deployment.yml':
             return {'steps': [{'task': 'deployToDatabricks', 'config_file_fn': 'databricks_job_config.json.j2'}]}
-        elif s == 'runway.config':
+        elif s == 'runway_config.yaml':
             return {}
 
     mock_load_yaml.side_effect = load
@@ -155,7 +155,8 @@ class MockedClass(DeploymentStep):
 
 
 @mock.patch.dict('runway.deployment_step.deployment_steps', {'mocked': MockedClass})
-def test_run_task():
+@mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
+def test_run_task(_):
     from runway.run_deployment import run_task
     res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})
 

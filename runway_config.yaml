@@ -21,7 +21,7 @@ azure_keyvault_keys:
     repository_url: "artifact-store-upload-url"
     username: "artifact-store-username"
     password: "artifact-store-password"
-  azure_subscription_id: subscription_id
+  azure_subscription_id: "subscription-id"
 
 devops_environment_keys_dev:
   azure_service_principal:
@@ -41,7 +41,7 @@ devops_environment_keys_prd:
     client_id: "AZURE_KEYVAULT_SP_USERNAME_PRD"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_PRD"
 
-runway_common_keys:
+runway_common:
   shared_registry: sdhcontainerregistryshared.azurecr.io
   k8s_name: sdhkubernetes{dtap}
   k8s_vnet_name: sdh-kubernetes

@@ -11,12 +11,14 @@ from runway.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups as victim,
 )
 
-with open('tests/test_runway.config', 'r') as f:
+with open('tests/test_runway_config.yaml', 'r') as f:
     runway_config = yaml.safe_load(f.read())
 
 
 class TestCreateEventhubConsumerGroups(unittest.TestCase):
-    def test_get_requested_consumer_groups(self):
+
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
+    def test_get_requested_consumer_groups(self, _):
         env = ApplicationVersion('DEV', 'local', 'foo')
         consumer_groups = victim(env, runway_config)._get_requested_consumer_groups(
             [EventHubConsumerGroup("hub1", "my-app-group1")])

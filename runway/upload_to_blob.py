@@ -5,7 +5,6 @@ from azure.storage.blob import BlockBlobService
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.azure_keyvault import AzureKeyvaultClient
 from runway.credentials.azure_storage_account import BlobStore
 from runway.util import get_application_name
 
@@ -25,11 +24,12 @@ class UploadToBlob(DeploymentStep):
                              destination: str,
                              container: str = None):
         if not container:
-            container = self.config['runway_common_keys']['artifacts_shared_blob_container_name']
+            container = self.config['runway_common']['artifacts_shared_blob_container_name']
         logger.info(
             f"""uploading artifact from
          | from ${source}
-         | to ${destination}"""
+         | to ${destination} 
+         | in container {container}"""
         )
 
         client.create_blob_from_path(
@@ -63,7 +63,7 @@ class UploadToBlob(DeploymentStep):
 
     def upload_application_to_blob(self):
         build_definition_name = get_application_name()
-        blob_service = BlobStore(*AzureKeyvaultClient.credentials(self.config, self.env)).credentials(self.config)
+        blob_service = BlobStore(self.vault_name, self.vault_client).credentials(self.config)
 
         filename_library = (
             f"{build_definition_name}/{build_definition_name}-{self.env.artifact_tag}"

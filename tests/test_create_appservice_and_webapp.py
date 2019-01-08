@@ -37,7 +37,7 @@ VALID_SITE_CONFIG = SiteConfig(
     ],
 )
 
-with open('tests/test_runway.config', 'r') as f:
+with open('tests/test_runway_config.yaml', 'r') as f:
     runway_config = yaml.safe_load(f.read())
 
 
@@ -53,8 +53,9 @@ class TestDeployToWebApp(unittest.TestCase):
             "REGISTRY_PASSWORD": "supersecret42",
         },
     )
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
     def test_build_site_config(
-            self, _get_cosmos_credentials_mock, create_application_insights_mock
+            self, _, _get_cosmos_credentials_mock, create_application_insights_mock
     ):
         _get_cosmos_credentials_mock.return_value = CosmosCredentials(
             "https://localhost:443", "secretcosmoskey"
@@ -72,7 +73,8 @@ class TestDeployToWebApp(unittest.TestCase):
         assert result == config
 
     @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
-    def test_parse_appservice_parameters_defaults(self):
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
+    def test_parse_appservice_parameters_defaults(self, _):
         expected_appservice_config = AppService(
             name="my-build", sku=AppServiceSKU(name="S1", capacity=2, tier="Standard")
         )
@@ -85,8 +87,9 @@ class TestDeployToWebApp(unittest.TestCase):
 
         assert expected_appservice_config == result
 
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
     @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
-    def test_parse_appservice_parameters_config_unavailable(self):
+    def test_parse_appservice_parameters_config_unavailable(self, _):
         expected_appservice_config = AppService(
             name="my-build", sku=AppServiceSKU(name="S1", capacity=2, tier="Standard")
         )
@@ -112,8 +115,10 @@ class TestDeployToWebApp(unittest.TestCase):
             "REGISTRY_PASSWORD": "supersecret123",
         },
     )
+
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
     def test_get_webapp_to_create(
-            self, get_cosmos_credentials_mock, get_site_config_mock
+            self, _, get_cosmos_credentials_mock, get_site_config_mock
     ):
         get_site_config_mock.return_value = VALID_SITE_CONFIG
         get_cosmos_credentials_mock.return_value = CosmosCredentials(
@@ -143,13 +148,15 @@ class TestDeployToWebApp(unittest.TestCase):
         get_site_config_mock.assert_called_once()
 
     @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
-    def test_linux_fx_version_docker(self):
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
+    def test_linux_fx_version_docker(self, _):
         linux_fx = 'DOCKER|some-registry/my-build:ver'
 
         assert victim(ENV, runway_config)._get_linux_fx_version() == linux_fx
 
     @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
-    def test_linux_fx_version_compose(self):
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
+    def test_linux_fx_version_compose(self, _):
         compose = """version: '3.2'
 services:
   app:
