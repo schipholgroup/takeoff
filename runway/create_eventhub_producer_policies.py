@@ -9,7 +9,7 @@ from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_databricks import DatabricksClient
-from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.credentials.azure_keyvault import AzureKeyvaultClient
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
 from runway.util import get_application_name
 
@@ -32,7 +32,7 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         eventhub_namespace = self.config['runway_common_keys']['eventhub_namespace'].format(dtap=formatted_dtap)
         resource_group = self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)
 
-        vault, client = azure_keyvault_client(self.config, self.env)
+        vault, client = AzureKeyvaultClient.credentials(self.config, self.env)
         credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
         eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(vault, client).credentials(self.config))
 

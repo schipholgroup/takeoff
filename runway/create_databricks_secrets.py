@@ -9,7 +9,7 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.KeyVaultCredentialsMixin import Secret, KeyVaultCredentialsMixin
 from runway.credentials.azure_databricks import DatabricksClient
-from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.credentials.azure_keyvault import AzureKeyvaultClient
 from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class CreateDatabricksSecrets(DeploymentStep):
     def create_databricks_secrets(self):
         application_name = get_application_name()
 
-        vault, client = azure_keyvault_client(self.config, self.env)
+        vault, client = AzureKeyvaultClient.credentials(self.config, self.env)
         secrets = KeyVaultCredentialsMixin(vault, client).get_keyvault_secrets(get_application_name())
         databricks_client = DatabricksClient(vault, client).credentials(self.config)
 

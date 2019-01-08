@@ -12,7 +12,7 @@ from runway.create_databricks_secrets import CreateDatabricksSecrets
 from runway.credentials.KeyVaultCredentialsMixin import Secret
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_databricks import DatabricksClient
-from runway.credentials.azure_keyvault import azure_keyvault_client
+from runway.credentials.azure_keyvault import AzureKeyvaultClient
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
 from runway.util import get_application_name
 
@@ -193,7 +193,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     def create_eventhub_consumer_groups(self, consumer_groups: List[EventHubConsumerGroup]):
-        vault, client = azure_keyvault_client(self.config, self.env)
+        vault, client = AzureKeyvaultClient.credentials(self.config, self.env)
         credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
 
         eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(vault, client).credentials(self.config))
