@@ -43,6 +43,7 @@ def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version):
         elif s == 'runway_config.yaml':
             return {}
 
+    # Since we're loading 2 yamls we need a side effect that mocks both
     mock_load_yaml.side_effect = load
 
     from runway.run_deployment import main
@@ -66,6 +67,7 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version):
         elif s == 'runway_config.yaml':
             return {}
 
+    # Since we're loading 2 yamls we need a side effect that mocks both
     mock_load_yaml.side_effect = load
 
     mock_get_version.return_value = env
@@ -97,6 +99,7 @@ def test_create_databricks_secret(_, mock_load_yaml, mock_get_version):
         elif s == 'runway_config.yaml':
             return {}
 
+    # Since we're loading 2 yamls we need a side effect that mocks both
     mock_load_yaml.side_effect = load
     mock_get_version.return_value = env
 
@@ -118,6 +121,7 @@ def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version):
         elif s == 'runway_config.yaml':
             return {}
 
+    # Since we're loading 2 yamls we need a side effect that mocks both
     mock_load_yaml.side_effect = load
     mock_get_version.return_value = env
 
