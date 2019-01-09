@@ -1,6 +1,5 @@
 import re
 from dataclasses import dataclass
-from pprint import pprint
 from typing import List, Dict
 
 from azure.keyvault import KeyVaultClient
