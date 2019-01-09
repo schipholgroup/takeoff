@@ -28,7 +28,7 @@ class BaseDeployToK8s(DeploymentStep):
         super().__init__(env, config)
         self.fixed_env = fixed_env
         # have to overwrite the default keyvault b/c of Vnet K8s cluster
-        self.vault_name, self.vault_client = AzureKeyvaultClient.credentials(self.config, dtap=fixed_env)
+        self.vault_name, self.vault_client = AzureKeyvaultClient.vault_and_client(self.config, dtap=fixed_env)
         self.add_application_insights = self.config.get('add_application_insights', False)
 
     def run(self):
@@ -80,7 +80,7 @@ class BaseDeployToK8s(DeploymentStep):
 
         client = ContainerServiceClient(
             credentials=credentials,
-            subscription_id=AzureSubscriptionId(self.vault_name, self.vault_client).credentials(self.config)
+            subscription_id=AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
         )
 
         # authenticate with k8s

@@ -159,7 +159,7 @@ class MockedClass(DeploymentStep):
 
 
 @mock.patch.dict('runway.deployment_step.deployment_steps', {'mocked': MockedClass})
-@mock.patch("runway.DeploymentStep.AzureKeyvaultClient.credentials", return_value=(None, None))
+@mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
 def test_run_task(_):
     from runway.run_deployment import run_task
     res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})

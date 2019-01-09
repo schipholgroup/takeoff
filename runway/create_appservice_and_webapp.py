@@ -202,7 +202,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
     def _get_website_management_client(self) -> WebSiteManagementClient:
         credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
 
-        return WebSiteManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).credentials(self.config))
+        return WebSiteManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config))
 
     def create_appservice_and_webapp(self) -> Site:
         formatted_dtap = self.env.environment.lower()

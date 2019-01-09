@@ -40,5 +40,5 @@ class PublishArtifact(DeploymentStep):
         assert return_code == 0, 'Could not build the package for some reason!'
 
     def publish_package(self):
-        credentials = DevopsArtifactStore(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
+        credentials = DevopsArtifactStore(vault_name=self.vault_name, vault_client=self.vault_client).store_settings(self.config)
         upload(upload_settings=credentials, dists=['/root/dist/*'])

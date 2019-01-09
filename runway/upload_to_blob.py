@@ -63,7 +63,7 @@ class UploadToBlob(DeploymentStep):
 
     def upload_application_to_blob(self):
         build_definition_name = get_application_name()
-        blob_service = BlobStore(self.vault_name, self.vault_client).credentials(self.config)
+        blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
         filename_library = (
             f"{build_definition_name}/{build_definition_name}-{self.env.artifact_tag}"

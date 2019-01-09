@@ -5,7 +5,7 @@ from runway.util import current_filename
 
 
 class BlobStore(KeyVaultCredentialsMixin):
-    def credentials(self, config) -> BlockBlobService:
+    def service_client(self, config) -> BlockBlobService:
         credential_kwargs = super()._transform_key_to_credential_kwargs(
             config['azure_keyvault_keys'][current_filename(__file__)]
         )

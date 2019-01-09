@@ -27,9 +27,9 @@ class Cosmos(object):
         self.config = config
 
     def _get_cosmos_management_client(self) -> CosmosDB:
-        vault, client = AzureKeyvaultClient.credentials(self.config, self.env)
+        vault, client = AzureKeyvaultClient.vault_and_client(self.config, self.env)
         credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
-        return CosmosDB(credentials, AzureSubscriptionId(vault, client).credentials(self.config))
+        return CosmosDB(credentials, AzureSubscriptionId(vault, client).subscription_id(self.config))
 
     def _get_cosmos_instance(self) -> dict:
         dtap = self.env.environment.lower()

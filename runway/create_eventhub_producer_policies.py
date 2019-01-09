@@ -8,7 +8,7 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
-from runway.credentials.azure_databricks import DatabricksClient
+from runway.credentials.azure_databricks import Databricks
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
 from runway.util import get_application_name
 
@@ -32,9 +32,9 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         resource_group = self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)
 
         credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
-        eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).credentials(self.config))
+        eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config))
 
-        databricks_client = DatabricksClient(self.vault_name, self.vault_client).credentials(self.config)
+        databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
         application_name = get_application_name()
 
         logger.info(f"Using Azure resource group: {resource_group}")
