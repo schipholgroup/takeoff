@@ -12,15 +12,13 @@ from databricks_cli.sdk import ApiClient
 from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
+from runway.credentials.azure_databricks import Databricks
 from runway.util import (
     get_application_name,
-    get_databricks_client,
     has_prefix_match,
 )
 
 logger = logging.getLogger(__name__)
-
-ROOT_LIBRARY_FOLDER = "dbfs:/mnt/libraries"
 
 
 @dataclass(frozen=True)
@@ -57,15 +55,16 @@ class DeployToDatabricks(DeploymentStep):
         """
         application_name = get_application_name()
 
+        root_library_folder = self.config['runway_common']['databricks_library_path']
         job_config = DeployToDatabricks._construct_job_config(
             config_file_fn=config_file_fn,
             name=application_name,
             version=self.env.artifact_tag,
-            egg=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-{self.env.artifact_tag}.egg",
-            python_file=f"{ROOT_LIBRARY_FOLDER}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
+            egg=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.egg",
+            python_file=f"{root_library_folder}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
         )
 
-        databricks_client = get_databricks_client(self.env.environment)
+        databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         is_streaming = self._job_is_streaming(job_config)
         logger.info("Removing old job")

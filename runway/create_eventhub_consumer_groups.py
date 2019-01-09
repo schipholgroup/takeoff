@@ -8,15 +8,12 @@ from azure.mgmt.relay.models import AccessRights
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
-from runway.util import (
-    get_azure_user_credentials,
-    RESOURCE_GROUP,
-    EVENTHUB_NAMESPACE,
-    get_application_name,
-    get_databricks_client,
-    get_subscription_id,
-)
+from runway.create_databricks_secrets import CreateDatabricksSecrets
+from runway.credentials.KeyVaultCredentialsMixin import Secret
+from runway.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.credentials.azure_databricks import Databricks
+from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -111,8 +108,8 @@ class CreateEventhubConsumerGroups(DeploymentStep):
 
     def _get_requested_consumer_groups(self, parsed_groups: List[EventHubConsumerGroup]) -> List[ConsumerGroup]:
         formatted_dtap = self.env.environment.lower()
-        eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=formatted_dtap)
-        resource_group = RESOURCE_GROUP.format(dtap=formatted_dtap)
+        eventhub_namespace = self.config['runway_common']['eventhub_namespace'].format(dtap=formatted_dtap)
+        resource_group = self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)
 
         return [
             ConsumerGroup(
@@ -195,11 +192,9 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     def create_eventhub_consumer_groups(self, consumer_groups: List[EventHubConsumerGroup]):
-        logger.info(f"Using Azure resource group: {RESOURCE_GROUP}")
-        logger.info(f"Using Azure namespace: {EVENTHUB_NAMESPACE}")
+        credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
 
-        credentials = get_azure_user_credentials(self.env.environment)
-        eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
+        eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config))
 
         consumer_groups_to_create = self._get_requested_consumer_groups(consumer_groups)
 
@@ -218,7 +213,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
                     client=eventhub_client,
                     group=group)
 
-        databricks_client = get_databricks_client(self.env.environment)
+        databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
         application_name = get_application_name()
 
         # For each Eventhub we have a separate connection string which is set by a shared access policy

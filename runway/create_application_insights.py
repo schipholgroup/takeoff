@@ -5,14 +5,12 @@ from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
-from runway.util import (
-    get_application_name,
-    get_subscription_id,
-    get_databricks_client,
-    get_azure_user_credentials,
-    AZURE_LOCATION,
-)
+from runway.create_databricks_secrets import CreateDatabricksSecrets
+from runway.credentials.KeyVaultCredentialsMixin import Secret
+from runway.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.credentials.azure_databricks import Databricks
+from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +40,7 @@ class CreateApplicationInsights(DeploymentStep):
             logger.info("Creating new Application Insights...")
             # Create a new Application Insights
             comp = ApplicationInsightsComponent(
-                location=AZURE_LOCATION, kind=kind, application_type=application_type
+                location=self.config['runway_azure']['location'], kind=kind, application_type=application_type
             )
             insight = client.components.create_or_update(
                 f"sdh{self.env.environment.lower()}", application_name, comp
@@ -50,8 +48,10 @@ class CreateApplicationInsights(DeploymentStep):
         return insight
 
     def __create_client(self) -> ApplicationInsightsManagementClient:
+        azure_user_credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
+
         return ApplicationInsightsManagementClient(
-            get_azure_user_credentials(self.env.environment), get_subscription_id()
+            azure_user_credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
         )
 
     def __find(self, client: ApplicationInsightsManagementClient, name: str):
@@ -73,7 +73,7 @@ class CreateDatabricksApplicationInsights(CreateApplicationInsights):
             "instrumentation-key", insight.instrumentation_key
         )
 
-        databricks_client = get_databricks_client(self.env.environment)
+        databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         CreateDatabricksSecrets._create_scope(databricks_client, application_name)
         CreateDatabricksSecrets._add_secrets(

@@ -11,20 +11,15 @@ from kubernetes.client import CoreV1Api
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.KeyVaultSecrets import KeyVaultSecrets, Secret
 from runway.create_application_insights import CreateApplicationInsights
-from runway.util import (
-    get_subscription_id,
-    get_azure_user_credentials,
-    get_application_name,
-    render_file_with_jinja,
-    get_docker_credentials,
-    b64_encode)
+from runway.credentials.KeyVaultCredentialsMixin import Secret, KeyVaultCredentialsMixin
+from runway.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.credentials.azure_container_registry import DockerRegistry
+from runway.credentials.azure_keyvault import AzureKeyvaultClient
+from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.util import get_application_name, render_file_with_jinja, b64_encode
 
 logger = logging.getLogger(__name__)
-
-K8S_NAME = "sdhkubernetes{dtap}"
-K8S_VNET_NAME = "sdh-kubernetes"
 
 
 # assumes kubectl is available
@@ -32,6 +27,8 @@ class BaseDeployToK8s(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict, fixed_env):
         super().__init__(env, config)
         self.fixed_env = fixed_env
+        # have to overwrite the default keyvault b/c of Vnet K8s cluster
+        self.vault_name, self.vault_client = AzureKeyvaultClient.vault_and_client(self.config, dtap=fixed_env)
         self.add_application_insights = self.config.get('add_application_insights', False)
 
     def run(self):
@@ -79,10 +76,11 @@ class BaseDeployToK8s(DeploymentStep):
         resource_group = f'sdh{self.fixed_env}'
 
         # get azure container service client
-        credentials = get_azure_user_credentials(self.fixed_env)
+        credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
+
         client = ContainerServiceClient(
             credentials=credentials,
-            subscription_id=get_subscription_id()
+            subscription_id=AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
         )
 
         # authenticate with k8s
@@ -187,7 +185,7 @@ class BaseDeployToK8s(DeploymentStep):
         self._create_namespace_if_not_exists(core_api_client, self.k8s_namespace)
 
         # 3: create kubernetes secrets from azure keyvault
-        secrets = KeyVaultSecrets.get_keyvault_secrets(self.fixed_env)
+        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(get_application_name())
         if self.add_application_insights:
             application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
             secrets.append(Secret('instrumentation-key', application_insights.instrumentation_key))
@@ -195,7 +193,8 @@ class BaseDeployToK8s(DeploymentStep):
         self._create_or_patch_secrets(secrets, self.k8s_namespace)
 
         # 3.1: create kubernetes secrets for docker registry
-        docker_credentials = get_docker_credentials()
+
+        docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
         secrets = [Secret(
             key=".dockerconfigjson",
             val=json.dumps({"auths": {docker_credentials.registry: {"username": docker_credentials.username,
@@ -233,7 +232,7 @@ class DeployToVnetK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return K8S_VNET_NAME
+        return self.config['runway_common']['k8s_vnet_name']
 
 
 class DeployToK8s(BaseDeployToK8s):
@@ -246,4 +245,4 @@ class DeployToK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return K8S_NAME.format(dtap=self.fixed_env)
+        return self.config['runway_common']['k8s_name'].format(dtap=self.fixed_env)

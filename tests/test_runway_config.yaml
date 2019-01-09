@@ -1,0 +1,48 @@
+runway_azure:
+  resource_group: "sdh{dtap}"
+  location: "west europe"
+  vault_name: "https://sdhkeyvault{dtap}.vault.azure.net/"
+  subscription_id: ""
+
+azure_keyvault_keys:
+  azure_active_directory_user:
+    username: "azure-username"
+    password: "azure-password"
+  azure_databricks:
+    host: "azure-databricks-host"
+    token: "azure-databricks-token"
+  azure_container_registry:
+    username: "registry-username"
+    password: "registry-password"
+    registry: "shared-registry"
+  azure_storage_account:
+    account_name: "azure-shared-blob-username"
+    account_key: "azure-shared-blob-password"
+  azure_devops_artifact_store:
+    repository_url: "artifact-store-upload-url"
+    username: "artifact-store-username"
+    password: "artifact-store-password"
+
+devops_environment_keys_dev:
+  azure_service_principal:
+    tenant: "AZURE_TENANTID"
+    client_id: "AZURE_KEYVAULT_SP_USERNAME_DEV"
+    secret: "AZURE_KEYVAULT_SP_PASSWORD_DEV"
+
+
+runway_azure_keyvault_shared_keys:
+- azure_shared_blob_username
+- azure_shared_blob_password
+- artifact_store_username
+- artifact_store_password
+- artifact_store_index_url
+- registry_username
+- registry_password
+
+runway_common:
+  shared_registry: "some-registry"
+  k8s_name: sdhkubernetes{dtap}
+  k8s_vnet_name: sdh-kubernetes
+  artifacts_shared_blob_container_name: libraries
+  eventhub_namespace: sdheventhub{dtap}
+  databricks_library_path: "dbfs:/mnt/libraries"

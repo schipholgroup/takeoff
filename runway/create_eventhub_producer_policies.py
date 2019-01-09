@@ -7,14 +7,10 @@ from azure.mgmt.relay.models import AccessRights
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
-from runway.util import (
-    get_azure_user_credentials,
-    RESOURCE_GROUP,
-    EVENTHUB_NAMESPACE,
-    get_application_name,
-    get_databricks_client,
-    get_subscription_id,
-)
+from runway.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.credentials.azure_databricks import Databricks
+from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -32,13 +28,13 @@ class CreateEventhubProducerPolicies(DeploymentStep):
 
     def create_eventhub_producer_policies(self, producer_policies: List[str]):
         formatted_dtap = self.env.environment.lower()
-        eventhub_namespace = EVENTHUB_NAMESPACE.format(dtap=formatted_dtap)
-        resource_group = RESOURCE_GROUP.format(dtap=formatted_dtap)
+        eventhub_namespace = self.config['runway_common']['eventhub_namespace'].format(dtap=formatted_dtap)
+        resource_group = self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)
 
-        credentials = get_azure_user_credentials(self.env.environment)
-        eventhub_client = EventHubManagementClient(credentials, get_subscription_id())
+        credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
+        eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config))
 
-        databricks_client = get_databricks_client(self.env.environment)
+        databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
         application_name = get_application_name()
 
         logger.info(f"Using Azure resource group: {resource_group}")
