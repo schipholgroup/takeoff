@@ -26,6 +26,9 @@ steps:
   inputs:
     testResultsFiles: $(System.DefaultWorkingDirectory)/testresults.xml
 
+- script: sudo chmod 777 . -R
+  displayName: Change permissions to allow DevOps access... sigh...
+
 - task: PublishCodeCoverageResults@1
   displayName: 'Publish coverage results'
   inputs:
