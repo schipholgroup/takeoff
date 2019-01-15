@@ -28,4 +28,13 @@ pool:
     AZURE_KEYVAULT_SP_PASSWORD_PRD: $(azure_keyvault_sp_password_prd)
 ```
 
+Also have `deployment.yaml` in the root of your project
+```yaml
+steps:
+- task: someTask
+  task_params: foo
+```
+
+Add the tasks as described in the sections
+
 - [Upload artifacts to shared azure blob store](./upload_to_blob/README.md)
