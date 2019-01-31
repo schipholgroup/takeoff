@@ -81,7 +81,7 @@ class UploadToBlob(DeploymentStep):
             self._upload_file_to_blob(blob_service, egg, filename_library)
 
             # only upload a py file if the path has been specified
-            if 'python_file_path' in self.config:
+            if 'python_file_path' in self.config.keys():
                 filename_main = (
                     f"{build_definition_name}/{build_definition_name}-main-{self.env.artifact_tag}.py"
                 )
