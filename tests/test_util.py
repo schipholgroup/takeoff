@@ -36,3 +36,15 @@ class TestPatternMatching(object):
         for string, (idx, value) in zip(self.test_strings[:2], values):
             with pytest.raises(IndexError):
                 assert victim.get_matching_group(string, self.pattern, idx) == value
+
+    def test_get_full_yaml_filename_file_exists(self):
+        filename = "deployment"
+        result = victim.get_full_yaml_filename(filename)
+        expected_result = "deployment.yml"
+        assert result == expected_result
+
+    def test_get_full_yaml_filename_file_exists(self):
+        filename = "my_stupid_file"
+        with pytest.raises(FileNotFoundError):
+            victim.get_full_yaml_filename(filename)
+
