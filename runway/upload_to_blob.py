@@ -77,12 +77,14 @@ class UploadToBlob(DeploymentStep):
         else:
             # it's an egg!
             filename_library += ".egg"
-            filename_main = (
-                f"{build_definition_name}/{build_definition_name}-main-{self.env.artifact_tag}.py"
-            )
-
             egg = UploadToBlob._get_egg()
             self._upload_file_to_blob(blob_service, egg, filename_library)
-            self._upload_file_to_blob(
-                blob_service, "/root/main/main.py", filename_main
-            )
+
+            # only upload a py file if the path has been specified
+            if 'python_file_path' in self.config:
+                filename_main = (
+                    f"{build_definition_name}/{build_definition_name}-main-{self.env.artifact_tag}.py"
+                )
+                self._upload_file_to_blob(
+                    blob_service, f"/root/{self.config['python_file_path']}", filename_main
+                )
