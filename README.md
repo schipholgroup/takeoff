@@ -20,15 +20,9 @@ To use this package for deployment you must have three files in your project rep
 - .vsts-ci.yml
 - deployment.yml
 
-See the `examples` directory for what should be in these files.
+For more information see the [Runway documentation](https://github.com/Schiphol-Hub/runway-docs)
 
 ## Local development
-
-Install the pre-commit hook with
-
-```bash
-cp .git-pre-commit .git/hooks/pre-commit
-```
 
 Make sure you have installed and updated docker and run linting and tests with:
 
