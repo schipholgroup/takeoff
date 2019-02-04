@@ -1,18 +1,11 @@
 import logging
 
-from yaml import load
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.util import get_tag, get_branch, get_short_hash
+from runway.util import get_tag, get_branch, get_short_hash, get_full_yaml_filename, load_yaml
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-
-def load_yaml(path: str) -> dict:
-    with open(path, "r") as f:
-        config_file = f.read()
-    return load(config_file)
 
 
 def get_environment() -> ApplicationVersion:
@@ -30,8 +23,8 @@ def get_environment() -> ApplicationVersion:
 
 def main():
     env = get_environment()
-    deployment_config = load_yaml("deployment.yml")
-    runway_config = load_yaml("runway_config.yaml")
+    deployment_config = load_yaml(get_full_yaml_filename("deployment"))
+    runway_config = load_yaml(get_full_yaml_filename("runway_config"))
 
     for task_config in deployment_config["steps"]:
         task = task_config["task"]

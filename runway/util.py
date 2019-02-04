@@ -90,3 +90,12 @@ def current_filename(__fn):
 
 def inverse_dictionary(d: dict):
     return {v: k for k, v in d.items()}
+
+
+def get_full_yaml_filename(filename: str) -> str:
+    extensions = ('.yaml', '.yml')
+    for ext in extensions:
+        concat_filename = f'{filename}{ext}'
+        if os.path.isfile(concat_filename):
+            return concat_filename
+    raise FileNotFoundError(f'Could not find Runway config file: {filename}')
