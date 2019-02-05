@@ -18,7 +18,8 @@
     { "jar": "some.jar" }
   ],
   "spark_python_task": {
-    "python_file": "{{ python_file }}"
+    "python_file": "{{ python_file }}",
+    "parameters": [{% for p in parameters %}"{{ p }}"{% if not loop.last %},{% endif %}{% endfor %}]
   },
   "schedule": {
     "quartz_cron_expression": "0 15 22 ? * *",

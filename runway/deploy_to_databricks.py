@@ -1,4 +1,3 @@
-import configparser
 import json
 import logging
 import re
@@ -87,12 +86,14 @@ class DeployToDatabricks(DeploymentStep):
                     log_destination=job_name,
                     python_file=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.egg",
                     egg_file=f"{root_library_folder}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
+                    parameters=self._construct_arguments(job['arguments'])
                 )
             else:
                 job_config = DeployToDatabricks._construct_job_config(
                     config_file_fn=job['config_file_fn'],
                     application_name=job_name,
                     log_destination=job_name,
+                    parameters=self._construct_arguments(job['arguments']),
                     class_name=job['main_name'],
                     jar_file=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.jar",
                 )
@@ -111,11 +112,12 @@ class DeployToDatabricks(DeploymentStep):
         return f"{get_application_name()}{postfix}-{self.env.artifact_tag}"
 
     @staticmethod
-    def _read_application_config(fn: str):
-        config = configparser.ConfigParser()
-        config.read(fn)
+    def _construct_arguments(args: dict) -> list:
+        params = []
+        for k, v in args.items():
+            params.extend([f'--{k}', v])
 
-        return config
+        return params
 
     @staticmethod
     def _construct_job_config(config_file_fn: str, **kwargs) -> dict:

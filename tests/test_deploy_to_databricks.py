@@ -53,6 +53,7 @@ class TestDeployToDatabricks(unittest.TestCase):
             log_destination="app",
             egg_file="some.egg",
             python_file="some.py",
+            parameters=['--foo', 'bar']
         )
 
         assert {
@@ -70,7 +71,7 @@ class TestDeployToDatabricks(unittest.TestCase):
                        "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/app"}},
                    },
                    "some_int": 5,
-                   "spark_python_task": {"python_file": "some.py"}} == job_config
+                   "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]}} == job_config
 
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     def test_invalid_config_emtpy_schema(self, _):
@@ -97,5 +98,9 @@ class TestDeployToDatabricks(unittest.TestCase):
                   ]
                   }
         run_config = victim(ApplicationVersion('foo', 'bar', 'baz'),
-               config).validate()
+                            config).validate()
         assert run_config['jobs'][0]['lang'] == 'python'
+
+    def test_create_arguments(self):
+        assert victim._construct_arguments({'foo': 'bar'}) == ['--foo', 'bar']
+        assert victim._construct_arguments({'foo': 'bar', 'baz': 'foobar'}) == ['--foo', 'bar', '--baz', 'foobar']
