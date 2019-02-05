@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 from typing import List
 
+import voluptuous as vol
 from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
@@ -20,6 +21,21 @@ from runway.util import (
 
 logger = logging.getLogger(__name__)
 
+SCHEMA = vol.Schema({
+    vol.Required('task'): str,
+    vol.Required('jobs'): [
+        vol.Schema(
+            vol.Schema({
+                vol.Required('main_name'): str,
+                vol.Optional('config_file_fn', default='databricks.json.j2'): str,
+                vol.Optional('name', default=''): str,
+                vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
+                vol.Optional('arguments', default=[]): [{}],
+            }, extra=vol.PREVENT_EXTRA)
+        )
+    ]
+}, extra=vol.ALLOW_EXTRA)
+
 
 @dataclass(frozen=True)
 class JobConfig(object):
@@ -31,9 +47,12 @@ class DeployToDatabricks(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 
+    def validate(self) -> dict:
+        return SCHEMA(self.config)
+
     def run(self):
-        config_file_fn = self.config['config_file_fn']
-        self.deploy_to_databricks(config_file_fn)
+        run_config = self.validate()
+        self.deploy_to_databricks(run_config)
 
     @staticmethod
     def _job_is_streaming(job_config: dict):
@@ -45,7 +64,7 @@ class DeployToDatabricks(DeploymentStep):
         """
         return "schedule" not in job_config.keys()
 
-    def deploy_to_databricks(self, config_file_fn: str):
+    def deploy_to_databricks(self, run_config: dict):
         """
         The application parameters (cosmos and eventhub) will be removed from this file as they
         will be set as databricks secrets eventually
@@ -56,25 +75,40 @@ class DeployToDatabricks(DeploymentStep):
         application_name = get_application_name()
 
         root_library_folder = self.config['runway_common']['databricks_library_path']
-        job_config = DeployToDatabricks._construct_job_config(
-            config_file_fn=config_file_fn,
-            name=application_name,
-            version=self.env.artifact_tag,
-            egg=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.egg",
-            python_file=f"{root_library_folder}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
-        )
 
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
-        is_streaming = self._job_is_streaming(job_config)
-        logger.info("Removing old job")
+        for job in run_config['jobs']:
+            job_name = self._construct_name(job['name'])
+            if job['lang'] == 'python':
+                job_config = DeployToDatabricks._construct_job_config(
+                    config_file_fn=job['config_file_fn'],
+                    application_name=job_name,
+                    log_destination=job_name,
+                    python_file=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.egg",
+                    egg_file=f"{root_library_folder}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
+                )
+            else:
+                job_config = DeployToDatabricks._construct_job_config(
+                    config_file_fn=job['config_file_fn'],
+                    application_name=job_name,
+                    log_destination=job_name,
+                    class_name=job['main_name'],
+                    jar_file=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.jar",
+                )
 
-        self.__remove_job(databricks_client, application_name, self.env.branch, is_streaming=is_streaming)
+            is_streaming = self._job_is_streaming(job_config)
 
-        logger.info("Submitting new job with configuration:")
-        logger.info(str(job_config))
+            logger.info("Removing old job")
+            self.__remove_job(databricks_client, job_name, self.env.branch, is_streaming=is_streaming)
 
-        self._submit_job(databricks_client, job_config, is_streaming)
+            logger.info("Submitting new job with configuration:")
+            logger.info(str(job_config))
+            self._submit_job(databricks_client, job_config, is_streaming)
+
+    def _construct_name(self, name) -> str:
+        postfix = f"-{name}" if name else ''
+        return f"{get_application_name()}{postfix}-{self.env.artifact_tag}"
 
     @staticmethod
     def _read_application_config(fn: str):
@@ -84,14 +118,8 @@ class DeployToDatabricks(DeploymentStep):
         return config
 
     @staticmethod
-    def _construct_job_config(config_file_fn: str, name: str, version: str, egg: str, python_file: str) -> dict:
-        params = {
-            "application_name": f"{name}-{version}",
-            "log_destination": name,
-            "python_file": python_file,
-            "egg_file": egg
-        }
-        job_config = util.render_file_with_jinja(config_file_fn, params, json.loads)
+    def _construct_job_config(config_file_fn: str, **kwargs) -> dict:
+        job_config = util.render_file_with_jinja(config_file_fn, kwargs, json.loads)
         return job_config
 
     @staticmethod
