@@ -26,7 +26,7 @@ SCHEMA = vol.Schema({
         vol.Schema(
             vol.Schema({
                 vol.Required('main_name'): str,
-                vol.Optional('config_file_fn', default='databricks.json.j2'): str,
+                vol.Optional('config_file', default='databricks.json.j2'): str,
                 vol.Optional('name', default=''): str,
                 vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
                 vol.Optional('arguments', default=[]): [{}],
@@ -81,7 +81,7 @@ class DeployToDatabricks(DeploymentStep):
             job_name = self._construct_name(job['name'])
             if job['lang'] == 'python':
                 job_config = DeployToDatabricks._construct_job_config(
-                    config_file_fn=job['config_file_fn'],
+                    config_file=job['config_file'],
                     application_name=job_name,
                     log_destination=job_name,
                     python_file=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.egg",
@@ -90,7 +90,7 @@ class DeployToDatabricks(DeploymentStep):
                 )
             else:
                 job_config = DeployToDatabricks._construct_job_config(
-                    config_file_fn=job['config_file_fn'],
+                    config_file=job['config_file'],
                     application_name=job_name,
                     log_destination=job_name,
                     parameters=self._construct_arguments(job['arguments']),
@@ -120,8 +120,8 @@ class DeployToDatabricks(DeploymentStep):
         return params
 
     @staticmethod
-    def _construct_job_config(config_file_fn: str, **kwargs) -> dict:
-        job_config = util.render_file_with_jinja(config_file_fn, kwargs, json.loads)
+    def _construct_job_config(config_file: str, **kwargs) -> dict:
+        job_config = util.render_file_with_jinja(config_file, kwargs, json.loads)
         return job_config
 
     @staticmethod
