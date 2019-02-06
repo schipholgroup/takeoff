@@ -37,18 +37,18 @@ class TestDeployToDatabricks(unittest.TestCase):
 
     def test_is_streaming_job(self):
         job_config = victim._construct_job_config(
-            config_file_fn=streaming_job_config
+            config_file=streaming_job_config
         )
         assert victim._job_is_streaming(job_config) is True
 
         job_config = victim._construct_job_config(
-            config_file_fn=batch_job_config
+            config_file=batch_job_config
         )
         assert victim._job_is_streaming(job_config) is False
 
     def test_construct_job_config(self):
         job_config = victim._construct_job_config(
-            config_file_fn=streaming_job_config,
+            config_file=streaming_job_config,
             application_name="app-42",
             log_destination="app",
             egg_file="some.egg",
@@ -74,14 +74,14 @@ class TestDeployToDatabricks(unittest.TestCase):
                    "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]}} == job_config
 
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_invalid_config_emtpy_schema(self, _):
+    def test_invalid_config_empty_schema(self, _):
         config = {'runway_common': {'databricks_library_path': '/path'}}
         with pytest.raises(voluptuous.error.MultipleInvalid):
             victim(ApplicationVersion('foo', 'bar', 'baz'),
                    config).validate()
 
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_invalid_config_emtpy_jobs(self, _):
+    def test_invalid_config_empty_jobs(self, _):
         config = {'runway_common': {'databricks_library_path': '/path'},
                   'jobs': []
                   }

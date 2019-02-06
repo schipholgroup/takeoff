@@ -21,18 +21,15 @@ from runway.util import (
 logger = logging.getLogger(__name__)
 
 SCHEMA = vol.Schema({
-    vol.Required('task'): str,
-    vol.Required('jobs'): [
-        vol.Schema(
-            vol.Schema({
-                vol.Required('main_name'): str,
-                vol.Optional('config_file', default='databricks.json.j2'): str,
-                vol.Optional('name', default=''): str,
-                vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
-                vol.Optional('arguments', default=[]): [{}],
-            }, extra=vol.PREVENT_EXTRA)
-        )
-    ]
+    vol.Required('jobs'): vol.All([
+        vol.Schema({
+            vol.Required('main_name'): str,
+            vol.Optional('config_file', default='databricks.json.j2'): str,
+            vol.Optional('name', default=''): str,
+            vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
+            vol.Optional('arguments', default=[]): [{}],
+        }, extra=vol.PREVENT_EXTRA)
+    ], vol.Length(min=1)),
 }, extra=vol.ALLOW_EXTRA)
 
 
@@ -79,23 +76,27 @@ class DeployToDatabricks(DeploymentStep):
 
         for job in run_config['jobs']:
             job_name = self._construct_name(job['name'])
+
+            common_arguments = dict(
+                config_file=job['config_file'],
+                application_name=job_name,
+                log_destination=job_name,
+                parameters=self._construct_arguments(job['arguments'])
+            )
+            storage_base_path = f"{root_library_folder}/{application_name}"
+            artifact_path = f"{storage_base_path}/{application_name}-{self.env.artifact_tag}"
+
             if job['lang'] == 'python':
                 job_config = DeployToDatabricks._construct_job_config(
-                    config_file=job['config_file'],
-                    application_name=job_name,
-                    log_destination=job_name,
-                    python_file=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.egg",
-                    egg_file=f"{root_library_folder}/{application_name}/{application_name}-main-{self.env.artifact_tag}.py",
-                    parameters=self._construct_arguments(job['arguments'])
+                    **common_arguments,
+                    egg_file=f"{artifact_path}.egg",
+                    python_file=f"{job['main_name']}-main-{self.env.artifact_tag}.py",
                 )
-            else:
+            else:  # java/scala jobs
                 job_config = DeployToDatabricks._construct_job_config(
-                    config_file=job['config_file'],
-                    application_name=job_name,
-                    log_destination=job_name,
-                    parameters=self._construct_arguments(job['arguments']),
+                    **common_arguments,
                     class_name=job['main_name'],
-                    jar_file=f"{root_library_folder}/{application_name}/{application_name}-{self.env.artifact_tag}.jar",
+                    jar_file=f"{storage_base_path}.jar",
                 )
 
             is_streaming = self._job_is_streaming(job_config)
@@ -121,8 +122,7 @@ class DeployToDatabricks(DeploymentStep):
 
     @staticmethod
     def _construct_job_config(config_file: str, **kwargs) -> dict:
-        job_config = util.render_file_with_jinja(config_file, kwargs, json.loads)
-        return job_config
+        return util.render_file_with_jinja(config_file, kwargs, json.loads)
 
     @staticmethod
     def __remove_job(client, application_name: str, branch: str, is_streaming: bool):
