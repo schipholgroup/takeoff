@@ -18,6 +18,7 @@
     { "jar": "some.jar" }
   ],
   "spark_python_task": {
-    "python_file": "{{ python_file }}"
+    "python_file": "{{ python_file }}",
+    "parameters": [{% for p in parameters %}"{{ p }}"{% if not loop.last %},{% endif %}{% endfor %}]
   }
 }

@@ -1,6 +1,5 @@
 import logging
 
-
 from runway.ApplicationVersion import ApplicationVersion
 from runway.util import get_tag, get_branch, get_short_hash, get_full_yaml_filename, load_yaml
 
