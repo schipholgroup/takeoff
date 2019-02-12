@@ -68,45 +68,48 @@ class DeployToDatabricks(DeploymentStep):
         configuration. If the job is batch this will not start it manually, assuming the schedule
         has been set correctly.
         """
+
         application_name = get_application_name()
-
-        root_library_folder = self.config['runway_common']['databricks_library_path']
-
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         for job in run_config['jobs']:
             job_name = self._construct_name(job['name'])
-
-            common_arguments = dict(
-                config_file=job['config_file'],
-                application_name=job_name,
-                log_destination=job_name,
-                parameters=self._construct_arguments(job['arguments'])
-            )
-            storage_base_path = f"{root_library_folder}/{application_name}"
-            artifact_path = f"{storage_base_path}/{application_name}-{self.env.artifact_tag}"
-
-            if job['lang'] == 'python':
-                job_config = DeployToDatabricks._construct_job_config(
-                    **common_arguments,
-                    egg_file=f"{artifact_path}.egg",
-                    python_file=f"{job['main_name']}-main-{self.env.artifact_tag}.py",
-                )
-            else:  # java/scala jobs
-                job_config = DeployToDatabricks._construct_job_config(
-                    **common_arguments,
-                    class_name=job['main_name'],
-                    jar_file=f"{storage_base_path}.jar",
-                )
-
+            job_config = self._create_config(job_name, job, application_name)
             is_streaming = self._job_is_streaming(job_config)
 
             logger.info("Removing old job")
+            job_name = self._construct_name(job_config['name'])
             self.__remove_job(databricks_client, job_name, self.env.branch, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(str(job_config))
             self._submit_job(databricks_client, job_config, is_streaming)
+
+    def _create_config(self, job_name: str, job_config: dict, application_name: str):
+        common_arguments = dict(
+            config_file=job_config['config_file'],
+            application_name=job_name,
+            log_destination=job_name,
+            parameters=self._construct_arguments(job_config['arguments'])
+        )
+
+        root_library_folder = self.config['runway_common']['databricks_library_path']
+        storage_base_path = f"{root_library_folder}/{application_name}"
+        artifact_path = f"{storage_base_path}/{application_name}-{self.env.artifact_tag}"
+
+        if job_config['lang'] == 'python':
+            run_config = DeployToDatabricks._construct_job_config(
+                **common_arguments,
+                egg_file=f"{artifact_path}.egg",
+                python_file=f"{job_config['main_name']}-main-{self.env.artifact_tag}.py",
+            )
+        else:  # java/scala jobs
+            run_config = DeployToDatabricks._construct_job_config(
+                **common_arguments,
+                class_name=job_config['main_name'],
+                jar_file=f"{storage_base_path}.jar",
+            )
+        return run_config
 
     def _construct_name(self, name) -> str:
         postfix = f"-{name}" if name else ''

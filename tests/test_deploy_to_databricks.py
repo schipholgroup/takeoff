@@ -5,7 +5,7 @@ import voluptuous
 from mock import mock
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.deploy_to_databricks import JobConfig, DeployToDatabricks as victim
+from runway.deploy_to_databricks import JobConfig, SCHEMA, DeployToDatabricks as victim
 
 jobs = [
     JobConfig("foo-SNAPSHOT", 1),
@@ -104,3 +104,69 @@ class TestDeployToDatabricks(unittest.TestCase):
     def test_create_arguments(self):
         assert victim._construct_arguments([{'foo': 'bar'}]) == ['--foo', 'bar']
         assert victim._construct_arguments([{'foo': 'bar'}, {'baz': 'foobar'}]) == ['--foo', 'bar', '--baz', 'foobar']
+
+    def test_schema_validity(self):
+        res = SCHEMA({
+            'jobs': [{
+                'main_name': 'foo',
+                'name': 'some-name',
+            }]
+        })['jobs'][0]
+        assert res['arguments'] == [{}]
+        assert res['lang'] == 'python'
+
+        res = SCHEMA({
+            'jobs': [{
+                'main_name': 'foo',
+                'name': 'some-name',
+                'arguments': [{'key': 'val'}]
+            }]
+        })['jobs'][0]
+        assert res['arguments'] == [{'key': 'val'}]
+
+        res = SCHEMA({
+            'jobs': [{
+                'main_name': 'foo',
+                'name': 'some-name',
+                'arguments': [{'key': 'val'}, {'key2': 'val2'}]
+            }]
+        })['jobs'][0]
+        assert res['arguments'] == [{'key': 'val'}, {'key2': 'val2'}]
+
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_yaml_to_databricks_json(self, _):
+        config = {'runway_common': {'databricks_library_path': '/path'}}
+        conf = {
+            'main_name': 'foo.class',
+            'config_file': 'tests/test_databricks.json.j2',
+            'lang': 'scala',
+            'arguments': [{'key': 'val'},
+                          {'key2': 'val2'}]
+        }
+
+        res = (victim(ApplicationVersion('foo', 'bar', 'baz'), config)
+               ._create_config('job_name', conf, 'app_name')
+               )
+
+        assert res == {"name": "job_name",
+                       "new_cluster": {
+                           "spark_version": "4.1.x-scala2.11",
+                           "spark_conf": {
+                               "spark.sql.warehouse.dir": "/some_",
+                               "some.setting": "true"
+                           },
+                           "cluster_log_conf": {
+                               "dbfs": {
+                                   "destination": "dbfs:/mnt/sdh/logs/job_name"
+                               }
+                           }
+                       },
+                       "some_int": 5,
+                       "libraries": [
+                           {"jar": "/path/app_name.jar"}
+                       ],
+                       "spark_jar_task": {
+                           "main_class_name": "foo.class",
+                           "parameters": ["--key", "val", "--key2", "val2"]
+                       }
+                       }
