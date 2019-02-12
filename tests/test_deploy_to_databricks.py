@@ -102,5 +102,5 @@ class TestDeployToDatabricks(unittest.TestCase):
         assert run_config['jobs'][0]['lang'] == 'python'
 
     def test_create_arguments(self):
-        assert victim._construct_arguments({'foo': 'bar'}) == ['--foo', 'bar']
-        assert victim._construct_arguments({'foo': 'bar', 'baz': 'foobar'}) == ['--foo', 'bar', '--baz', 'foobar']
+        assert victim._construct_arguments([{'foo': 'bar'}]) == ['--foo', 'bar']
+        assert victim._construct_arguments([{'foo': 'bar'}, {'baz': 'foobar'}]) == ['--foo', 'bar', '--baz', 'foobar']

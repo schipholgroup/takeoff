@@ -27,7 +27,7 @@ SCHEMA = vol.Schema({
             vol.Optional('config_file', default='databricks.json.j2'): str,
             vol.Optional('name', default=''): str,
             vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
-            vol.Optional('arguments', default=[]): [{}],
+            vol.Optional('arguments', default=[{}]): [{}],
         }, extra=vol.PREVENT_EXTRA)
     ], vol.Length(min=1)),
 }, extra=vol.ALLOW_EXTRA)
@@ -113,10 +113,11 @@ class DeployToDatabricks(DeploymentStep):
         return f"{get_application_name()}{postfix}-{self.env.artifact_tag}"
 
     @staticmethod
-    def _construct_arguments(args: dict) -> list:
+    def _construct_arguments(args: List[dict]) -> list:
         params = []
-        for k, v in args.items():
-            params.extend([f'--{k}', v])
+        for named_arguments_pair in args:
+            for k, v in named_arguments_pair.items():
+                params.extend([f'--{k}', v])
 
         return params
 
