@@ -28,7 +28,7 @@ SCHEMA = vol.Schema({
             vol.Optional('name', default=''): str,
             vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
             vol.Optional('arguments', default=[{}]): [{}],
-        }, extra=vol.PREVENT_EXTRA)
+        }, extra=vol.ALLOW_EXTRA)
     ], vol.Length(min=1)),
 }, extra=vol.ALLOW_EXTRA)
 
