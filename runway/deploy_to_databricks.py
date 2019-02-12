@@ -107,7 +107,7 @@ class DeployToDatabricks(DeploymentStep):
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
                 class_name=job_config['main_name'],
-                jar_file=f"{storage_base_path}.jar",
+                jar_file=f"{artifact_path}.jar",
             )
         return run_config
 
