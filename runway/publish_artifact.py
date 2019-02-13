@@ -1,4 +1,5 @@
 import logging
+import shutil
 import subprocess
 
 from twine.commands.upload import upload
@@ -27,8 +28,10 @@ class PublishArtifact(DeploymentStep):
         # First make sure the correct version number is used.
         with open('/root/version.py', 'w+') as f:
             f.write(f"__version__='{self.env.version}'")
-        cmd = ['python', 'setup.py', 'bdist_wheel']
+        # ensure any old artifacts are gone
+        shutil.rmtree('/root/dist/', ignore_errors=True)
 
+        cmd = ['python', 'setup.py', 'bdist_wheel']
         p = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
