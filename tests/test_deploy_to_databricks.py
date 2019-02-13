@@ -163,7 +163,7 @@ class TestDeployToDatabricks(unittest.TestCase):
                        },
                        "some_int": 5,
                        "libraries": [
-                           {"jar": "/path/app_name.jar"}
+                           {"jar": "/path/app_name/app_name-bar.jar"}
                        ],
                        "spark_jar_task": {
                            "main_class_name": "foo.class",
