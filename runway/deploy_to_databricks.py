@@ -98,7 +98,7 @@ class DeployToDatabricks(DeploymentStep):
         if job_config["lang"] == "python":
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
-                egg_file=f"{artifact_path}.egg",
+                whl_file=f"{artifact_path}.whl",
                 python_file=f"{job_config['main_name']}-main-{self.env.artifact_tag}.py",
             )
         else:  # java/scala jobs
