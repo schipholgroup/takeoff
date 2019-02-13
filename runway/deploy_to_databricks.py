@@ -99,7 +99,7 @@ class DeployToDatabricks(DeploymentStep):
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
                 whl_file=f"{artifact_path}.whl",
-                python_file=f"{job_config['main_name']}-main-{self.env.artifact_tag}.py",
+                python_file=f"{storage_base_path}/{application_name}-main-{self.env.artifact_tag}.py",
             )
         else:  # java/scala jobs
             run_config = DeployToDatabricks._construct_job_config(

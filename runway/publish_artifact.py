@@ -54,20 +54,20 @@ class PublishArtifact(DeploymentStep):
             if target == "pypi":
                 self.publish_to_pypi()
             elif target == "blob":
-                self.publish_to_blob(artifact=self._get_wheel(),
-                                     artifact_ext=".whl")
+                self.publish_to_blob(file=self._get_wheel(),
+                                     file_ext=".whl")
                 # only upload a py file if the path has been specified
                 if 'python_file_path' in self.config.keys():
-                    self.publish_to_blob(artifact=f"/root/{self.config['python_file_path']}",
-                                         artifact_ext=".py")
+                    self.publish_to_blob(file=f"/root/{self.config['python_file_path']}",
+                                         file_ext=".py")
             else:
                 logging.info("Invalid target for artifact")
 
     def publish_jvm_package(self):
         for target in self.config["target"]:
             if target == "blob":
-                self.publish_to_blob(artifact=self._get_jar(),
-                                     artifact_ext=".jar")
+                self.publish_to_blob(file=self._get_jar(),
+                                     file_ext=".jar")
             else:
                 logging.info("Invalid target for artifact")
 
