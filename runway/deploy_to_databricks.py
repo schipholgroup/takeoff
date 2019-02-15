@@ -1,5 +1,6 @@
 import json
 import logging
+import pprint
 import re
 from dataclasses import dataclass
 from typing import List
@@ -13,24 +14,30 @@ from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.azure_databricks import Databricks
-from runway.util import (
-    get_application_name,
-    has_prefix_match,
-)
+from runway.util import get_application_name, has_prefix_match
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = vol.Schema({
-    vol.Required('jobs'): vol.All([
-        vol.Schema({
-            vol.Required('main_name'): str,
-            vol.Optional('config_file', default='databricks.json.j2'): str,
-            vol.Optional('name', default=''): str,
-            vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
-            vol.Optional('arguments', default=[{}]): [{}],
-        }, extra=vol.ALLOW_EXTRA)
-    ], vol.Length(min=1)),
-}, extra=vol.ALLOW_EXTRA)
+SCHEMA = vol.Schema(
+    {
+        vol.Required("jobs"): vol.All(
+            [
+                vol.Schema(
+                    {
+                        vol.Required("main_name"): str,
+                        vol.Optional("config_file", default="databricks.json.j2"): str,
+                        vol.Optional("name", default=""): str,
+                        vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
+                        vol.Optional("arguments", default=[{}]): [{}],
+                    },
+                    extra=vol.ALLOW_EXTRA,
+                )
+            ],
+            vol.Length(min=1),
+        )
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 @dataclass(frozen=True)
@@ -72,32 +79,31 @@ class DeployToDatabricks(DeploymentStep):
         application_name = get_application_name()
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
-        for job in run_config['jobs']:
-            job_name = self._construct_name(job['name'])
+        for job in run_config["jobs"]:
+            job_name = self._construct_name(job["name"])
             job_config = self._create_config(job_name, job, application_name)
             is_streaming = self._job_is_streaming(job_config)
 
             logger.info("Removing old job")
-            job_name = self._construct_name(job_config['name'])
-            self.__remove_job(databricks_client, job_name, self.env.branch, is_streaming=is_streaming)
+            self.__remove_job(databricks_client, job_name, self.env.arfifact_tag, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
-            logger.info(str(job_config))
+            logger.info(pprint.pformat(job_config))
             self._submit_job(databricks_client, job_config, is_streaming)
 
     def _create_config(self, job_name: str, job_config: dict, application_name: str):
         common_arguments = dict(
-            config_file=job_config['config_file'],
+            config_file=job_config["config_file"],
             application_name=job_name,
             log_destination=job_name,
-            parameters=self._construct_arguments(job_config['arguments'])
+            parameters=self._construct_arguments(job_config["arguments"]),
         )
 
-        root_library_folder = self.config['runway_common']['databricks_library_path']
+        root_library_folder = self.config["runway_common"]["databricks_library_path"]
         storage_base_path = f"{root_library_folder}/{application_name}"
         artifact_path = f"{storage_base_path}/{application_name}-{self.env.artifact_tag}"
 
-        if job_config['lang'] == 'python':
+        if job_config["lang"] == "python":
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
                 egg_file=f"{artifact_path}.egg",
@@ -105,14 +111,12 @@ class DeployToDatabricks(DeploymentStep):
             )
         else:  # java/scala jobs
             run_config = DeployToDatabricks._construct_job_config(
-                **common_arguments,
-                class_name=job_config['main_name'],
-                jar_file=f"{storage_base_path}.jar",
+                **common_arguments, class_name=job_config["main_name"], jar_file=f"{storage_base_path}.jar"
             )
         return run_config
 
     def _construct_name(self, name) -> str:
-        postfix = f"-{name}" if name else ''
+        postfix = f"-{name}" if name else ""
         return f"{get_application_name()}{postfix}-{self.env.artifact_tag}"
 
     @staticmethod
@@ -120,7 +124,7 @@ class DeployToDatabricks(DeploymentStep):
         params = []
         for named_arguments_pair in args:
             for k, v in named_arguments_pair.items():
-                params.extend([f'--{k}', v])
+                params.extend([f"--{k}", v])
 
         return params
 
@@ -138,10 +142,7 @@ class DeployToDatabricks(DeploymentStep):
         jobs_api = JobsApi(client)
         runs_api = RunsApi(client)
 
-        job_configs = [
-            JobConfig(_["settings"]["name"], _["job_id"])
-            for _ in jobs_api.list_jobs()["jobs"]
-        ]
+        job_configs = [JobConfig(_["settings"]["name"], _["job_id"]) for _ in jobs_api.list_jobs()["jobs"]]
         job_id = DeployToDatabricks._application_job_id(application_name, branch, job_configs)
 
         if job_id:
@@ -152,23 +153,14 @@ class DeployToDatabricks(DeploymentStep):
     @staticmethod
     def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> int:
         snapshot = "SNAPSHOT"
-        tag = "\d+\.\d+\.\d+|"
-        pattern = re.compile(rf"^({application_name})-({snapshot}|{tag}|{branch})$")
+        tag = "\d+\.\d+\.\d+"
+        pattern = re.compile(rf"^({application_name})(-.*)?-({snapshot}|{tag}|{branch})$")
 
-        return next(
-            (
-                _.job_id
-                for _ in jobs
-                if has_prefix_match(_.name, application_name, pattern)
-            ),
-            None,
-        )
+        return next((_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)), None)
 
     @staticmethod
     def _kill_it_with_fire(runs_api, job_id):
-        runs = runs_api.list_runs(
-            job_id, active_only=True, completed_only=None, offset=None, limit=None
-        )
+        runs = runs_api.list_runs(job_id, active_only=True, completed_only=None, offset=None, limit=None)
         # If the runs is empty, there are no jobs at all
         # TODO: Check if the has_more flag is true, this means we need to go over the pages
         if "runs" in runs:
@@ -181,8 +173,10 @@ class DeployToDatabricks(DeploymentStep):
         job_resp = jobs_api.create_job(job_config)
 
         if is_streaming:
-            jobs_api.run_now(job_id=job_resp["job_id"],
-                             jar_params=None,
-                             notebook_params=None,
-                             python_params=None,
-                             spark_submit_params=None)
+            jobs_api.run_now(
+                job_id=job_resp["job_id"],
+                jar_params=None,
+                notebook_params=None,
+                python_params=None,
+                spark_submit_params=None,
+            )
