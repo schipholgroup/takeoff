@@ -85,7 +85,7 @@ class DeployToDatabricks(DeploymentStep):
             is_streaming = self._job_is_streaming(job_config)
 
             logger.info("Removing old job")
-            self.__remove_job(databricks_client, job_name, self.env.arfifact_tag, is_streaming=is_streaming)
+            self.__remove_job(databricks_client, job_name, self.env.artifact_tag, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
