@@ -7,7 +7,7 @@ with open("README.md", "r") as f:
 setup_dependencies = []
 test_dependencies = [
     "azure==4.0.0",
-    "databricks-cli==0.7.2",
+    "databricks-cli==0.8.4",
     "jinja2==2.10",
     "gitpython==2.1.10",
     "mock==2.0.0",
@@ -30,7 +30,7 @@ setup(
     packages=["runway", "runway/credentials"],
     install_requires=[
         "azure==4.0.0",
-        "databricks-cli==0.7.2",
+        "databricks-cli==0.8.4",
         "docker==3.5.0",
         "flake8==3.5.0",
         "gitpython==2.1.10",
