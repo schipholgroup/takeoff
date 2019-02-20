@@ -146,7 +146,6 @@ class DeployToDatabricks(DeploymentStep):
         else:
             logger.info(f"Could not find job in list of {job_configs}")
 
-
     @staticmethod
     def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> int:
         snapshot = "SNAPSHOT"
