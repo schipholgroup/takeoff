@@ -14,6 +14,7 @@ jobs = [
     JobConfig("foobar-0.0.2", 3),
     JobConfig("barfoo-0.0.2", 4),
     JobConfig("daniel-branch-name", 5),
+    JobConfig("tim-postfix-SNAPSHOT", 6),
 ]
 
 streaming_job_config = "tests/test_job_config.json.j2"
@@ -36,25 +37,14 @@ class TestDeployToDatabricks(unittest.TestCase):
     def test_find_application_job_id_if_branch_if_no_version(self):
         assert victim._application_job_id("daniel", "", jobs) is None
 
+    def test_find_application_job_id_if_postfix(self):
+        assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) is 6
+
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "app-name"})
     def test_construct_name(self, _):
-        assert (
-            victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), {})._construct_name("")
-            == "app-name-some-branch"
-        )
-        assert victim(ApplicationVersion("env", "1.0.0", "master"), {})._construct_name("") == "app-name-1.0.0"
-        assert victim(ApplicationVersion("env", "SNAPSHOT", "master"), {})._construct_name("") == "app-name-SNAPSHOT"
-
-        assert (
-            victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), {})._construct_name("foo")
-            == "app-name-foo-some-branch"
-        )
-        assert victim(ApplicationVersion("env", "1.0.0", "master"), {})._construct_name("foo") == "app-name-foo-1.0.0"
-        assert (
-            victim(ApplicationVersion("env", "SNAPSHOT", "master"), {})._construct_name("foo")
-            == "app-name-foo-SNAPSHOT"
-        )
+        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), {})._construct_name("") == "app-name"
+        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), {})._construct_name("foo") == "app-name-foo"
 
     def test_is_streaming_job(self):
         job_config = victim._construct_job_config(config_file=streaming_job_config)
