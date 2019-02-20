@@ -71,12 +71,13 @@ class DeployToDatabricks(DeploymentStep):
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         for job in run_config["jobs"]:
-            job_name = self._construct_name(job["name"])
+            app_name = self._construct_name(job["name"])
+            job_name = f"{app_name}-{self.env.artifact_tag}"
             job_config = self._create_config(job_name, job, application_name)
             is_streaming = self._job_is_streaming(job_config)
 
             logger.info("Removing old job")
-            self.__remove_job(databricks_client, job_name, self.env.artifact_tag, is_streaming=is_streaming)
+            self.__remove_job(databricks_client, app_name, self.env.artifact_tag, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
@@ -110,7 +111,7 @@ class DeployToDatabricks(DeploymentStep):
 
     def _construct_name(self, name) -> str:
         postfix = f"-{name}" if name else ""
-        return f"{get_application_name()}{postfix}-{self.env.artifact_tag}"
+        return f"{get_application_name()}{postfix}"
 
     @staticmethod
     def _construct_arguments(args: List[dict]) -> list:
@@ -144,13 +145,13 @@ class DeployToDatabricks(DeploymentStep):
                 DeployToDatabricks._kill_it_with_fire(runs_api, job_id)
             jobs_api.delete_job(job_id)
         else:
-            logger.info(f"Could not find job in list of {job_configs}")
+            logger.info(f"Could not find job in list of {pprint.pformat(job_configs)}")
 
     @staticmethod
     def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> int:
         snapshot = "SNAPSHOT"
         tag = "\d+\.\d+\.\d+"
-        pattern = re.compile(rf"^({application_name})(-.*)?-({snapshot}|{tag}|{branch})$")
+        pattern = re.compile(rf"^({application_name})-({snapshot}|{tag}|{branch})$")
 
         return next((_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)), None)
 
