@@ -146,9 +146,13 @@ class DeployToDatabricks(DeploymentStep):
         job_id = DeployToDatabricks._application_job_id(application_name, branch, job_configs)
 
         if job_id:
+            logger.info(f"Found Job with ID {job_id} and removing it")
             if is_streaming:
                 DeployToDatabricks._kill_it_with_fire(runs_api, job_id)
             jobs_api.delete_job(job_id)
+        else:
+            logger.info(f"Could not find job in list of {job_configs}")
+
 
     @staticmethod
     def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> int:
