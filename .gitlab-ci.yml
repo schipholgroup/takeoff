@@ -2,8 +2,8 @@ stages:
 - lint
 - test
 
-services:
-- docker:dind
+#services:
+#- docker:dind
 
 lint:
   image: python:3.7
@@ -12,7 +12,7 @@ lint:
   - python setup.py flake8
 
 test:
-  image: python3.7
+  image: python:3.7
   stage: test
   script:
   - python setup.py test
