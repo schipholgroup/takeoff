@@ -1,0 +1,4 @@
+#!/usr/bin/python3
+from runway.run_deployment import get_environment
+
+print(get_environment().artifact_tag)

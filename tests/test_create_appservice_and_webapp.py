@@ -48,7 +48,7 @@ class TestDeployToWebApp(unittest.TestCase):
         os.environ,
         {
             "APPSERVICE_LOCATION": "west europe",
-            "BUILD_DEFINITIONNAME": "my-app",
+            "CI_PROJECT_NAME": "my-app",
             "REGISTRY_USERNAME": "awesomeperson",
             "REGISTRY_PASSWORD": "supersecret42",
         },
@@ -72,7 +72,7 @@ class TestDeployToWebApp(unittest.TestCase):
         assert result.app_settings == config.app_settings
         assert result == config
 
-    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "my-build"})
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     def test_parse_appservice_parameters_defaults(self, _):
         expected_appservice_config = AppService(
@@ -88,7 +88,7 @@ class TestDeployToWebApp(unittest.TestCase):
         assert expected_appservice_config == result
 
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
-    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "my-build"})
     def test_parse_appservice_parameters_config_unavailable(self, _):
         expected_appservice_config = AppService(
             name="my-build", sku=AppServiceSKU(name="S1", capacity=2, tier="Standard")
@@ -110,7 +110,7 @@ class TestDeployToWebApp(unittest.TestCase):
         os.environ,
         {
             "APPSERVICE_LOCATION": "west europe",
-            "BUILD_DEFINITIONNAME": "my-build",
+            "CI_PROJECT_NAME": "my-build",
             "REGISTRY_USERNAME": "user123",
             "REGISTRY_PASSWORD": "supersecret123",
         },
@@ -147,14 +147,14 @@ class TestDeployToWebApp(unittest.TestCase):
 
         get_site_config_mock.assert_called_once()
 
-    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "my-build"})
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     def test_linux_fx_version_docker(self, _):
         linux_fx = 'DOCKER|some-registry/my-build:ver'
 
         assert victim(ENV, runway_config)._get_linux_fx_version() == linux_fx
 
-    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "my-build"})
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "my-build"})
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     def test_linux_fx_version_compose(self, _):
         compose = """version: '3.2'

@@ -42,7 +42,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
 
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
-    @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "app-name"})
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "app-name"})
     def test_construct_name(self, _):
         assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), {})._construct_name("") == "app-name"
         assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), {})._construct_name("foo") == "app-name-foo"
@@ -135,6 +135,6 @@ class TestDeployToDatabricks(unittest.TestCase):
                 "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/job_name"}},
             },
             "some_int": 5,
-            "libraries": [{"jar": "/path/app_name.jar"}],
+            "libraries": [{"jar": "/path/app_name/app_name-bar.jar"}],
             "spark_jar_task": {"main_class_name": "foo.class", "parameters": ["--key", "val", "--key2", "val2"]},
         }

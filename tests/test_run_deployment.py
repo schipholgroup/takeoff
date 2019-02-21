@@ -16,8 +16,8 @@ from runway.run_deployment import run_task
 environment_variables = {
     "WEBAPP_NAME": "my-app",
     "APPSERVICE_LOCATION": "west europe",
-    "BUILD_DEFINITIONNAME": "my-build",
-    "BUILD_SOURCEBRANCHNAME": "True",
+    "CI_PROJECT_NAME": "my-build",
+    "CI_COMMIT_REF_NAME": "True",
     "REGISTRY_USERNAME": "user123",
     "REGISTRY_PASSWORD": "supersecret123",
 }

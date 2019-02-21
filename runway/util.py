@@ -28,7 +28,7 @@ def render_file_with_jinja(path: str, params: dict, parse_function: Callable) ->
 
 
 def get_branch() -> str:
-    return os.environ["BUILD_SOURCEBRANCHNAME"]
+    return os.environ["CI_COMMIT_REF_NAME"]
 
 
 def get_tag() -> str:
@@ -43,7 +43,7 @@ def get_short_hash(n: int = 7) -> str:
 
 
 def get_application_name() -> str:
-    return os.environ["BUILD_DEFINITIONNAME"]
+    return os.environ["CI_PROJECT_NAME"]
 
 
 def b64_encode(s: str):

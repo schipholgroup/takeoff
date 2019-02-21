@@ -1,3 +1,10 @@
+.job_template: &image_build
+  image: docker:latest
+  stage: deploy
+  before_script:
+  - env > .env
+  - export DOCKER_HOST="tcp://localhost:2375"
+
 stages:
 - test
 - deploy
@@ -11,17 +18,35 @@ lint:
   script:
   - python setup.py flake8
 
+hadolint:
+  image:  hadolint/hadolint:latest-debian
+  stage: test
+  script:
+  - hadolint Dockerfile_python
+  - hadolint Dockerfile_pyspark
+
 test:
   image: python:3.7
   stage: test
   script:
   - python setup.py test
 
-runway:
-  image: docker:stable
-  stage: deploy
+runway-python:
+  <<: *image_build
   script:
-  - export DOCKER_HOST="tcp://localhost:2375"
   - docker build -t runway:latest -f Dockerfile_python .
+  - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
+
   - docker login --username $jfrog_username --password $jfrog_password schipholsdh-docker.jfrog.io
-  - docker run runway:latest runway
+  - docker tag runway:latest schipholsdh-docker.jfrog.io/runway:${version}-python
+  - docker push schipholsdh-docker.jfrog.io/runway:${version}-python
+
+runway-pyspark:
+  <<: *image_build
+  script:
+  - docker build -t runway:latest -f Dockerfile_pyspark .
+  - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
+
+  - docker login --username $jfrog_username --password $jfrog_password schipholsdh-docker.jfrog.io
+  - docker tag runway:latest schipholsdh-docker.jfrog.io/runway:${version}-pyspark
+  - docker push schipholsdh-docker.jfrog.io/runway:${version}-pyspark

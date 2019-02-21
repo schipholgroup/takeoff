@@ -47,5 +47,5 @@ setup(
     },
     setup_requires=setup_dependencies,
     tests_require=test_dependencies,
-    scripts=["scripts/runway"],
+    scripts=["scripts/runway", "scripts/get_version"],
 )

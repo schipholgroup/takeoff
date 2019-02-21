@@ -18,17 +18,26 @@ from runway.util import get_application_name, has_prefix_match
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = vol.Schema({
-    vol.Required('jobs'): vol.All([
-        vol.Schema({
-            vol.Required('main_name'): str,
-            vol.Optional('config_file', default='databricks.json.j2'): str,
-            vol.Optional('name', default=''): str,
-            vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
-            vol.Optional('arguments', default=[{}]): [{}],
-        }, extra=vol.ALLOW_EXTRA)
-    ], vol.Length(min=1)),
-}, extra=vol.ALLOW_EXTRA)
+SCHEMA = vol.Schema(
+    {
+        vol.Required("jobs"): vol.All(
+            [
+                vol.Schema(
+                    {
+                        vol.Required("main_name"): str,
+                        vol.Optional("config_file", default="databricks.json.j2"): str,
+                        vol.Optional("name", default=""): str,
+                        vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
+                        vol.Optional("arguments", default=[{}]): [{}],
+                    },
+                    extra=vol.ALLOW_EXTRA,
+                )
+            ],
+            vol.Length(min=1),
+        )
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 @dataclass(frozen=True)
@@ -103,9 +112,7 @@ class DeployToDatabricks(DeploymentStep):
             )
         else:  # java/scala jobs
             run_config = DeployToDatabricks._construct_job_config(
-                **common_arguments,
-                class_name=job_config['main_name'],
-                jar_file=f"{artifact_path}.jar",
+                **common_arguments, class_name=job_config["main_name"], jar_file=f"{artifact_path}.jar"
             )
         return run_config
 
