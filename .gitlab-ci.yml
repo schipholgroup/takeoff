@@ -1,5 +1,6 @@
 stages:
 - test
+- build
 - deploy
 
 services:
@@ -19,9 +20,14 @@ test:
 
 build-image:
   image: docker:stable
-  stage: deploy
+  stage: build
   script:
   - export DOCKER_HOST="tcp://localhost:2375"
   - docker login --username $jfrog_username --password $jfrog_password schipholsdh-docker.jfrog.io
-  - docker build -t schipholsdh-docker.jfrog.io/runway:gitlab-ci-1 -f Dockerfile_python .
-  - docker push schipholsdh-docker.jfrog.io/runway:gitlab-ci-1
+  - docker build -t runway:latest -f Dockerfile_python .
+
+push-image:
+  image: runway:latest
+  stage: deploy
+  script:
+  - runway
