@@ -15,6 +15,7 @@ jobs = [
     JobConfig("barfoo-0.0.2", 4),
     JobConfig("daniel-branch-name", 5),
     JobConfig("tim-postfix-SNAPSHOT", 6),
+    JobConfig("tim-postfix-SNAPSHOT", 7),
 ]
 
 streaming_job_config = "tests/test_job_config.json.j2"
@@ -23,22 +24,22 @@ batch_job_config = "tests/test_job_config_scheduled.json.j2"
 
 class TestDeployToDatabricks(unittest.TestCase):
     def test_find_application_job_id_if_snapshot(self):
-        assert victim._application_job_id("foo", "master", jobs) == 1
+        assert victim._application_job_id("foo", "master", jobs) == [1]
 
     def test_find_application_job_id_if_version(self):
-        assert victim._application_job_id("bar", "0.3.1", jobs) == 2
+        assert victim._application_job_id("bar", "0.3.1", jobs) == [2]
 
     def test_find_application_job_id_if_version_not_set(self):
-        assert victim._application_job_id("bar", "", jobs) == 2
+        assert victim._application_job_id("bar", "", jobs) == [2]
 
     def test_find_application_job_id_if_branch(self):
-        assert victim._application_job_id("daniel", "branch-name", jobs) == 5
+        assert victim._application_job_id("daniel", "branch-name", jobs) == [5]
 
     def test_find_application_job_id_if_branch_if_no_version(self):
-        assert victim._application_job_id("daniel", "", jobs) is None
+        assert victim._application_job_id("daniel", "", jobs) == []
 
     def test_find_application_job_id_if_postfix(self):
-        assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) is 6
+        assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
 
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     @mock.patch.dict(os.environ, {"BUILD_DEFINITIONNAME": "app-name"})

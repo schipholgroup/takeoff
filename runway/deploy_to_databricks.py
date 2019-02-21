@@ -144,23 +144,24 @@ class DeployToDatabricks(DeploymentStep):
         runs_api = RunsApi(client)
 
         job_configs = [JobConfig(_["settings"]["name"], _["job_id"]) for _ in jobs_api.list_jobs()["jobs"]]
-        job_id = DeployToDatabricks._application_job_id(application_name, branch, job_configs)
+        job_ids = DeployToDatabricks._application_job_id(application_name, branch, job_configs)
 
-        if job_id:
+        if not job_ids:
+            logger.info(f"Could not find jobs in list of {pprint.pformat(job_configs)}")
+
+        for job_id in job_ids:
             logger.info(f"Found Job with ID {job_id} and removing it")
             if is_streaming:
                 DeployToDatabricks._kill_it_with_fire(runs_api, job_id)
             jobs_api.delete_job(job_id)
-        else:
-            logger.info(f"Could not find job in list of {pprint.pformat(job_configs)}")
 
     @staticmethod
-    def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> int:
+    def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> List[int]:
         snapshot = "SNAPSHOT"
         tag = "\d+\.\d+\.\d+"
         pattern = re.compile(rf"^({application_name})-({snapshot}|{tag}|{branch})$")
 
-        return next((_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)), None)
+        return [_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)]
 
     @staticmethod
     def _kill_it_with_fire(runs_api, job_id):
