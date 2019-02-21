@@ -1,6 +1,5 @@
 stages:
 - test
-- build
 - deploy
 
 services:
@@ -18,16 +17,11 @@ test:
   script:
   - python setup.py test
 
-build-image:
+runway:
   image: docker:stable
-  stage: build
-  script:
-  - export DOCKER_HOST="tcp://localhost:2375"
-  - docker login --username $jfrog_username --password $jfrog_password schipholsdh-docker.jfrog.io
-  - docker build -t runway:latest -f Dockerfile_python .
-
-push-image:
-  image: runway:latest
   stage: deploy
   script:
-  - runway
+  - export DOCKER_HOST="tcp://localhost:2375"
+  - docker build -t runway:latest -f Dockerfile_python .
+  - docker login --username $jfrog_username --password $jfrog_password schipholsdh-docker.jfrog.io
+  - docker run runway:latest runway
