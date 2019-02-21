@@ -2,8 +2,8 @@ stages:
 - test
 - deploy
 
-#services:
-#- docker:dind
+services:
+- docker:dind
 
 lint:
   image: python:3.7
@@ -18,7 +18,7 @@ test:
   - python setup.py test
 
 build-image:
-  image: docker:latest
+  image: docker:stable
   stage: deploy
   script:
   - docker login --username $jfrog_username --password $jfrog_password schipholsdh-docker.jfrog.io
