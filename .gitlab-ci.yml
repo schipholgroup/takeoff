@@ -1,13 +1,13 @@
 stages:
-- lint
 - test
+- deploy
 
-#services:
-#- docker:dind
+services:
+- docker:dind
 
 lint:
   image: python:3.7
-  stage: lint
+  stage: test
   script:
   - python setup.py flake8
 
@@ -16,3 +16,11 @@ test:
   stage: test
   script:
   - python setup.py test
+
+build-image:
+  image: docker:latest
+  stage: deploy
+  script:
+  - docker login schipholsdh-docker.jfrog.io --username ${jfrog_username} --password ${jfrog_password}
+  - docker build -t schipholsdh-docker.jfrog.io/runway:gitlab-ci-1 -f Dockerfile_python .
+  - docker push schipholsdh-docker.jfrog.io/runway:gitlab-ci-1
