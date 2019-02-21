@@ -2,8 +2,8 @@ stages:
 - test
 - deploy
 
-services:
-- docker:dind
+#services:
+#- docker:dind
 
 lint:
   image: python:3.7
