@@ -21,6 +21,6 @@ build-image:
   image: docker:latest
   stage: deploy
   script:
-  - docker login schipholsdh-docker.jfrog.io --username ${jfrog_username} --password ${jfrog_password}
+  - docker login --username ${jfrog_username} --password ${jfrog_password} schipholsdh-docker.jfrog.io
   - docker build -t schipholsdh-docker.jfrog.io/runway:gitlab-ci-1 -f Dockerfile_python .
   - docker push schipholsdh-docker.jfrog.io/runway:gitlab-ci-1
