@@ -33,6 +33,5 @@ runway:
   - docker build -t runway:latest -f Dockerfile .
   - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
 
-  - docker login --username $jfrog_username --password $jfrog_password schipholsdh-docker.jfrog.io
   - docker tag runway:latest schipholsdh-docker.jfrog.io/runway:${version}
   - docker push schipholsdh-docker.jfrog.io/runway:${version}
