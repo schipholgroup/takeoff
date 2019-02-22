@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  dockerception:
+    user: root
+    image: dockerception
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    working_dir: /root/
+    privileged: true
+    volumes:
+    - type: bind
+      source: ./
+      target: /root
+    - "/var/run/docker.sock:/var/run/docker.sock"
+    tty: true

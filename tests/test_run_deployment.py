@@ -24,6 +24,8 @@ environment_variables = {
 
 env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 
+def filename(s):
+    return f"{s}.yml"
 
 def test_no_run_task():
     with pytest.raises(ValueError):
@@ -31,16 +33,17 @@ def test_no_run_task():
 
 
 @mock.patch.dict(os.environ, environment_variables)
+@mock.patch("runway.run_deployment.get_full_yaml_filename", side_effect=filename)
 @mock.patch("runway.run_deployment.get_environment")
 @mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateAppserviceAndWebapp, 'run', return_value=None)
-def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version):
+def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version, __):
     mock_get_version.return_value = env
 
     def load(s):
         if s == 'deployment.yml':
             return {'steps': [{'task': 'deployWebAppService'}]}
-        elif s == 'runway_config.yaml':
+        elif s == 'runway_config.yml':
             return {}
 
     # Since we're loading 2 yamls we need a side effect that mocks both
@@ -54,17 +57,18 @@ def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version):
 
 
 @mock.patch.dict(os.environ, environment_variables)
+@mock.patch("runway.run_deployment.get_full_yaml_filename", side_effect=filename)
 @mock.patch("runway.run_deployment.get_environment")
 @mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateEventhubConsumerGroups, 'run', return_value=None)
-def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version):
+def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == 'deployment.yml':
             return {'steps': [{'task': 'createEventhubConsumerGroups',
                                'groups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
                                           {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
                                }]}
-        elif s == 'runway_config.yaml':
+        elif s == 'runway_config.yml':
             return {}
 
     # Since we're loading 2 yamls we need a side effect that mocks both
@@ -89,14 +93,15 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version):
 
 
 @mock.patch.dict(os.environ, environment_variables)
+@mock.patch("runway.run_deployment.get_full_yaml_filename", side_effect=filename)
 @mock.patch("runway.run_deployment.get_environment")
 @mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(CreateDatabricksSecrets, 'run', return_value=None)
-def test_create_databricks_secret(_, mock_load_yaml, mock_get_version):
+def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == 'deployment.yml':
             return {'steps': [{'task': 'createDatabricksSecrets'}]}
-        elif s == 'runway_config.yaml':
+        elif s == 'runway_config.yml':
             return {}
 
     # Since we're loading 2 yamls we need a side effect that mocks both
@@ -111,14 +116,15 @@ def test_create_databricks_secret(_, mock_load_yaml, mock_get_version):
 
 
 @mock.patch.dict(os.environ, environment_variables)
+@mock.patch("runway.run_deployment.get_full_yaml_filename", side_effect=filename)
 @mock.patch("runway.run_deployment.get_environment")
 @mock.patch("runway.run_deployment.load_yaml")
 @mock.patch.object(DeployToDatabricks, 'run', return_value=None)
-def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version):
+def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == 'deployment.yml':
             return {'steps': [{'task': 'deployToDatabricks', 'config_file_fn': 'databricks_job_config.json.j2'}]}
-        elif s == 'runway_config.yaml':
+        elif s == 'runway_config.yml':
             return {}
 
     # Since we're loading 2 yamls we need a side effect that mocks both
