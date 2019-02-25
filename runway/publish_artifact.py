@@ -26,16 +26,16 @@ class PublishArtifact(DeploymentStep):
 
     def build_package(self):
         # First make sure the correct version number is used.
-        with open('/root/version.py', 'w+') as f:
+        with open('version.py', 'w+') as f:
             f.write(f"__version__='{self.env.version}'")
         # ensure any old artifacts are gone
-        shutil.rmtree('/root/dist/', ignore_errors=True)
+        shutil.rmtree('dist/', ignore_errors=True)
 
         cmd = ['python', 'setup.py', 'bdist_wheel']
         p = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
-                             cwd='/root/',
+                             cwd='./',
                              universal_newlines=True)
         log_docker(iter(p.stdout.readline, ''))
         return_code = p.wait()
@@ -44,4 +44,4 @@ class PublishArtifact(DeploymentStep):
 
     def publish_package(self):
         credentials = DevopsArtifactStore(vault_name=self.vault_name, vault_client=self.vault_client).store_settings(self.config)
-        upload(upload_settings=credentials, dists=['/root/dist/*'])
+        upload(upload_settings=credentials, dists=['dist/*'])

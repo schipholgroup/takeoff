@@ -49,9 +49,9 @@ class DockerImageBuilder(DeploymentStep):
         }
         try:
             image = docker_client.images.build(
-                path="/root",
+                path=".",
                 tag=tag,
-                dockerfile=f"/root/{docker_file}",
+                dockerfile=f"./{docker_file}",
                 buildargs=build_args,
                 quiet=False,
                 nocache=True

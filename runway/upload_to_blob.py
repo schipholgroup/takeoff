@@ -39,9 +39,9 @@ class UploadToBlob(DeploymentStep):
     @staticmethod
     def _get_jar(lang: str) -> str:
         if lang == "sbt":
-            jars = glob.glob("/root/target/scala-2.*/*-assembly-*.jar")
+            jars = glob.glob("target/scala-2.*/*-assembly-*.jar")
         elif lang == "maven":
-            jars = glob.glob("/root/target/*-uber.jar")
+            jars = glob.glob("target/*-uber.jar")
         else:
             raise ValueError(f"Unknown language {lang}")
 
@@ -54,7 +54,7 @@ class UploadToBlob(DeploymentStep):
 
     @staticmethod
     def _get_egg():
-        eggs = glob.glob("/root/dist/*.egg")
+        eggs = glob.glob("dist/*.egg")
         if len(eggs) != 1:
             raise FileNotFoundError(
                 f"Eggs found: {eggs}; There can (and must) be only one!"
@@ -86,5 +86,5 @@ class UploadToBlob(DeploymentStep):
                     f"{build_definition_name}/{build_definition_name}-main-{self.env.artifact_tag}.py"
                 )
                 self._upload_file_to_blob(
-                    blob_service, f"/root/{self.config['python_file_path']}", filename_main
+                    blob_service, f"{self.config['python_file_path']}", filename_main
                 )
