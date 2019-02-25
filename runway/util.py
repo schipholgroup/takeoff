@@ -99,3 +99,14 @@ def get_full_yaml_filename(filename: str) -> str:
         if os.path.isfile(concat_filename):
             return concat_filename
     raise FileNotFoundError(f'Could not find Runway config file: {filename}')
+
+
+def get_whl_name(artifact_tag: str, file_ext: str) -> str:
+    # Wheels enforce a strict naming convention. This function helps us adhere to this naming convention
+    build_definition_name = get_application_name()
+    return f"{build_definition_name}/{build_definition_name.replace('-', '_')}-{artifact_tag.replace('-', '_')}-py3-none-any{file_ext}"
+
+
+def get_main_py_name(artifact_tag: str, file_ext: str) -> str:
+    build_definition_name = get_application_name()
+    return f"{build_definition_name}/{build_definition_name}-main-{artifact_tag}{file_ext}"

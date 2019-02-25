@@ -8,7 +8,7 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.azure_devops_artifact_store import DevopsArtifactStore
 from runway.credentials.azure_storage_account import BlobStore
-from runway.util import get_tag, get_application_name
+from runway.util import get_tag, get_application_name, get_whl_name, get_main_py_name
 
 
 logger = logging.getLogger(__name__)
@@ -74,17 +74,13 @@ class PublishArtifact(DeploymentStep):
     def publish_to_blob(self, file, file_ext):
         build_definition_name = get_application_name()
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
-        # filename = f"{build_definition_name}/{file}"
 
         if file_ext == ".py":
-            filename = (
-                f"{build_definition_name}/{build_definition_name}-main-{self.env.artifact_tag}{file_ext}"
-            )
+            filename = get_main_py_name(self.env.artifact_tag, file_ext)
+        elif file_ext == ".whl":
+            filename = get_whl_name(self.env.artifact_tag, file_ext)
         else:
-            filename = (
-                f"{build_definition_name}/{build_definition_name.replace('-', '_')}-{self.env.artifact_tag.replace('-', '_')}-py3-none-any{file_ext}"
-                # f"{build_definition_name}/{build_definition_name}-{self.env.artifact_tag}-py3-none-any{file_ext}"
-            )
+            logging.info(f"Unsupported filetype extension: {file_ext}")
 
         self._upload_file_to_blob(blob_service, file, filename)
 
