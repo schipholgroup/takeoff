@@ -109,4 +109,4 @@ def get_whl_name(artifact_tag: str, file_ext: str) -> str:
 
 def get_main_py_name(artifact_tag: str, file_ext: str) -> str:
     build_definition_name = get_application_name()
-    return f"{build_definition_name}/{build_definition_name}-main-{artifact_tag}{file_ext}"
+    return f"{build_definition_name}/{build_definition_name.replace('-', '_')}-main-{artifact_tag.replace('-', '_')}{file_ext}"
