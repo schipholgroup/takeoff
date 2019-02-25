@@ -1,0 +1,26 @@
+stages:
+- test
+- deploy
+
+services:
+- docker
+
+dist: xenial
+language: python
+python: 3.7
+cache:
+  directories:
+  - $HOME/.cache/pip
+
+jobs:
+  include:
+  - stage: test
+    name: "testing"
+    script:
+      - python setup.py flake8
+  - name: "linting"
+    script:
+      - python setup.py test
+#  - stage: deploy
+#    name: "Deploy to GCP"
+#    script: ./deploy
