@@ -22,9 +22,10 @@ jobs:
     script:
     - python setup.py test
   - stage: deploy
-    name: "Deploy to GCP"
+    name: "Deploy Docker image"
     script:
-    - echo "$JFROG_PASSWORD" | docker login -u "$JFROG_USERNAME" --password-stdin schipholsdh-docker.jfrog.io
+    - env > .env
+    - docker login --username $JFROG_USERNAME --password $JFROG_PASSWORD schipholsdh-docker.jfrog.io
     - docker build -t runway:latest -f Dockerfile .
     - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
 
