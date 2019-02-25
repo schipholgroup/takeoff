@@ -8,7 +8,7 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.azure_devops_artifact_store import DevopsArtifactStore
 from runway.credentials.azure_storage_account import BlobStore
-from runway.util import get_tag, get_application_name, get_whl_name, get_main_py_name
+from runway.util import get_tag, get_whl_name, get_main_py_name
 
 
 logger = logging.getLogger(__name__)
@@ -72,7 +72,6 @@ class PublishArtifact(DeploymentStep):
                 logging.info("Invalid target for artifact")
 
     def publish_to_blob(self, file, file_ext):
-        build_definition_name = get_application_name()
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
         if file_ext == ".py":
