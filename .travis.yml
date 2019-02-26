@@ -5,6 +5,9 @@ stages:
 services:
 - docker
 
+env:
+- TRAVIS_REPO_NAME=${TRAVIS_REPO_SLUG#*/}
+
 dist: xenial
 language: python
 python: 3.7
