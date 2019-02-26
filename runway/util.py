@@ -102,6 +102,9 @@ def get_full_yaml_filename(filename: str) -> str:
 
 def get_whl_name(artifact_tag: str, file_ext: str) -> str:
     # Wheels enforce a strict naming convention. This function helps us adhere to this naming convention
+    # The convention is: {distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl
+    # In our case, we need to use underscores to concatenate words within a package name and version name.
+    # build-tag is optional, and we do not supply it.
     build_definition_name = get_application_name()
     return (
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
@@ -115,3 +118,8 @@ def get_main_py_name(artifact_tag: str, file_ext: str) -> str:
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
         f"main-{artifact_tag.replace('-', '_')}{file_ext}"
     )
+
+
+def get_jar_name(artifact_tag: str, file_ext: str) -> str:
+    build_definition_name = get_application_name()
+    return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"

@@ -108,8 +108,8 @@ class DeployToDatabricks(DeploymentStep):
         if job_config["lang"] == "python":
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
-                whl_file=f"{storage_base_path}/{get_whl_name(self.env.artifact_tag, '.whl')}",
-                python_file=f"{storage_base_path}/{get_main_py_name(self.env.artifact_tag, '.py')}",
+                whl_file=f"{root_library_folder}/{get_whl_name(self.env.artifact_tag, '.whl')}",
+                python_file=f"{root_library_folder}/{get_main_py_name(self.env.artifact_tag, '.py')}",
             )
         else:  # java/scala jobs
             run_config = DeployToDatabricks._construct_job_config(

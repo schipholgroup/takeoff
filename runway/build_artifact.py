@@ -22,10 +22,10 @@ class BuildArtifact(DeploymentStep):
 
     def build_python_wheel(self):
         # First make sure the correct version number is used.
-        with open("/root/version.py", "w+") as f:
+        with open("version.py", "w+") as f:
             f.write(f"__version__='{self.env.version}'")
         # ensure any old artifacts are gone
-        shutil.rmtree("/root/dist/", ignore_errors=True)
+        shutil.rmtree("dist/", ignore_errors=True)
 
         cmd = ["python", "setup.py", "bdist_wheel"]
         p = subprocess.Popen(
