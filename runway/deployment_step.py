@@ -1,6 +1,5 @@
 from runway.build_docker_image import DockerImageBuilder
 from runway.create_application_insights import CreateDatabricksApplicationInsights
-from runway.create_appservice_and_webapp import CreateAppserviceAndWebapp
 from runway.create_databricks_secrets import CreateDatabricksSecrets
 from runway.create_eventhub_consumer_groups import CreateEventhubConsumerGroups
 from runway.create_eventhub_producer_policies import CreateEventhubProducerPolicies
@@ -13,7 +12,6 @@ deployment_steps = {
     "uploadToBlob": UploadToBlob,
     "buildDockerImage": DockerImageBuilder,
     "createApplicationInsights": CreateDatabricksApplicationInsights,
-    "deployWebAppService": CreateAppserviceAndWebapp,
     "createDatabricksSecrets": CreateDatabricksSecrets,
     "createEventhubConsumerGroups": CreateEventhubConsumerGroups,
     "createEventhubProducerPolicies": CreateEventhubProducerPolicies,

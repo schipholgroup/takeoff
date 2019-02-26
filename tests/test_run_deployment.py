@@ -5,7 +5,6 @@ import pytest
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.create_appservice_and_webapp import CreateAppserviceAndWebapp
 from runway.create_databricks_secrets import CreateDatabricksSecrets
 from runway.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
@@ -30,30 +29,6 @@ def filename(s):
 def test_no_run_task():
     with pytest.raises(ValueError):
         run_task(env, 'foo', {})
-
-
-@mock.patch.dict(os.environ, environment_variables)
-@mock.patch("runway.run_deployment.get_full_yaml_filename", side_effect=filename)
-@mock.patch("runway.run_deployment.get_environment")
-@mock.patch("runway.run_deployment.load_yaml")
-@mock.patch.object(CreateAppserviceAndWebapp, 'run', return_value=None)
-def test_deploy_web_app_service(_, mock_load_yaml, mock_get_version, __):
-    mock_get_version.return_value = env
-
-    def load(s):
-        if s == 'deployment.yml':
-            return {'steps': [{'task': 'deployWebAppService'}]}
-        elif s == 'runway_config.yml':
-            return {}
-
-    # Since we're loading 2 yamls we need a side effect that mocks both
-    mock_load_yaml.side_effect = load
-
-    from runway.run_deployment import main
-
-    with mock.patch.object(CreateAppserviceAndWebapp, "__init__", return_value=None) as mock_task:
-        main()
-        mock_task.assert_called_once_with(env, {'task': 'deployWebAppService'})
 
 
 @mock.patch.dict(os.environ, environment_variables)

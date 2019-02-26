@@ -44,8 +44,9 @@ class TestDeployToDatabricks(unittest.TestCase):
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "app-name"})
     def test_construct_name(self, _):
-        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), {})._construct_name("") == "app-name"
-        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), {})._construct_name("foo") == "app-name-foo"
+        config = {'common_environment_keys': {'application_name': 'CI_PROJECT_NAME'}}
+        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), config)._construct_name("") == "app-name"
+        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), config)._construct_name("foo") == "app-name-foo"
 
     def test_is_streaming_job(self):
         job_config = victim._construct_job_config(config_file=streaming_job_config)
