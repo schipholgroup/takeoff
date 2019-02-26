@@ -1,4 +1,8 @@
 #!/usr/bin/python3
 from runway.run_deployment import get_environment
+from runway.util import load_yaml, get_full_yaml_filename
 
-print(get_environment().artifact_tag)
+runway_config = load_yaml(get_full_yaml_filename("runway_config"))
+env = get_environment(runway_config)
+
+print(env.artifact_tag)
