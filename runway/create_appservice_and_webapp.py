@@ -11,10 +11,11 @@ from msrestazure.azure_exceptions import CloudError
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_application_insights import CreateApplicationInsights
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
 from runway.credentials.cosmos import Cosmos
-from runway.util import get_application_name, render_string_with_jinja
+from runway.util import render_string_with_jinja
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -95,7 +96,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             sku_config = appservice_sku_defaults[dtap]
 
         return AppService(
-            name=get_application_name(),
+            name=ApplicationName().get(self.config),
             sku=AppServiceSKU(
                 name=sku_config.name, capacity=sku_config.capacity, tier=sku_config.tier
             ),
@@ -107,7 +108,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
             tag_config = compose_config.get("variables")
             tag_config.update({
                 'registry': self.config['runway_common']['shared_registry'],
-                'application_name': get_application_name(),
+                'application_name': ApplicationName().get(self.config),
                 'tag': self.env.artifact_tag
             })
 
@@ -116,7 +117,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
         else:
             return "DOCKER|{registry_url}/{build_definition_name}:{tag}".format(
                 registry_url=self.config['runway_common']['shared_registry'],
-                build_definition_name=get_application_name(),
+                build_definition_name=ApplicationName().get(self.config),
                 tag=self.env.artifact_tag,
             )
 
@@ -155,7 +156,7 @@ class CreateAppserviceAndWebapp(DeploymentStep):
                               appservice_id: str,
                               web_client: WebSiteManagementClient) -> WebApp:
         # use build definition name as default web app name
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
         formatted_dtap = self.env.environment.lower()
 
         webapp_name = "{name}-{env}".format(

@@ -27,10 +27,6 @@ def render_file_with_jinja(path: str, params: dict, parse_function: Callable) ->
     return parse_function(rendered)
 
 
-def get_branch() -> str:
-    return os.environ["CI_COMMIT_REF_NAME"]
-
-
 def get_tag() -> str:
     repo = Repo(search_parent_directories=True)
     return next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
@@ -40,10 +36,6 @@ def get_short_hash(n: int = 7) -> str:
     repo = Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
     return repo.git.rev_parse(sha, short=n)
-
-
-def get_application_name() -> str:
-    return os.environ["CI_PROJECT_NAME"]
 
 
 def b64_encode(s: str):

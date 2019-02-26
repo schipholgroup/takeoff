@@ -13,8 +13,9 @@ from databricks_cli.sdk import ApiClient
 from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_databricks import Databricks
-from runway.util import get_application_name, has_prefix_match
+from runway.util import has_prefix_match
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class DeployToDatabricks(DeploymentStep):
         has been set correctly.
         """
 
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         for job in run_config["jobs"]:
@@ -118,7 +119,7 @@ class DeployToDatabricks(DeploymentStep):
 
     def _construct_name(self, name) -> str:
         postfix = f"-{name}" if name else ""
-        return f"{get_application_name()}{postfix}"
+        return f"{ApplicationName().get(self.config)}{postfix}"
 
     @staticmethod
     def _construct_arguments(args: List[dict]) -> list:

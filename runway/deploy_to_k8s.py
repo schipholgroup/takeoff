@@ -13,11 +13,12 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_application_insights import CreateApplicationInsights
 from runway.credentials.KeyVaultCredentialsMixin import Secret, KeyVaultCredentialsMixin
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_container_registry import DockerRegistry
 from runway.credentials.azure_keyvault import AzureKeyvaultClient
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
-from runway.util import get_application_name, render_file_with_jinja, b64_encode
+from runway.util import render_file_with_jinja, b64_encode
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +39,16 @@ class BaseDeployToK8s(DeploymentStep):
             service_ip = self.config["service_ips"][self.env.environment.lower()]
 
         # load some k8s config
+        application_name = ApplicationName().get(self.config)
         k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"],
                                                 {"docker_tag": self.env.artifact_tag,
                                                  "namespace": self.k8s_namespace,
-                                                 "application_name": get_application_name()},
+                                                 "application_name": application_name},
                                                 yaml.load)
         k8s_service = render_file_with_jinja(self.config["service_config_path"],
                                              {"service_ip": service_ip,
                                               "namespace": self.k8s_namespace,
-                                              "application_name": get_application_name()},
+                                              "application_name": application_name},
                                              yaml.load)
         logging.info("Deploying ----------------------------------------")
         pprint(k8s_deployment)
@@ -148,14 +150,14 @@ class BaseDeployToK8s(DeploymentStep):
         self._create_or_patch_resource(
             client=api_instance,
             resource_type="deployment",
-            name=get_application_name(),
+            name=ApplicationName().get(self.config),
             namespace=k8s_namespace,
             resource_config=deployment
         )
 
     def _create_or_patch_secrets(self, secrets, k8s_namespace, name: str = None, secret_type: str = "Opaque"):
         api_instance = client.CoreV1Api()
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
         secret_name = f"{application_name}-secret" if not name else name
 
         secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
@@ -185,7 +187,7 @@ class BaseDeployToK8s(DeploymentStep):
         self._create_namespace_if_not_exists(core_api_client, self.k8s_namespace)
 
         # 3: create kubernetes secrets from azure keyvault
-        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(get_application_name())
+        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(ApplicationName().get(self.config))
         if self.add_application_insights:
             application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
             secrets.append(Secret('instrumentation-key', application_insights.instrumentation_key))
@@ -228,7 +230,7 @@ class DeployToVnetK8s(BaseDeployToK8s):
 
     @property
     def k8s_namespace(self):
-        return f"{get_application_name()}-{self.env.environment.lower()}"
+        return f"{ApplicationName().get(self.config)}-{self.env.environment.lower()}"
 
     @property
     def cluster_name(self):
@@ -241,7 +243,7 @@ class DeployToK8s(BaseDeployToK8s):
 
     @property
     def k8s_namespace(self):
-        return get_application_name()
+        return ApplicationName().get(self.config)
 
     @property
     def cluster_name(self):

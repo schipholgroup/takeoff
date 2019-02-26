@@ -7,10 +7,10 @@ from azure.mgmt.relay.models import AccessRights
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import Secret, CreateDatabricksSecrets
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_databricks import Databricks
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
-from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -35,7 +35,7 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config))
 
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
 
         logger.info(f"Using Azure resource group: {resource_group}")
         logger.info(f"Using Azure namespace: {eventhub_namespace}")
@@ -45,7 +45,7 @@ class CreateEventhubProducerPolicies(DeploymentStep):
                 'resource_group_name': resource_group,
                 'namespace_name': eventhub_namespace,
                 'event_hub_name': policy + formatted_dtap,
-                'authorization_rule_name': f"{get_application_name()}-send-policy",
+                'authorization_rule_name': f"{ApplicationName().get(self.config)}-send-policy",
             }
 
             try:

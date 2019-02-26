@@ -10,10 +10,10 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import CreateDatabricksSecrets
 from runway.credentials.KeyVaultCredentialsMixin import Secret
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_databricks import Databricks
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
-from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -152,10 +152,10 @@ class CreateEventhubConsumerGroups(DeploymentStep):
             group.consumer_group,
         )
 
-    @staticmethod
-    def _create_connection_strings(client: EventHubManagementClient,
+    def _create_connection_strings(self,
+                                   client: EventHubManagementClient,
                                    eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
-        policy_name = f"{get_application_name()}-policy"
+        policy_name = f"{ApplicationName().get(self.config)}-policy"
 
         for group in eventhub_entities:
             if not CreateEventhubConsumerGroups._authorization_rules_exists(
@@ -214,7 +214,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
                     group=group)
 
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
 
         # For each Eventhub we have a separate connection string which is set by a shared access policy
         # The different consumer groups can use this same shared access policy

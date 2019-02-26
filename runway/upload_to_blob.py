@@ -5,8 +5,8 @@ from azure.storage.blob import BlockBlobService
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_storage_account import BlobStore
-from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class UploadToBlob(DeploymentStep):
         return eggs[0]
 
     def upload_application_to_blob(self):
-        build_definition_name = get_application_name()
+        build_definition_name = ApplicationName().get(self.config)
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
         filename_library = (
