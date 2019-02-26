@@ -21,7 +21,7 @@ class Secret:
 
     @property
     def env_key(self):
-        return self.key.upper().replace('-', '_')
+        return self.key.upper().replace("-", "_")
 
 
 @dataclass
@@ -68,13 +68,13 @@ class KeyVaultCredentialsMixin(object):
 
         """
         credentials: Dict[str, Secret] = self._credentials(list(keys.values()))
-        credential_kwargs = {function_argument: credentials[env_variable]
-                             for env_variable, function_argument in inverse_dictionary(keys).items()}
+        credential_kwargs = {
+            function_argument: credentials[env_variable]
+            for env_variable, function_argument in inverse_dictionary(keys).items()
+        }
         return credential_kwargs
 
-    def _credentials(self,
-                     keys: List[str],
-                     prefix: str = None) -> Dict[str, str]:
+    def _credentials(self, keys: List[str], prefix: str = None) -> Dict[str, str]:
         """
         Args:
             keys (List[str]): A list containing the keys to search for in the keyvault
@@ -92,7 +92,7 @@ class KeyVaultCredentialsMixin(object):
             raise ValueError(f"Could not find required key {secret_key}")
         return secrets[secret_key].val
 
-    def get_keyvault_secrets(self, prefix: str = ''):
+    def get_keyvault_secrets(self, prefix: str = ""):
         """
         Args:
             prefix (str, optional): A prefix to filter keyvault keys on. Default is the application name
@@ -125,24 +125,20 @@ class KeyVaultCredentialsMixin(object):
         """
         if prefix:
             pattern = re.compile(rf"^({prefix})-([-A-z0-9]+)*")
-            return [IdAndKey(_, get_matching_group(_, pattern, 1))
-                    for _ in keyvault_ids
-                    if has_prefix_match(_, prefix, pattern)]
+            return [
+                IdAndKey(_, get_matching_group(_, pattern, 1))
+                for _ in keyvault_ids
+                if has_prefix_match(_, prefix, pattern)
+            ]
         return [IdAndKey(_, _) for _ in keyvault_ids]
 
-    def _retrieve_secrets(self,
-                          client: KeyVaultClient,
-                          vault: str,
-                          prefix: str) -> List[Secret]:
+    def _retrieve_secrets(self, client: KeyVaultClient, vault: str, prefix: str) -> List[Secret]:
         secrets = list(client.get_secrets(vault))
         secrets_ids = self._extract_keyvault_ids_from(secrets)
         secrets_filtered = self._filter_keyvault_ids(secrets_ids, prefix)
 
         app_secrets = [
-            Secret(
-                _.databricks_secret_key,
-                client.get_secret(vault, _.keyvault_id, "").value,
-            )
+            Secret(_.databricks_secret_key, client.get_secret(vault, _.keyvault_id, "").value)
             for _ in secrets_filtered
         ]
 

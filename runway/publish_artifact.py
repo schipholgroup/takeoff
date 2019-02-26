@@ -34,9 +34,7 @@ class PublishArtifact(DeploymentStep):
             raise ValueError(f"Unknown language {lang}")
 
         if len(jars) != 1:
-            raise FileNotFoundError(
-                f"jars found: {jars}; There can (and must) be only one!"
-            )
+            raise FileNotFoundError(f"jars found: {jars}; There can (and must) be only one!")
 
         return jars[0]
 
@@ -44,9 +42,7 @@ class PublishArtifact(DeploymentStep):
     def _get_wheel():
         wheels = glob.glob("/root/dist/*.whl")
         if len(wheels) != 1:
-            raise FileNotFoundError(
-                f"wheels found: {wheels}; There can (and must) be only one!"
-            )
+            raise FileNotFoundError(f"wheels found: {wheels}; There can (and must) be only one!")
         return wheels[0]
 
     def publish_python_package(self):
@@ -54,20 +50,17 @@ class PublishArtifact(DeploymentStep):
             if target == "pypi":
                 self.publish_to_pypi()
             elif target == "blob":
-                self.publish_to_blob(file=self._get_wheel(),
-                                     file_ext=".whl")
+                self.publish_to_blob(file=self._get_wheel(), file_ext=".whl")
                 # only upload a py file if the path has been specified
-                if 'python_file_path' in self.config.keys():
-                    self.publish_to_blob(file=f"/root/{self.config['python_file_path']}",
-                                         file_ext=".py")
+                if "python_file_path" in self.config.keys():
+                    self.publish_to_blob(file=f"/root/{self.config['python_file_path']}", file_ext=".py")
             else:
                 logging.info("Invalid target for artifact")
 
     def publish_jvm_package(self):
         for target in self.config["target"]:
             if target == "blob":
-                self.publish_to_blob(file=self._get_jar(),
-                                     file_ext=".jar")
+                self.publish_to_blob(file=self._get_jar(), file_ext=".jar")
             else:
                 logging.info("Invalid target for artifact")
 
@@ -83,13 +76,11 @@ class PublishArtifact(DeploymentStep):
 
         self._upload_file_to_blob(blob_service, file, filename)
 
-    def _upload_file_to_blob(self,
-                             client: BlockBlobService,
-                             source: str,
-                             destination: str,
-                             container: str = None):
+    def _upload_file_to_blob(
+        self, client: BlockBlobService, source: str, destination: str, container: str = None
+    ):
         if not container:
-            container = self.config['runway_common']['artifacts_shared_blob_container_name']
+            container = self.config["runway_common"]["artifacts_shared_blob_container_name"]
         logger.info(
             f"""uploading artifact from
              | from ${source}
@@ -97,14 +88,13 @@ class PublishArtifact(DeploymentStep):
              | in container {container}"""
         )
 
-        client.create_blob_from_path(
-            container_name=container, blob_name=destination, file_path=source
-        )
+        client.create_blob_from_path(container_name=container, blob_name=destination, file_path=source)
 
     def publish_to_pypi(self):
         if get_tag():
-            credentials = DevopsArtifactStore(vault_name=self.vault_name, vault_client=self.vault_client)\
-                .store_settings(self.config)
-            upload(upload_settings=credentials, dists=['/root/dist/*'])
+            credentials = DevopsArtifactStore(
+                vault_name=self.vault_name, vault_client=self.vault_client
+            ).store_settings(self.config)
+            upload(upload_settings=credentials, dists=["/root/dist/*"])
         else:
             logging.info("Not on a release tag, not publishing artifact on pypi.")

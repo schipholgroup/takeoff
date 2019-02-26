@@ -32,9 +32,7 @@ class DockerImageBuilder(DeploymentStep):
             password=docker_credentials.password,
             registry=docker_credentials.registry,
         )
-        dockerfiles = [
-            DockerFile(df["file"], df.get("postfix")) for df in self.config["dockerfiles"]
-        ]
+        dockerfiles = [DockerFile(df["file"], df.get("postfix")) for df in self.config["dockerfiles"]]
         self.deploy(dockerfiles, docker_credentials, client)
 
     def build_image(self, docker_file, docker_client, tag):
@@ -44,9 +42,7 @@ class DockerImageBuilder(DeploymentStep):
         logger.info(f"Building docker image for {docker_file}")
 
         # Set these environment variables at build time only, they should not be available at runtime
-        build_args = {
-            'PIP_EXTRA_INDEX_URL': os.getenv('PIP_EXTRA_INDEX_URL')
-        }
+        build_args = {"PIP_EXTRA_INDEX_URL": os.getenv("PIP_EXTRA_INDEX_URL")}
         try:
             image = docker_client.images.build(
                 path="/root",
@@ -54,7 +50,7 @@ class DockerImageBuilder(DeploymentStep):
                 dockerfile=f"/root/{docker_file}",
                 buildargs=build_args,
                 quiet=False,
-                nocache=True
+                nocache=True,
             )
             log_docker(image[1])
 
@@ -62,10 +58,7 @@ class DockerImageBuilder(DeploymentStep):
             log_docker(e.build_log)
             raise e
 
-    def deploy(self,
-               dockerfiles: List[DockerFile],
-               docker_credentials,
-               docker_client):
+    def deploy(self, dockerfiles: List[DockerFile], docker_credentials, docker_client):
         application_name = get_application_name()
         for df in dockerfiles:
             tag = self.env.artifact_tag

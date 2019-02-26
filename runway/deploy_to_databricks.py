@@ -15,26 +15,30 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.azure_databricks import Databricks
 
-from runway.util import (
-    get_application_name,
-    has_prefix_match,
-    get_whl_name,
-    get_main_py_name
-)
+from runway.util import get_application_name, has_prefix_match, get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = vol.Schema({
-    vol.Required('jobs'): vol.All([
-        vol.Schema({
-            vol.Required('main_name'): str,
-            vol.Optional('config_file', default='databricks.json.j2'): str,
-            vol.Optional('name', default=''): str,
-            vol.Optional('lang', default='python'): vol.All(str, vol.In(['python', 'scala'])),
-            vol.Optional('arguments', default=[{}]): [{}],
-        }, extra=vol.ALLOW_EXTRA)
-    ], vol.Length(min=1)),
-}, extra=vol.ALLOW_EXTRA)
+SCHEMA = vol.Schema(
+    {
+        vol.Required("jobs"): vol.All(
+            [
+                vol.Schema(
+                    {
+                        vol.Required("main_name"): str,
+                        vol.Optional("config_file", default="databricks.json.j2"): str,
+                        vol.Optional("name", default=""): str,
+                        vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
+                        vol.Optional("arguments", default=[{}]): [{}],
+                    },
+                    extra=vol.ALLOW_EXTRA,
+                )
+            ],
+            vol.Length(min=1),
+        )
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 @dataclass(frozen=True)
@@ -101,7 +105,7 @@ class DeployToDatabricks(DeploymentStep):
         storage_base_path = f"{root_library_folder}/{application_name}"
         artifact_path = f"{storage_base_path}/{application_name}-{self.env.artifact_tag}"
 
-        if job_config['lang'] == 'python':
+        if job_config["lang"] == "python":
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
                 whl_file=f"{storage_base_path}/{get_whl_name(self.env.artifact_tag, '.whl')}",
@@ -109,9 +113,7 @@ class DeployToDatabricks(DeploymentStep):
             )
         else:  # java/scala jobs
             run_config = DeployToDatabricks._construct_job_config(
-                **common_arguments,
-                class_name=job_config['main_name'],
-                jar_file=f"{artifact_path}.jar",
+                **common_arguments, class_name=job_config["main_name"], jar_file=f"{artifact_path}.jar"
             )
         return run_config
 

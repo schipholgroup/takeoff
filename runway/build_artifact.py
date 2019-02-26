@@ -22,18 +22,16 @@ class BuildArtifact(DeploymentStep):
 
     def build_python_wheel(self):
         # First make sure the correct version number is used.
-        with open('/root/version.py', 'w+') as f:
+        with open("/root/version.py", "w+") as f:
             f.write(f"__version__='{self.env.version}'")
         # ensure any old artifacts are gone
-        shutil.rmtree('/root/dist/', ignore_errors=True)
+        shutil.rmtree("/root/dist/", ignore_errors=True)
 
-        cmd = ['python', 'setup.py', 'bdist_wheel']
-        p = subprocess.Popen(cmd,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT,
-                             cwd='/root/',
-                             universal_newlines=True)
-        log_docker(iter(p.stdout.readline, ''))
+        cmd = ["python", "setup.py", "bdist_wheel"]
+        p = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="/root/", universal_newlines=True
+        )
+        log_docker(iter(p.stdout.readline, ""))
         return_code = p.wait()
 
-        assert return_code == 0, 'Could not build the package for some reason!'
+        assert return_code == 0, "Could not build the package for some reason!"

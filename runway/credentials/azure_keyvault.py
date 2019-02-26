@@ -11,11 +11,9 @@ class AzureKeyvaultClient(object):
             raise KeyError("At least one of 'dtap' or 'env' must be provided")
         if env:
             dtap = env.environment.lower()
-        vault = config['runway_azure']['vault_name'].format(dtap=dtap)
+        vault = config["runway_azure"]["vault_name"].format(dtap=dtap)
         logging.info(config)
         logging.info(dtap)
-        keyvault_client = KeyVaultClient(
-            AzureServicePrincipalCredentials().credentials(config, dtap)
-        )
+        keyvault_client = KeyVaultClient(AzureServicePrincipalCredentials().credentials(config, dtap))
 
         return vault, keyvault_client
