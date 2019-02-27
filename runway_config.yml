@@ -1,3 +1,35 @@
+runway_azure:
+  resource_group: "sdh{dtap}"
+  location: "west europe"
+  vault_name: "https://sdhkeyvault{dtap}.vault.azure.net/"
+
 common_environment_keys:
-  application_name: TRAVIS_REPO_NAME
-  branch_name: TRAVIS_BRANCH
+  application_name: BUILD_SOURCEBRANCHNAME
+  branch_name: BUILD_DEFINITIONNAME
+
+azure_keyvault_keys:
+  azure_container_registry:
+    username: "registry-username"
+    password: "registry-password"
+    registry: "registry-server"
+
+devops_environment_keys_dev:
+  azure_service_principal:
+    tenant: "AZURE_TENANTID"
+    client_id: "AZURE_KEYVAULT_SP_USERNAME_DEV"
+    secret: "AZURE_KEYVAULT_SP_PASSWORD_DEV"
+
+devops_environment_keys_acp:
+  azure_service_principal:
+    tenant: "AZURE_TENANTID"
+    client_id: "AZURE_KEYVAULT_SP_USERNAME_ACP"
+    secret: "AZURE_KEYVAULT_SP_PASSWORD_ACP"
+
+devops_environment_keys_prd:
+  azure_service_principal:
+    tenant: "AZURE_TENANTID"
+    client_id: "AZURE_KEYVAULT_SP_USERNAME_PRD"
+    secret: "AZURE_KEYVAULT_SP_PASSWORD_PRD"
+
+runway_common:
+  shared_registry: sdhcontainerregistryshared.azurecr.io

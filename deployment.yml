@@ -1,0 +1,4 @@
+steps:
+- task: buildDockerImage
+  dockerfiles:
+  - file: Dockerfile
