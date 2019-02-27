@@ -29,7 +29,7 @@ class BaseDeployToK8s(DeploymentStep):
         self.fixed_env = fixed_env
         # have to overwrite the default keyvault b/c of Vnet K8s cluster
         self.vault_name, self.vault_client = AzureKeyvaultClient.vault_and_client(self.config, dtap=fixed_env)
-        self.add_application_insights = self.config.get('add_application_insights', False)
+        self.add_application_insights = self.config.get("add_application_insights", False)
 
     def run(self):
         # get the ip address for this environment
@@ -38,16 +38,24 @@ class BaseDeployToK8s(DeploymentStep):
             service_ip = self.config["service_ips"][self.env.environment.lower()]
 
         # load some k8s config
-        k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"],
-                                                {"docker_tag": self.env.artifact_tag,
-                                                 "namespace": self.k8s_namespace,
-                                                 "application_name": get_application_name()},
-                                                yaml.load)
-        k8s_service = render_file_with_jinja(self.config["service_config_path"],
-                                             {"service_ip": service_ip,
-                                              "namespace": self.k8s_namespace,
-                                              "application_name": get_application_name()},
-                                             yaml.load)
+        k8s_deployment = render_file_with_jinja(
+            self.config["deployment_config_path"],
+            {
+                "docker_tag": self.env.artifact_tag,
+                "namespace": self.k8s_namespace,
+                "application_name": get_application_name(),
+            },
+            yaml.load,
+        )
+        k8s_service = render_file_with_jinja(
+            self.config["service_config_path"],
+            {
+                "service_ip": service_ip,
+                "namespace": self.k8s_namespace,
+                "application_name": get_application_name(),
+            },
+            yaml.load,
+        )
         logging.info("Deploying ----------------------------------------")
         pprint(k8s_deployment)
         pprint(k8s_service)
@@ -55,17 +63,16 @@ class BaseDeployToK8s(DeploymentStep):
 
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
-        self.deploy_to_k8s(deployment_config=k8s_deployment,
-                           service_config=k8s_service)
+        self.deploy_to_k8s(deployment_config=k8s_deployment, service_config=k8s_service)
 
     @staticmethod
     def _write_kube_config(credential_results: CredentialResults):
-        kubeconfig = credential_results.kubeconfigs[0].value.decode(encoding='UTF-8')
+        kubeconfig = credential_results.kubeconfigs[0].value.decode(encoding="UTF-8")
 
         kubeconfig_dir = os.path.expanduser("~/.kube")
 
-        # assumption here that there is no existing kubeconfig (which makes sense, given this script should be run in
-        # a docker container ;-) )
+        # assumption here that there is no existing kubeconfig (which makes sense, given this script should
+        # be run in a docker container ;-) )
         os.mkdir(kubeconfig_dir)
         with open(kubeconfig_dir + "/config", "w") as f:
             f.write(kubeconfig)
@@ -73,27 +80,32 @@ class BaseDeployToK8s(DeploymentStep):
         logger.info("Kubeconfig successfully written")
 
     def _authenticate_with_k8s(self):
-        resource_group = f'sdh{self.fixed_env}'
+        resource_group = f"sdh{self.fixed_env}"
 
         # get azure container service client
-        credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
+        credentials = AzureUserCredentials(
+            vault_name=self.vault_name, vault_client=self.vault_client
+        ).credentials(self.config)
 
         client = ContainerServiceClient(
             credentials=credentials,
-            subscription_id=AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
+            subscription_id=AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(
+                self.config
+            ),
         )
 
         # authenticate with k8s
-        credential_results = client.managed_clusters.list_cluster_user_credentials(resource_group_name=resource_group,
-                                                                                   resource_name=self.cluster_name)
+        credential_results = client.managed_clusters.list_cluster_user_credentials(
+            resource_group_name=resource_group, resource_name=self.cluster_name
+        )
 
         self._write_kube_config(credential_results)
 
     def _find_needle(self, needle, haystack):
         # Helper method to abstract away checking for existence of a k8s entity
         # this assumes the k8s structure of entities (i.e. items->metadata->name
-        for dep in haystack['items']:
-            if dep['metadata']['name'] == needle:
+        for dep in haystack["items"]:
+            if dep["metadata"]["name"] == needle:
                 return True
         return False
 
@@ -112,35 +124,29 @@ class BaseDeployToK8s(DeploymentStep):
             namespace_to_create = client.V1Namespace(metadata={"name": k8s_namespace})
             api_client.create_namespace(body=namespace_to_create)
 
-    def _create_or_patch_resource(self,
-                                  client,
-                                  resource_type: str,
-                                  name: str,
-                                  namespace: str,
-                                  resource_config: dict):
-        list_function = getattr(client, f'list_namespaced_{resource_type}')
-        patch_function = getattr(client, f'patch_namespaced_{resource_type}')
-        create_function = getattr(client, f'create_namespaced_{resource_type}')
+    def _create_or_patch_resource(
+        self, client, resource_type: str, name: str, namespace: str, resource_config: dict
+    ):
+        list_function = getattr(client, f"list_namespaced_{resource_type}")
+        patch_function = getattr(client, f"patch_namespaced_{resource_type}")
+        create_function = getattr(client, f"create_namespaced_{resource_type}")
         if self._k8s_resource_exists(name, namespace, list_function):
             # we need to patch the existing resource
             logger.info(f"Found existing k8s resource, patching resource {name} in namespace {namespace}")
-            patch_function(name=name,
-                           namespace=namespace,
-                           body=resource_config)
+            patch_function(name=name, namespace=namespace, body=resource_config)
         else:
             # the resource doesn't exist, we need to create it
             logger.info(f"No existing k8s resource found, creating resource: {name} in namespace {namespace}")
-            create_function(namespace=namespace,
-                            body=resource_config)
+            create_function(namespace=namespace, body=resource_config)
 
     def _create_or_patch_service(self, api_client: CoreV1Api, service_config: dict, k8s_namespace: str):
-        service_name = service_config['metadata']['name']
+        service_name = service_config["metadata"]["name"]
         self._create_or_patch_resource(
             client=CoreV1Api(),
             resource_type="service",
             name=service_name,
             namespace=k8s_namespace,
-            resource_config=service_config
+            resource_config=service_config,
         )
 
     def _create_or_patch_deployment(self, deployment: dict, k8s_namespace: str):
@@ -150,7 +156,7 @@ class BaseDeployToK8s(DeploymentStep):
             resource_type="deployment",
             name=get_application_name(),
             namespace=k8s_namespace,
-            resource_config=deployment
+            resource_config=deployment,
         )
 
     def _create_or_patch_secrets(self, secrets, k8s_namespace, name: str = None, secret_type: str = "Opaque"):
@@ -158,16 +164,18 @@ class BaseDeployToK8s(DeploymentStep):
         application_name = get_application_name()
         secret_name = f"{application_name}-secret" if not name else name
 
-        secret = client.V1Secret(metadata=client.V1ObjectMeta(name=secret_name),
-                                 type=secret_type,
-                                 data={_.key: b64_encode(_.val) for _ in secrets})
+        secret = client.V1Secret(
+            metadata=client.V1ObjectMeta(name=secret_name),
+            type=secret_type,
+            data={_.key: b64_encode(_.val) for _ in secrets},
+        )
 
         self._create_or_patch_resource(
             client=api_instance,
             resource_type="secret",
             name=secret_name,
             namespace=k8s_namespace,
-            resource_config=secret.to_dict()
+            resource_config=secret.to_dict(),
         )
 
     def deploy_to_k8s(self, deployment_config: dict, service_config: dict):
@@ -185,25 +193,38 @@ class BaseDeployToK8s(DeploymentStep):
         self._create_namespace_if_not_exists(core_api_client, self.k8s_namespace)
 
         # 3: create kubernetes secrets from azure keyvault
-        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(get_application_name())
+        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
+            get_application_name()
+        )
         if self.add_application_insights:
-            application_insights = CreateApplicationInsights(self.env, {}).create_application_insights("web", "web")
-            secrets.append(Secret('instrumentation-key', application_insights.instrumentation_key))
-        secrets.append(Secret('build-version', self.env.artifact_tag))
+            application_insights = CreateApplicationInsights(self.env, {}).create_application_insights(
+                "web", "web"
+            )
+            secrets.append(Secret("instrumentation-key", application_insights.instrumentation_key))
+        secrets.append(Secret("build-version", self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.k8s_namespace)
 
         # 3.1: create kubernetes secrets for docker registry
 
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
-        secrets = [Secret(
-            key=".dockerconfigjson",
-            val=json.dumps({"auths": {docker_credentials.registry: {"username": docker_credentials.username,
-                                                                    "password": docker_credentials.password,
-                                                                    "auth": b64_encode(
-                                                                        f"{docker_credentials.username}:{docker_credentials.password}")
-                                                                    }}
-                            })
-        )]
+        secrets = [
+            Secret(
+                key=".dockerconfigjson",
+                val=json.dumps(
+                    {
+                        "auths": {
+                            docker_credentials.registry: {
+                                "username": docker_credentials.username,
+                                "password": docker_credentials.password,
+                                "auth": b64_encode(
+                                    f"{docker_credentials.username}:{docker_credentials.password}"
+                                ),
+                            }
+                        }
+                    }
+                ),
+            )
+        ]
         secret_type = "kubernetes.io/dockerconfigjson"
         self._create_or_patch_secrets(secrets, self.k8s_namespace, name="acr-auth", secret_type=secret_type)
 
@@ -232,7 +253,7 @@ class DeployToVnetK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return self.config['runway_common']['k8s_vnet_name']
+        return self.config["runway_common"]["k8s_vnet_name"]
 
 
 class DeployToK8s(BaseDeployToK8s):
@@ -245,4 +266,4 @@ class DeployToK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return self.config['runway_common']['k8s_name'].format(dtap=self.fixed_env)
+        return self.config["runway_common"]["k8s_name"].format(dtap=self.fixed_env)

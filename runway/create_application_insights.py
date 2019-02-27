@@ -26,11 +26,7 @@ class CreateApplicationInsights(DeploymentStep):
             raise ValueError("Unknown application insights kind: {}".format(kind))
 
         if application_type not in {"web", "other"}:
-            raise ValueError(
-                "Unknown application insights application_type: {}".format(
-                    application_type
-                )
-            )
+            raise ValueError("Unknown application insights application_type: {}".format(application_type))
 
         application_name = get_application_name()
         client = self.__create_client()
@@ -40,7 +36,7 @@ class CreateApplicationInsights(DeploymentStep):
             logger.info("Creating new Application Insights...")
             # Create a new Application Insights
             comp = ApplicationInsightsComponent(
-                location=self.config['runway_azure']['location'], kind=kind, application_type=application_type
+                location=self.config["runway_azure"]["location"], kind=kind, application_type=application_type
             )
             insight = client.components.create_or_update(
                 f"sdh{self.env.environment.lower()}", application_name, comp
@@ -48,10 +44,13 @@ class CreateApplicationInsights(DeploymentStep):
         return insight
 
     def __create_client(self) -> ApplicationInsightsManagementClient:
-        azure_user_credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
+        azure_user_credentials = AzureUserCredentials(
+            vault_name=self.vault_name, vault_client=self.vault_client
+        ).credentials(self.config)
 
         return ApplicationInsightsManagementClient(
-            azure_user_credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
+            azure_user_credentials,
+            AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
         )
 
     def __find(self, client: ApplicationInsightsManagementClient, name: str):
@@ -69,13 +68,9 @@ class CreateDatabricksApplicationInsights(CreateApplicationInsights):
         application_name = get_application_name()
         insight = self.create_application_insights("other", "other")
 
-        instrumentation_secret = Secret(
-            "instrumentation-key", insight.instrumentation_key
-        )
+        instrumentation_secret = Secret("instrumentation-key", insight.instrumentation_key)
 
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         CreateDatabricksSecrets._create_scope(databricks_client, application_name)
-        CreateDatabricksSecrets._add_secrets(
-            databricks_client, application_name, [instrumentation_secret]
-        )
+        CreateDatabricksSecrets._add_secrets(databricks_client, application_name, [instrumentation_secret])

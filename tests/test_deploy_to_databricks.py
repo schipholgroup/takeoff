@@ -59,22 +59,27 @@ class TestDeployToDatabricks(unittest.TestCase):
             config_file=streaming_job_config,
             application_name="app-42",
             log_destination="app",
-            egg_file="some.egg",
+            whl_file="some.whl",
             python_file="some.py",
             parameters=["--foo", "bar"],
         )
 
         assert {
-            "name": "app-42",
-            "libraries": [{"egg": "some.egg"}, {"jar": "some.jar"}],
-            "new_cluster": {
-                "spark_version": "4.1.x-scala2.11",
-                "spark_conf": {"spark.sql.warehouse.dir": "/some_", "some.setting": "true"},
-                "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/app"}},
-            },
-            "some_int": 5,
-            "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]},
-        } == job_config
+           "name": "app-42",
+           "libraries": [
+               {"whl": "some.whl"},
+               {"jar": "some.jar"}
+           ],
+           "new_cluster": {
+               "spark_version": "4.1.x-scala2.11",
+               "spark_conf": {
+                   "spark.sql.warehouse.dir": "/some_",
+                   "some.setting": "true",
+               },
+               "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/app"}},
+           },
+           "some_int": 5,
+           "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]}} == job_config
 
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     def test_invalid_config_empty_schema(self, _):

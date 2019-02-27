@@ -40,11 +40,7 @@ class Cosmos(object):
 
     @staticmethod
     def _get_cosmos_endpoint(cosmos: CosmosDB, cosmos_instance: dict):
-        return (cosmos
-                .database_accounts
-                .get(**cosmos_instance)
-                .document_endpoint
-                )
+        return cosmos.database_accounts.get(**cosmos_instance).document_endpoint
 
     def _get_instance(self) -> CosmosInfo:
         cosmos = self._get_cosmos_management_client()
@@ -54,21 +50,15 @@ class Cosmos(object):
 
     def get_cosmos_write_credentials(self) -> CosmosCredentials:
         cosmos = self._get_instance()
-        key = (cosmos.client
-               .database_accounts
-               .list_keys(**cosmos.instance)
-               .primary_master_key
-               )
+        key = cosmos.client.database_accounts.list_keys(**cosmos.instance).primary_master_key
 
         return CosmosCredentials(cosmos.endpoint, key)
 
     def get_cosmos_read_only_credentials(self) -> CosmosCredentials:
         cosmos = self._get_instance()
 
-        key = (cosmos.client
-               .database_accounts
-               .list_read_only_keys(**cosmos.instance)
-               .primary_readonly_master_key
-               )
+        key = cosmos.client.database_accounts.list_read_only_keys(
+            **cosmos.instance
+        ).primary_readonly_master_key
 
         return CosmosCredentials(cosmos.endpoint, key)
