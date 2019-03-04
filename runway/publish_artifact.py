@@ -22,7 +22,7 @@ class PublishArtifact(DeploymentStep):
         if self.config["lang"] == "python":
             self.publish_python_package()
         elif self.config["lang"] in {"sbt", "maven"}:
-            self.publish_jvm_package()
+            self.publish_jvm_package(self.config["lang"])
 
     @staticmethod
     def _get_jar(lang: str) -> str:
@@ -57,10 +57,10 @@ class PublishArtifact(DeploymentStep):
             else:
                 logging.info("Invalid target for artifact")
 
-    def publish_jvm_package(self):
+    def publish_jvm_package(self, lang):
         for target in self.config["target"]:
             if target == "blob":
-                self.publish_to_blob(file=self._get_jar(), file_ext=".jar")
+                self.publish_to_blob(file=self._get_jar(lang), file_ext=".jar")
             else:
                 logging.info("Invalid target for artifact")
 
