@@ -1,0 +1,41 @@
+addons:
+  apt:
+    packages:
+      - yamllint
+      - jsonlint
+
+stages:
+  - test
+  - deploy
+
+services:
+  - docker
+
+dist: xenial
+language: python
+python: 3.7
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+jobs:
+  include:
+    - stage: test
+      name: "Lint python"
+      script:
+        - python setup.py flake8
+    - name: "Lint runway"
+      script:
+        - yamllint -d relaxed .
+    - name: "Unit tests"
+      script:
+        - python setup.py test
+    - stage: deploy
+      name: "Deploy Docker image"
+      script:
+        - export TRAVIS_REPO_NAME=${TRAVIS_REPO_SLUG#*/}
+        - env > .env
+        - docker build -t runway:latest -f Dockerfile .
+        - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
+
+        - docker tag runway:latest sdhcontainerregistryshared.azurecr.io/runway:${version}
