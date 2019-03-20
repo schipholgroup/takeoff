@@ -29,7 +29,7 @@ class BuildArtifact(DeploymentStep):
 
         cmd = ["python", "setup.py", "bdist_wheel"]
         p = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="/root/", universal_newlines=True
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="./", universal_newlines=True
         )
         log_docker(iter(p.stdout.readline, ""))
         return_code = p.wait()
