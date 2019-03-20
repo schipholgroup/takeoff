@@ -4,8 +4,8 @@ runway_azure:
   vault_name: "https://sdhkeyvault{dtap}.vault.azure.net/"
 
 common_environment_keys:
-  application_name: BUILD_SOURCEBRANCHNAME
-  branch_name: BUILD_DEFINITIONNAME
+  application_name: TRAVIS_REPO_NAME
+  branch_name: TRAVIS_BRANCH
 
 azure_keyvault_keys:
   azure_container_registry:

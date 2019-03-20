@@ -26,9 +26,11 @@ jobs:
     script:
     - export TRAVIS_REPO_NAME=${TRAVIS_REPO_SLUG#*/}
     - env > .env
-    - docker login --username $JFROG_USERNAME --password $JFROG_PASSWORD schipholsdh-docker.jfrog.io
+    - env
+    - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
     - docker build -t runway:latest -f Dockerfile .
     - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
 
-    - docker tag runway:latest schipholsdh-docker.jfrog.io/runway:${version}
-    - docker push schipholsdh-docker.jfrog.io/runway:${version}
+    - echo ${version}
+    - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}
+    - docker push ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}
