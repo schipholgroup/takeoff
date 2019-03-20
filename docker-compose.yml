@@ -1,16 +1,7 @@
 version: "3.3"
 services:
   python:
-    image: python:3.7.0
-    working_dir: /root/
-    volumes:
-    - type: bind
-      source: ./
-      target: /root
-    tty: true
-
-  hadolint:
-    image: hadolint/hadolint:latest-debian
+    image: python:3.7
     working_dir: /root/
     volumes:
     - type: bind
@@ -42,5 +33,3 @@ services:
     - AZURE_KEYVAULT_SP_PASSWORD_ACP
     - AZURE_KEYVAULT_SP_USERNAME_PRD
     - AZURE_KEYVAULT_SP_PASSWORD_PRD
-    - JFROG_USERNAME
-    - JFROG_PASSWORD
