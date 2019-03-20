@@ -21,18 +21,20 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         super().__init__(env, config)
 
     def run(self):
-        policies = [
-            policy["eventhubEntity"] for policy in self.config["policies"]
-        ]
+        policies = [policy["eventhubEntity"] for policy in self.config["policies"]]
         self.create_eventhub_producer_policies(policies)
 
     def create_eventhub_producer_policies(self, producer_policies: List[str]):
         formatted_dtap = self.env.environment.lower()
-        eventhub_namespace = self.config['runway_common']['eventhub_namespace'].format(dtap=formatted_dtap)
-        resource_group = self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)
+        eventhub_namespace = self.config["runway_common"]["eventhub_namespace"].format(dtap=formatted_dtap)
+        resource_group = self.config["runway_azure"]["resource_group"].format(dtap=formatted_dtap)
 
-        credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
-        eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config))
+        credentials = AzureUserCredentials(
+            vault_name=self.vault_name, vault_client=self.vault_client
+        ).credentials(self.config)
+        eventhub_client = EventHubManagementClient(
+            credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
+        )
 
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
         application_name = ApplicationName().get(self.config)
@@ -50,8 +52,7 @@ class CreateEventhubProducerPolicies(DeploymentStep):
 
             try:
                 eventhub_client.event_hubs.create_or_update_authorization_rule(
-                    **common_azure_parameters,
-                    rights=[AccessRights.send],
+                    **common_azure_parameters, rights=[AccessRights.send]
                 )
 
                 connection_string = eventhub_client.event_hubs.list_keys(
@@ -61,8 +62,6 @@ class CreateEventhubProducerPolicies(DeploymentStep):
                 logger.info("Could not create connection String. Make sure the Eventhub exists.")
                 raise
 
-            secret = Secret(
-                f"{policy}-connection-string",
-                connection_string)
+            secret = Secret(f"{policy}-connection-string", connection_string)
 
             CreateDatabricksSecrets._add_secrets(databricks_client, application_name, [secret])

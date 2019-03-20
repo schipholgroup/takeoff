@@ -14,6 +14,6 @@ class DockerCredentials(object):
 class DockerRegistry(KeyVaultCredentialsMixin):
     def credentials(self, config) -> DockerCredentials:
         credential_kwargs = super()._transform_key_to_credential_kwargs(
-            config['azure_keyvault_keys'][current_filename(__file__)]
+            config["azure_keyvault_keys"][current_filename(__file__)]
         )
         return DockerCredentials(**credential_kwargs)

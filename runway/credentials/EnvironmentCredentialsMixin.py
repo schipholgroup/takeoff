@@ -7,8 +7,10 @@ from runway.util import inverse_dictionary
 class EnvironmentCredentialsMixin(object):
     def _transform_environment_key_to_credential_kwargs(self, keys: Dict[str, str]):
         credentials: Dict[str, str] = self._read_os_variables(list(keys.values()))
-        credential_kwargs = {function_arg: credentials[os_variable]
-                             for os_variable, function_arg in inverse_dictionary(keys).items()}
+        credential_kwargs = {
+            function_arg: credentials[os_variable]
+            for os_variable, function_arg in inverse_dictionary(keys).items()
+        }
         return credential_kwargs
 
     def _read_os_variables(self, environment_keys: List[str]):

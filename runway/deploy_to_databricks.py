@@ -15,7 +15,7 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_databricks import Databricks
-from runway.util import has_prefix_match
+from runway.util import has_prefix_match, get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)
 
@@ -108,8 +108,8 @@ class DeployToDatabricks(DeploymentStep):
         if job_config["lang"] == "python":
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
-                egg_file=f"{artifact_path}.egg",
-                python_file=f"{job_config['main_name']}-main-{self.env.artifact_tag}.py",
+                whl_file=f"{root_library_folder}/{get_whl_name(self.env.artifact_tag, '.whl')}",
+                python_file=f"{root_library_folder}/{get_main_py_name(self.env.artifact_tag, '.py')}",
             )
         else:  # java/scala jobs
             run_config = DeployToDatabricks._construct_job_config(

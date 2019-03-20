@@ -65,20 +65,12 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         self.create_eventhub_consumer_groups(groups)
 
     @staticmethod
-    def _eventhub_exists(
-            client: EventHubManagementClient, group: ConsumerGroup
-    ) -> bool:
-        hubs = list(
-            client.event_hubs.list_by_namespace(
-                group.resource_group, group.eventhub_namespace
-            )
-        )
+    def _eventhub_exists(client: EventHubManagementClient, group: ConsumerGroup) -> bool:
+        hubs = list(client.event_hubs.list_by_namespace(group.resource_group, group.eventhub_namespace))
 
         if group.eventhub_entity in set(_.name for _ in hubs):
             return True
-        raise ValueError(
-            f"Eventhub with name {group.eventhub_entity} does not exist. Please create it first"
-        )
+        raise ValueError(f"Eventhub with name {group.eventhub_entity} does not exist. Please create it first")
 
     @staticmethod
     def _group_exists(client: EventHubManagementClient, group: ConsumerGroup) -> bool:
@@ -106,10 +98,12 @@ class CreateEventhubConsumerGroups(DeploymentStep):
             for hub_group_pair in consumer_group_input.split(",")
         ]
 
-    def _get_requested_consumer_groups(self, parsed_groups: List[EventHubConsumerGroup]) -> List[ConsumerGroup]:
+    def _get_requested_consumer_groups(
+        self, parsed_groups: List[EventHubConsumerGroup]
+    ) -> List[ConsumerGroup]:
         formatted_dtap = self.env.environment.lower()
-        eventhub_namespace = self.config['runway_common']['eventhub_namespace'].format(dtap=formatted_dtap)
-        resource_group = self.config['runway_azure']['resource_group'].format(dtap=formatted_dtap)
+        eventhub_namespace = self.config["runway_common"]["eventhub_namespace"].format(dtap=formatted_dtap)
+        resource_group = self.config["runway_azure"]["resource_group"].format(dtap=formatted_dtap)
 
         return [
             ConsumerGroup(
@@ -122,9 +116,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         ]
 
     @staticmethod
-    def _authorization_rules_exists(
-            client: EventHubManagementClient, group: EventHub, name: str
-    ) -> bool:
+    def _authorization_rules_exists(client: EventHubManagementClient, group: EventHub, name: str) -> bool:
         logging.info(
             f"Retrieving rules, Resource Group {group.resource_group}, "
             f"Eventhub Namespace {group.eventhub_namespace}, "
@@ -146,10 +138,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
     @staticmethod
     def _create_consumer_group(client: EventHubManagementClient, group: ConsumerGroup):
         client.consumer_groups.create_or_update(
-            group.resource_group,
-            group.eventhub_namespace,
-            group.eventhub_entity,
-            group.consumer_group,
+            group.resource_group, group.eventhub_namespace, group.eventhub_entity, group.consumer_group
         )
 
     def _create_connection_strings(self,
@@ -158,9 +147,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
         for group in eventhub_entities:
-            if not CreateEventhubConsumerGroups._authorization_rules_exists(
-                    client, group, policy_name
-            ):
+            if not CreateEventhubConsumerGroups._authorization_rules_exists(client, group, policy_name):
                 client.event_hubs.create_or_update_authorization_rule(
                     group.resource_group,
                     group.eventhub_namespace,
@@ -171,10 +158,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
 
         connection_strings = [
             client.event_hubs.list_keys(
-                group.resource_group,
-                group.eventhub_namespace,
-                group.eventhub_entity,
-                policy_name,
+                group.resource_group, group.eventhub_namespace, group.eventhub_entity, policy_name
             ).primary_connection_string
             for group in eventhub_entities
         ]
@@ -192,26 +176,25 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     def create_eventhub_consumer_groups(self, consumer_groups: List[EventHubConsumerGroup]):
-        credentials = AzureUserCredentials(vault_name=self.vault_name, vault_client=self.vault_client).credentials(self.config)
+        credentials = AzureUserCredentials(
+            vault_name=self.vault_name, vault_client=self.vault_client
+        ).credentials(self.config)
 
-        eventhub_client = EventHubManagementClient(credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config))
+        eventhub_client = EventHubManagementClient(
+            credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
+        )
 
         consumer_groups_to_create = self._get_requested_consumer_groups(consumer_groups)
 
         connection_strings = self._create_connection_strings(
-            client=eventhub_client,
-            eventhub_entities=self._get_unique_eventhubs(consumer_groups_to_create),
+            client=eventhub_client, eventhub_entities=self._get_unique_eventhubs(consumer_groups_to_create)
         )
 
         for group in consumer_groups_to_create:
             if CreateEventhubConsumerGroups._eventhub_exists(
-                    eventhub_client, group
-            ) and not CreateEventhubConsumerGroups._group_exists(
                 eventhub_client, group
-            ):
-                self._create_consumer_group(
-                    client=eventhub_client,
-                    group=group)
+            ) and not CreateEventhubConsumerGroups._group_exists(eventhub_client, group):
+                self._create_consumer_group(client=eventhub_client, group=group)
 
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
         application_name = ApplicationName().get(self.config)
@@ -219,10 +202,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         # For each Eventhub we have a separate connection string which is set by a shared access policy
         # The different consumer groups can use this same shared access policy
         secrets = [
-            Secret(
-                f"{_.eventhub_entity_without_environment}-connection-string",
-                _.connection_string,
-            )
+            Secret(f"{_.eventhub_entity_without_environment}-connection-string", _.connection_string)
             for _ in connection_strings
         ]
 
