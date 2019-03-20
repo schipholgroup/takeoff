@@ -1,4 +1,12 @@
-# ![runway](img/runway.png) Runway
+<p align="center">
+  <img width=250" height="250" src="https://raw.githubusercontent.com/Schiphol-Hub/runway/tvc-travis/img/runway.png?token=AJS0v09SYXZhOPcfGLObz2-le35CYdjZks5ckngxwA%3D%3D">
+</p>
+<h2 align="center">Schiphol Runway</h2>
+
+<p align="center">
+<a href="https://travis-ci.com/Schiphol-Hub/runway"><img alt="Build Status" src="https://travis-ci.com/Schiphol-Hub/runway.svg?token=Y1xSdb7sYXYbyQLwtbLj&branch=master"></a>
+<a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+</p>
 
 This package is used as dependency in other project to consolidate deployment of any application in the Azure Cloud.
 

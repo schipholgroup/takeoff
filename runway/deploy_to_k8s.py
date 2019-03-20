@@ -40,16 +40,20 @@ class BaseDeployToK8s(DeploymentStep):
 
         # load some k8s config
         application_name = ApplicationName().get(self.config)
-        k8s_deployment = render_file_with_jinja(self.config["deployment_config_path"],
-                                                {"docker_tag": self.env.artifact_tag,
-                                                 "namespace": self.k8s_namespace,
-                                                 "application_name": application_name},
-                                                yaml.load)
-        k8s_service = render_file_with_jinja(self.config["service_config_path"],
-                                             {"service_ip": service_ip,
-                                              "namespace": self.k8s_namespace,
-                                              "application_name": application_name},
-                                             yaml.load)
+        k8s_deployment = render_file_with_jinja(
+            self.config["deployment_config_path"],
+            {
+                "docker_tag": self.env.artifact_tag,
+                "namespace": self.k8s_namespace,
+                "application_name": application_name,
+            },
+            yaml.load,
+        )
+        k8s_service = render_file_with_jinja(
+            self.config["service_config_path"],
+            {"service_ip": service_ip, "namespace": self.k8s_namespace, "application_name": application_name},
+            yaml.load,
+        )
         logging.info("Deploying ----------------------------------------")
         pprint(k8s_deployment)
         pprint(k8s_service)
@@ -187,7 +191,9 @@ class BaseDeployToK8s(DeploymentStep):
         self._create_namespace_if_not_exists(core_api_client, self.k8s_namespace)
 
         # 3: create kubernetes secrets from azure keyvault
-        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(ApplicationName().get(self.config))
+        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
+            ApplicationName().get(self.config)
+        )
         if self.add_application_insights:
             application_insights = CreateApplicationInsights(self.env, {}).create_application_insights(
                 "web", "web"

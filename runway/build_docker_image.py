@@ -59,10 +59,7 @@ class DockerImageBuilder(DeploymentStep):
             log_docker(e.build_log)
             raise e
 
-    def deploy(self,
-               dockerfiles: List[DockerFile],
-               docker_credentials,
-               docker_client):
+    def deploy(self, dockerfiles: List[DockerFile], docker_credentials, docker_client):
         application_name = ApplicationName().get(self.config)
         for df in dockerfiles:
             tag = self.env.artifact_tag

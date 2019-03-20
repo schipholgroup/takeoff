@@ -141,9 +141,9 @@ class CreateEventhubConsumerGroups(DeploymentStep):
             group.resource_group, group.eventhub_namespace, group.eventhub_entity, group.consumer_group
         )
 
-    def _create_connection_strings(self,
-                                   client: EventHubManagementClient,
-                                   eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
+    def _create_connection_strings(
+        self, client: EventHubManagementClient, eventhub_entities: Set[EventHub]
+    ) -> List[ConnectingString]:
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
         for group in eventhub_entities:

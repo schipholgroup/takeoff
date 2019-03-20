@@ -46,7 +46,8 @@ class TestDeployToDatabricks(unittest.TestCase):
     def test_construct_name(self, _):
         config = {'common_environment_keys': {'application_name': 'CI_PROJECT_NAME'}}
         assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), config)._construct_name("") == "app-name"
-        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), config)._construct_name("foo") == "app-name-foo"
+        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), config)._construct_name(
+            "foo") == "app-name-foo"
 
     def test_is_streaming_job(self):
         job_config = victim._construct_job_config(config_file=streaming_job_config)
@@ -66,21 +67,21 @@ class TestDeployToDatabricks(unittest.TestCase):
         )
 
         assert {
-           "name": "app-42",
-           "libraries": [
-               {"whl": "some.whl"},
-               {"jar": "some.jar"}
-           ],
-           "new_cluster": {
-               "spark_version": "4.1.x-scala2.11",
-               "spark_conf": {
-                   "spark.sql.warehouse.dir": "/some_",
-                   "some.setting": "true",
-               },
-               "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/app"}},
-           },
-           "some_int": 5,
-           "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]}} == job_config
+                   "name": "app-42",
+                   "libraries": [
+                       {"whl": "some.whl"},
+                       {"jar": "some.jar"}
+                   ],
+                   "new_cluster": {
+                       "spark_version": "4.1.x-scala2.11",
+                       "spark_conf": {
+                           "spark.sql.warehouse.dir": "/some_",
+                           "some.setting": "true",
+                       },
+                       "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/app"}},
+                   },
+                   "some_int": 5,
+                   "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]}} == job_config
 
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     def test_invalid_config_empty_schema(self, _):
@@ -121,8 +122,9 @@ class TestDeployToDatabricks(unittest.TestCase):
         )["jobs"][0]
         assert res["arguments"] == [{"key": "val"}, {"key2": "val2"}]
 
+    @mock.patch("runway.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_yaml_to_databricks_json(self, _):
+    def test_yaml_to_databricks_json(self, _, __):
         config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
             "main_name": "foo.class",

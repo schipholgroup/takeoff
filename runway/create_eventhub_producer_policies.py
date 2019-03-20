@@ -44,10 +44,10 @@ class CreateEventhubProducerPolicies(DeploymentStep):
 
         for policy in producer_policies:
             common_azure_parameters = {
-                'resource_group_name': resource_group,
-                'namespace_name': eventhub_namespace,
-                'event_hub_name': policy + formatted_dtap,
-                'authorization_rule_name': f"{ApplicationName().get(self.config)}-send-policy",
+                "resource_group_name": resource_group,
+                "namespace_name": eventhub_namespace,
+                "event_hub_name": policy + formatted_dtap,
+                "authorization_rule_name": f"{ApplicationName().get(self.config)}-send-policy",
             }
 
             try:

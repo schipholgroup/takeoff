@@ -1,6 +1,7 @@
 import logging
 import shutil
 import subprocess
+from typing import List
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
@@ -16,9 +17,19 @@ class BuildArtifact(DeploymentStep):
     def run(self):
         if self.config["lang"] == "python":
             self.build_python_wheel()
+        elif self.config["lang"] == "sbt":
+            self.build_sbt_assembly_jar()
         else:
             logging.info("Currently only python artifact building is supported")
         # TODO: add support for building jars
+
+    @staticmethod
+    def call_subprocess(cmd: List[str]) -> int:
+        p = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="./", universal_newlines=True
+        )
+        log_docker(iter(p.stdout.readline, ""))
+        return p.wait()
 
     def build_python_wheel(self):
         # First make sure the correct version number is used.
@@ -28,10 +39,15 @@ class BuildArtifact(DeploymentStep):
         shutil.rmtree("dist/", ignore_errors=True)
 
         cmd = ["python", "setup.py", "bdist_wheel"]
-        p = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="./", universal_newlines=True
-        )
-        log_docker(iter(p.stdout.readline, ""))
-        return_code = p.wait()
+        return_code = self.call_subprocess(cmd)
+
+        assert return_code == 0, "Could not build the package for some reason!"
+
+    def build_sbt_assembly_jar(self):
+        # ensure any old artifacts are gone
+        shutil.rmtree("target/", ignore_errors=True)
+
+        cmd = ["sbt", "clean", "assembly"]
+        return_code = self.call_subprocess(cmd)
 
         assert return_code == 0, "Could not build the package for some reason!"

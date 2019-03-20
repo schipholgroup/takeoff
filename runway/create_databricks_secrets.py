@@ -48,7 +48,9 @@ class CreateDatabricksSecrets(DeploymentStep):
     def create_databricks_secrets(self):
         application_name = ApplicationName().get(self.config)
 
-        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(application_name)
+        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
+            application_name
+        )
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         self._create_scope(databricks_client, application_name)
