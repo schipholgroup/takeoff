@@ -1,6 +1,7 @@
 import logging
 import shutil
 import subprocess
+import sys
 from typing import List
 
 from runway.ApplicationVersion import ApplicationVersion
@@ -28,7 +29,18 @@ class BuildArtifact(DeploymentStep):
         p = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd="./", universal_newlines=True
         )
-        log_docker(iter(p.stdout.readline, ""))
+
+        def is_end(p, type):
+            msg = type.readline()
+            if msg == '' and p.poll() != None:
+                return True
+            if msg != '':
+                sys.stdout.write(msg)
+            return False
+
+        while True:
+            if is_end(p, p.stdout):
+                break
         return p.wait()
 
     def build_python_wheel(self):
