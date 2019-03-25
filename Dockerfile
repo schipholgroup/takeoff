@@ -1,7 +1,5 @@
 FROM sdhcontainerregistryshared.azurecr.io/runway-base-azure:4.0.0
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 COPY setup.py /
 COPY README.md /
 COPY scripts /scripts

@@ -5,7 +5,7 @@ runway_azure:
 
 common_environment_keys:
   application_name: CI_PROJECT_NAME
-  branch_name: CI_COMMIT_REF_NAME
+  branch_name: CI_COMMIT_REF_SLUG
 
 azure_keyvault_keys:
   azure_container_registry:
