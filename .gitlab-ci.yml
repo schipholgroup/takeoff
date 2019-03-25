@@ -30,10 +30,11 @@ runway:
     DOCKER_HOST: tcp://localhost:2375
   script:
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
-
-    - env > .env
     - docker build -t runway:latest -f Dockerfile .
+
+    - env
+    - env > .env
     - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
 
-    - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}
-    - docker push ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}
+    - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/runway:${version}
+    - docker push ${REGISTRY_LOGIN_SERVER}/runway:${version}
