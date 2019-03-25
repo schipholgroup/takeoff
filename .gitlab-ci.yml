@@ -5,23 +5,23 @@ stages:
 services:
   - docker:dind
 
-lint:
-  image: python:3.7
-  stage: test
-  script:
-    - python setup.py flake8
-
-test:
-  image: python:3.7
-  stage: test
-  script:
-    - python setup.py test
-
-lint_yaml:
-  image: giantswarm/yamllint:latest
-  stage: test
-  script:
-    - yamllint -d relaxed .
+#lint:
+#  image: python:3.7
+#  stage: test
+#  script:
+#    - python setup.py flake8
+#
+#test:
+#  image: python:3.7
+#  stage: test
+#  script:
+#    - python setup.py test
+#
+#lint_yaml:
+#  image: giantswarm/yamllint:latest
+#  stage: test
+#  script:
+#    - yamllint -d relaxed .
 
 runway:
   image: docker:latest
@@ -29,6 +29,7 @@ runway:
   variables:
     DOCKER_HOST: tcp://localhost:2375
   script:
+    - docker login sdhcontainerregistryshared.azurecr.io
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
     - docker build -t runway:latest -f Dockerfile .
 
