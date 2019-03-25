@@ -1,31 +1,39 @@
 stages:
-- test
-- deploy
+  - test
+  - deploy
 
 services:
-- docker:dind
+  - docker:dind
 
 lint:
   image: python:3.7
   stage: test
   script:
-  - python setup.py flake8
+    - python setup.py flake8
 
 test:
   image: python:3.7
   stage: test
   script:
-  - python setup.py test
+    - python setup.py test
+
+lint_yaml:
+  image: giantswarm/yamllint:latest
+  stage: test
+  script:
+    - yamllint -d relaxed .
 
 runway:
   image: docker:latest
   stage: deploy
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
   script:
-  - env > .env
-  - export DOCKER_HOST="tcp://localhost:2375"
-  - docker build -t runway:latest -f Dockerfile .
-  - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
+    - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
 
-  - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
-  - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}
-  - docker push ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}
+    - env > .env
+    - docker build -t runway:latest -f Dockerfile .
+    - version=$(docker run --env-file .env -v `echo $PWD`:/root runway:latest bash -c "cd /root && get_version")
+
+    - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}
+    - docker push ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}

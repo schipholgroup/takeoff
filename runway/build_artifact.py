@@ -6,7 +6,6 @@ from typing import List
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.util import log_docker
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ class BuildArtifact(DeploymentStep):
 
         def is_end(p, type):
             msg = type.readline()
-            if msg == '' and p.poll() != None:
+            if msg == '' and p.poll() is not None:
                 return True
             if msg != '':
                 sys.stdout.write(msg)
