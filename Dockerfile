@@ -22,3 +22,5 @@ RUN echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/ap
 RUN apt-get update && apt-get install -y --no-install-recommends kubectl=1.11.3-00 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src

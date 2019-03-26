@@ -27,15 +27,14 @@ runway:
   image: docker:latest
   stage: deploy
   variables:
-    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_HOST: tcp://docker:2375
   script:
-    - docker login sdhcontainerregistryshared.azurecr.io
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
     - docker build -t runway:latest -f Dockerfile .
 
-    - env
-    - env > .env
-    - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest bash -c "source ~/.bashrc && cd /src && get_version")
+    - env | grep -v ^PATH > .env
+    - cat .env
+    - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest get_version
 
     - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/runway:${version}
     - docker push ${REGISTRY_LOGIN_SERVER}/runway:${version}

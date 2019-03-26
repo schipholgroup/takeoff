@@ -4,7 +4,8 @@
 <h2 align="center">Schiphol Runway</h2>
 
 <p align="center">
-<a href="https://gitlab.com/Schiphol-Hub/runway/commits/master"><img alt="pipeline status" src="https://gitlab.com/Schiphol-Hub/runway/badges/master/pipeline.svg"/></a>
+<a href="https://travis-ci.com/Schiphol-Hub/runway"><img alt="Build Status" src="https://travis-ci.com/Schiphol-Hub/runway.svg?token=Y1xSdb7sYXYbyQLwtbLj&branch=master"></a>
+<img alt="" src="https://img.shields.io/badge/python-3.7-blue.svg">
 <a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 </p>
 

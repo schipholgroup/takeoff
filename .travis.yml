@@ -5,6 +5,9 @@ stages:
 services:
 - docker
 
+before_install:
+  - sudo apt-get install -y yamllint
+
 before_script:
   - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
   - export TRAVIS_REPO_NAME=${TRAVIS_REPO_SLUG#*/}
@@ -26,11 +29,14 @@ jobs:
   - name: "Unit tests"
     script:
     - python setup.py test
+  - name: "Yaml lint"
+    script:
+      - yamllint -d relaxed .
   - stage: deploy
     name: "Deploy Docker image"
     script:
     - docker build -t runway:latest -f Dockerfile .
-    - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest bash -c "source ~/.bashrc && cd /src && get_version")
+    - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest bash -c "source /root/.bashrc && cd /src && get_version")
 
     - echo ${version}
     - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/${TRAVIS_REPO_NAME}:${version}
