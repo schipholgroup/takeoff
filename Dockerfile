@@ -14,6 +14,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends lsb-release apt
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    ca-certificates \
+    gnupg2 \
+    software-properties-common \
+    build-essential \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
+    && apt-key fingerprint 0EBFCD88 \
+    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian  $(lsb_release -cs) stable" \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends docker-ce
+
+
+
 
 # Install kubectl
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
