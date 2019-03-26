@@ -30,7 +30,6 @@ runway:
     DOCKER_HOST: tcp://localhost:2375
   script:
     - env | grep -v ^PATH > .env
-    - cat .env
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
     - docker build -t runway:latest -f Dockerfile .
 
