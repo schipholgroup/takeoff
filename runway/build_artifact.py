@@ -31,9 +31,9 @@ class BuildArtifact(DeploymentStep):
 
         def is_end(p, type):
             msg = type.readline()
-            if msg == '' and p.poll() is not None:
+            if msg == "" and p.poll() is not None:
                 return True
-            if msg != '':
+            if msg != "":
                 sys.stdout.write(msg)
             return False
 

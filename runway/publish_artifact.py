@@ -102,8 +102,8 @@ class PublishArtifact(DeploymentStep):
     def publish_to_artifactory(self):
         version = self.env.artifact_tag
         if not get_tag():
-            postfix = '-SNAPSHOT'
+            postfix = "-SNAPSHOT"
         else:
-            postfix = ''
+            postfix = ""
         cmd = ["sbt", f'set version := "{version}{postfix}"', "publish"]
         BuildArtifact.call_subprocess(cmd)
