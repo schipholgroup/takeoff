@@ -27,14 +27,14 @@ runway:
   image: docker:latest
   stage: deploy
   variables:
-    DOCKER_HOST: tcp://docker:2375
+    DOCKER_HOST: tcp://localhost:2375
   script:
     - env | grep -v ^PATH > .env
     - cat .env
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
     - docker build -t runway:latest -f Dockerfile .
 
-    - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest get_version
+    - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest get_version)
 
     - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/runway:${version}
     - docker push ${REGISTRY_LOGIN_SERVER}/runway:${version}
