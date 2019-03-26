@@ -4,12 +4,8 @@ runway_azure:
   vault_name: "https://sdhkeyvault{dtap}.vault.azure.net/"
 
 common_environment_keys:
-  # gitlab
   application_name: CI_PROJECT_NAME
   branch_name: CI_COMMIT_REF_SLUG
-  # travis
-#  application_name: TRAVIS_REPO_NAME
-#  branch_name: TRAVIS_BRANCH
 
 azure_keyvault_keys:
   azure_container_registry:
