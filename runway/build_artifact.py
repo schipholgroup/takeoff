@@ -52,7 +52,8 @@ class BuildArtifact(DeploymentStep):
         cmd = ["python", "setup.py", "bdist_wheel"]
         return_code = self.call_subprocess(cmd)
 
-        assert return_code == 0, "Could not build the package for some reason!"
+        if return_code != 0:
+            raise ChildProcessError("Could not build the package for some reason!")
 
     def build_sbt_assembly_jar(self):
         # ensure any old artifacts are gone
@@ -61,4 +62,5 @@ class BuildArtifact(DeploymentStep):
         cmd = ["sbt", "clean", "assembly"]
         return_code = self.call_subprocess(cmd)
 
-        assert return_code == 0, "Could not build the package for some reason!"
+        if return_code != 0:
+            raise ChildProcessError("Could not build the package for some reason!")
