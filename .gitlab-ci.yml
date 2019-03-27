@@ -29,7 +29,8 @@ runway:
   variables:
     DOCKER_HOST: tcp://localhost:2375
   before_script:
-    - env | grep -v -e ^PATH -e ^CI_COMMIT_MESSAGE> .env
+    - unset CI_COMMIT_DESCRIPTION CI_COMMIT_MESSAGE # hack to avoid multiline env variables that docker does not like
+    - env | grep -v ^PATH > .env
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
   script:
     - cat .env
