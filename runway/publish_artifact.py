@@ -6,11 +6,10 @@ from twine.commands.upload import upload
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.build_artifact import BuildArtifact
 from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_devops_artifact_store import DevopsArtifactStore
 from runway.credentials.azure_storage_account import BlobStore
-from runway.util import get_tag, get_whl_name, get_main_py_name, get_jar_name
+from runway.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_bash_command
 
 logger = logging.getLogger(__name__)
 
@@ -103,4 +102,4 @@ class PublishArtifact(DeploymentStep):
         version = self.env.artifact_tag
         postfix = "-SNAPSHOT" if not get_tag() else ""
         cmd = ["sbt", f'set version := "{version}{postfix}"', "publish"]
-        BuildArtifact.call_subprocess(cmd)
+        run_bash_command(cmd)
