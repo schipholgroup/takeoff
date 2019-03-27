@@ -1,5 +1,6 @@
 import base64
 import os
+import subprocess
 from dataclasses import dataclass
 from typing import Pattern, Callable
 
@@ -112,3 +113,14 @@ def get_main_py_name(build_definition_name: str, artifact_tag: str, file_ext: st
 
 def get_jar_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
     return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"
+
+
+def run_bash_command(command):
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
+    while True:
+        output = process.stdout.readline()
+        if output == "" and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+    return process.poll()
