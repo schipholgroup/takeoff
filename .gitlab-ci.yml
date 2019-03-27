@@ -33,7 +33,6 @@ runway:
     - env | grep -v ^PATH > .env
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
   script:
-    - cat .env
     - docker build -t runway:latest -f Dockerfile .
 
     - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest get_version)
