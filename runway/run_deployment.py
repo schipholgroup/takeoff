@@ -1,15 +1,16 @@
 import logging
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.util import get_tag, get_branch, get_short_hash, get_full_yaml_filename, load_yaml
+from runway.credentials.branch_name import BranchName
+from runway.util import get_tag, get_short_hash, get_full_yaml_filename, load_yaml
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def get_environment() -> ApplicationVersion:
+def get_environment(config) -> ApplicationVersion:
+    branch = BranchName().get(config)
     tag = get_tag()
-    branch = get_branch()
     git_hash = get_short_hash()
 
     if tag:
@@ -21,9 +22,9 @@ def get_environment() -> ApplicationVersion:
 
 
 def main():
-    env = get_environment()
     deployment_config = load_yaml(get_full_yaml_filename("deployment"))
     runway_config = load_yaml(get_full_yaml_filename("runway_config"))
+    env = get_environment(runway_config)
 
     for task_config in deployment_config["steps"]:
         task = task_config["task"]

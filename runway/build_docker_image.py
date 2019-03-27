@@ -8,8 +8,9 @@ from docker import DockerClient
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_container_registry import DockerRegistry
-from runway.util import get_application_name, log_docker
+from runway.util import log_docker
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +46,9 @@ class DockerImageBuilder(DeploymentStep):
         build_args = {"PIP_EXTRA_INDEX_URL": os.getenv("PIP_EXTRA_INDEX_URL")}
         try:
             image = docker_client.images.build(
-                path="/root",
+                path=".",
                 tag=tag,
-                dockerfile=f"/root/{docker_file}",
+                dockerfile=f"./{docker_file}",
                 buildargs=build_args,
                 quiet=False,
                 nocache=True,
@@ -59,7 +60,7 @@ class DockerImageBuilder(DeploymentStep):
             raise e
 
     def deploy(self, dockerfiles: List[DockerFile], docker_credentials, docker_client):
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
         for df in dockerfiles:
             tag = self.env.artifact_tag
 

@@ -27,10 +27,6 @@ def render_file_with_jinja(path: str, params: dict, parse_function: Callable) ->
     return parse_function(rendered)
 
 
-def get_branch() -> str:
-    return os.environ["BUILD_SOURCEBRANCHNAME"]
-
-
 def get_tag() -> str:
     repo = Repo(search_parent_directories=True)
     return next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
@@ -40,10 +36,6 @@ def get_short_hash(n: int = 7) -> str:
     repo = Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
     return repo.git.rev_parse(sha, short=n)
-
-
-def get_application_name() -> str:
-    return os.environ["BUILD_DEFINITIONNAME"]
 
 
 def b64_encode(s: str):
@@ -100,26 +92,23 @@ def get_full_yaml_filename(filename: str) -> str:
     raise FileNotFoundError(f"Could not find Runway config file: {filename}")
 
 
-def get_whl_name(artifact_tag: str, file_ext: str) -> str:
+def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
     # Wheels enforce a strict naming convention. This function helps us adhere to this naming convention
     # The convention is: {distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl
     # In our case, we need to use underscores to concatenate words within a package name and version name.
     # build-tag is optional, and we do not supply it.
-    build_definition_name = get_application_name()
     return (
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
         f"{artifact_tag.replace('-', '_')}-py3-none-any{file_ext}"
     )
 
 
-def get_main_py_name(artifact_tag: str, file_ext: str) -> str:
-    build_definition_name = get_application_name()
+def get_main_py_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
     return (
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
         f"main-{artifact_tag.replace('-', '_')}{file_ext}"
     )
 
 
-def get_jar_name(artifact_tag: str, file_ext: str) -> str:
-    build_definition_name = get_application_name()
+def get_jar_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
     return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"

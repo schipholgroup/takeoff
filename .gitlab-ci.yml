@@ -1,0 +1,40 @@
+stages:
+  - test
+  - deploy
+
+services:
+  - docker:dind
+
+lint:
+  image: python:3.7
+  stage: test
+  script:
+    - python setup.py flake8
+
+test:
+  image: python:3.7
+  stage: test
+  script:
+    - python setup.py test
+
+lint_yaml:
+  image: giantswarm/yamllint:latest
+  stage: test
+  script:
+    - yamllint -d relaxed .
+
+runway:
+  image: docker:latest
+  stage: deploy
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+  before_script:
+    - env | grep -v -e ^PATH -e ^CI_COMMIT_MESSAGE> .env
+    - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
+  script:
+    - cat .env
+    - docker build -t runway:latest -f Dockerfile .
+
+    - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest get_version)
+    - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/runway:${version}
+    - docker push ${REGISTRY_LOGIN_SERVER}/runway:${version}

@@ -13,9 +13,9 @@ from databricks_cli.sdk import ApiClient
 from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_databricks import Databricks
-
-from runway.util import get_application_name, has_prefix_match, get_whl_name, get_main_py_name
+from runway.util import has_prefix_match, get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class DeployToDatabricks(DeploymentStep):
         has been set correctly.
         """
 
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         for job in run_config["jobs"]:
@@ -105,11 +105,14 @@ class DeployToDatabricks(DeploymentStep):
         storage_base_path = f"{root_library_folder}/{application_name}"
         artifact_path = f"{storage_base_path}/{application_name}-{self.env.artifact_tag}"
 
+        build_definition_name = ApplicationName().get(self.config)
         if job_config["lang"] == "python":
+            wheel_name = get_whl_name(build_definition_name, self.env.artifact_tag, ".whl")
+            py_main_name = get_main_py_name(build_definition_name, self.env.artifact_tag, ".py")
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
-                whl_file=f"{root_library_folder}/{get_whl_name(self.env.artifact_tag, '.whl')}",
-                python_file=f"{root_library_folder}/{get_main_py_name(self.env.artifact_tag, '.py')}",
+                whl_file=f"{root_library_folder}/{ wheel_name }",
+                python_file=f"{root_library_folder}/{ py_main_name }",
             )
         else:  # java/scala jobs
             run_config = DeployToDatabricks._construct_job_config(
@@ -119,7 +122,7 @@ class DeployToDatabricks(DeploymentStep):
 
     def _construct_name(self, name) -> str:
         postfix = f"-{name}" if name else ""
-        return f"{get_application_name()}{postfix}"
+        return f"{ApplicationName().get(self.config)}{postfix}"
 
     @staticmethod
     def _construct_arguments(args: List[dict]) -> list:

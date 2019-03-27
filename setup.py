@@ -38,6 +38,7 @@ setup(
         "pytest==3.8.2",
         "pytest-cov==2.6.0",
         "PyYAML==3.13",
+        "requests>=2.20.0",
         "twine==1.12.1",
         "voluptuous==0.11.5"
     ],
@@ -47,5 +48,5 @@ setup(
     },
     setup_requires=setup_dependencies,
     tests_require=test_dependencies,
-    scripts=["scripts/runway"],
+    scripts=["scripts/runway", "scripts/get_version"],
 )

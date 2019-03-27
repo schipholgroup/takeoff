@@ -7,10 +7,10 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import CreateDatabricksSecrets
 from runway.credentials.KeyVaultCredentialsMixin import Secret
+from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_databricks import Databricks
 from runway.credentials.azure_subscription_id import AzureSubscriptionId
-from runway.util import get_application_name
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class CreateApplicationInsights(DeploymentStep):
         if application_type not in {"web", "other"}:
             raise ValueError("Unknown application insights application_type: {}".format(application_type))
 
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
         client = self.__create_client()
 
         insight = self.__find(client, application_name)
@@ -65,7 +65,7 @@ class CreateDatabricksApplicationInsights(CreateApplicationInsights):
         self.create_databricks_application_insights()
 
     def create_databricks_application_insights(self):
-        application_name = get_application_name()
+        application_name = ApplicationName().get(self.config)
         insight = self.create_application_insights("other", "other")
 
         instrumentation_secret = Secret("instrumentation-key", insight.instrumentation_key)
