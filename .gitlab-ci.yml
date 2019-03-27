@@ -9,10 +9,10 @@ lint:
   image: python:3.7
   stage: test
   script:
-    - python setup.py flake8
+    - python setup.py test
 
 test:
-  image: python:3.7
+  image: sdhcontainerregistryshared.azurecr.io/runway-azure-base:SNAPSHOT
   stage: test
   script:
     - python setup.py test
@@ -29,10 +29,10 @@ runway:
   variables:
     DOCKER_HOST: tcp://localhost:2375
   before_script:
-    - env | grep -v -e ^PATH -e ^CI_COMMIT_MESSAGE> .env
+    - unset CI_COMMIT_DESCRIPTION CI_COMMIT_MESSAGE # hack to avoid multiline env variables that docker does not like
+    - env | grep -v ^PATH > .env
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
   script:
-    - cat .env
     - docker build -t runway:latest -f Dockerfile .
 
     - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest get_version)

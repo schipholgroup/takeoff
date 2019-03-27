@@ -6,7 +6,6 @@ from twine.commands.upload import upload
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.build_artifact import BuildArtifact
 from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_devops_artifact_store import DevopsArtifactStore
 from runway.credentials.azure_storage_account import BlobStore
