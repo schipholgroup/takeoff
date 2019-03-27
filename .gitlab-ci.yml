@@ -9,7 +9,7 @@ lint:
   image: python:3.7
   stage: test
   script:
-    - python setup.py flake8
+    - python setup.py test
 
 test:
   image: python:3.7
