@@ -12,7 +12,7 @@ lint:
     - python setup.py test
 
 test:
-  image: sdhcontainerregistryshared.azurecr.io/runway-azure-base:SNAPSHOT
+  image: python:3.7
   stage: test
   script:
     - python setup.py test

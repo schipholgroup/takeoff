@@ -46,7 +46,6 @@ class DockerImageBuilder(DeploymentStep):
             ".",
         ]
 
-        logger.info(cmd)
         logger.info(f"Building docker image for {docker_file} with command \n{' '.join(cmd)}")
 
         return_code = run_bash_command(cmd)
