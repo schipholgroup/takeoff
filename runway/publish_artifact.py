@@ -48,7 +48,7 @@ class PublishArtifact(DeploymentStep):
                 self.publish_to_blob(file=self._get_wheel(), file_ext=".whl")
                 # only upload a py file if the path has been specified
                 if "python_file_path" in self.config.keys():
-                    self.publish_to_blob(file=f"/{self.config['python_file_path']}", file_ext=".py")
+                    self.publish_to_blob(file=f"{self.config['python_file_path']}", file_ext=".py")
             else:
                 logging.info("Invalid target for artifact")
 
