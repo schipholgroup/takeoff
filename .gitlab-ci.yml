@@ -9,10 +9,10 @@ lint:
   image: python:3.7
   stage: test
   script:
-    - python setup.py test
+    - python setup.py flake8
 
 test:
-  image: python:3.7
+  image: sdhcontainerregistryshared.azurecr.io/runway-base-azure:SNAPSHOT
   stage: test
   script:
     - python setup.py test
