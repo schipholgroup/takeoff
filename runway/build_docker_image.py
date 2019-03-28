@@ -1,10 +1,9 @@
 import logging
 import os
+import base64
 from dataclasses import dataclass
 from typing import List
-
-import docker
-from docker import DockerClient
+import json
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
@@ -26,23 +25,31 @@ class DockerImageBuilder(DeploymentStep):
         super().__init__(env, config)
 
     def run(self):
-        client: DockerClient = docker.from_env()
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
-        client.login(
-            username=docker_credentials.username,
-            password=docker_credentials.password,
-            registry=docker_credentials.registry,
-        )
+        creds = f"{docker_credentials.username}:{docker_credentials.password}".encode()
+
+        docker_json = {"auths": {docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}}
+
+        home = os.environ["HOME"]
+        if not os.path.exists(f"{home}/.docker"):
+            os.mkdir(f"{ home }/.docker")
+        with open(f"{home}/.docker/config.json", "w") as f:
+            json.dump(docker_json, f)
+
         dockerfiles = [DockerFile(df["file"], df.get("postfix")) for df in self.config["dockerfiles"]]
-        self.deploy(dockerfiles, docker_credentials, client)
+        self.deploy(dockerfiles, docker_credentials)
 
     def build_image(self, docker_file, tag):
         # Set these environment variables at build time only, they should not be available at runtime
         cmd = [
-            "docker", "build",
-            "--build-arg", f"PIP_EXTRA_INDEX_URL={os.getenv('PIP_EXTRA_INDEX_URL')}",
-            "-t", tag,
-            "-f", f"./{docker_file}",
+            "docker",
+            "build",
+            "--build-arg",
+            f"PIP_EXTRA_INDEX_URL={os.getenv('PIP_EXTRA_INDEX_URL')}",
+            "-t",
+            tag,
+            "-f",
+            f"./{docker_file}",
             ".",
         ]
 
@@ -51,9 +58,19 @@ class DockerImageBuilder(DeploymentStep):
         return_code = run_bash_command(cmd)
 
         if return_code != 0:
-            raise ChildProcessError("Could not build the package for some reason!")
+            raise ChildProcessError("Could not build the image for some reason!")
 
-    def deploy(self, dockerfiles: List[DockerFile], docker_credentials, docker_client):
+    def push_image(self, tag):
+        cmd = ["docker", "push", tag]
+
+        logger.info(f"Uploading docker image {tag}")
+
+        return_code = run_bash_command(cmd)
+
+        if return_code != 0:
+            raise ChildProcessError("Could not push image for some reason!")
+
+    def deploy(self, dockerfiles: List[DockerFile], docker_credentials):
         application_name = ApplicationName().get(self.config)
         for df in dockerfiles:
             tag = self.env.artifact_tag
@@ -64,8 +81,6 @@ class DockerImageBuilder(DeploymentStep):
 
             repository = f"{docker_credentials.registry}/{application_name}"
 
-            self.build_image(df.dockerfile, f"{repository}:{tag}")
-
-            logger.info(f"Uploading docker image for {df.dockerfile}")
-
-            docker_client.images.push(repository=repository, tag=tag)
+            image_tag = f"{repository}:{tag}"
+            self.build_image(df.dockerfile, image_tag)
+            self.push_image(image_tag)
