@@ -24,32 +24,32 @@ class DockerImageBuilder(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 
-    def run(self):
-        docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
+    def populate_docker_config(self, docker_credentials):
         creds = f"{docker_credentials.username}:{docker_credentials.password}".encode()
 
         docker_json = {"auths": {docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}}
 
         home = os.environ["HOME"]
-        if not os.path.exists(f"{home}/.docker"):
-            os.mkdir(f"{ home }/.docker")
-        with open(f"{home}/.docker/config.json", "w") as f:
+        docker_dir = f"{home}/.docker"
+        if not os.path.exists(docker_dir):
+            os.mkdir(docker_dir)
+        with open(f"{docker_dir}/config.json", "w") as f:
             json.dump(docker_json, f)
 
+    def run(self):
         dockerfiles = [DockerFile(df["file"], df.get("postfix")) for df in self.config["dockerfiles"]]
+        docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
+
+        self.populate_docker_config(docker_credentials)
         self.deploy(dockerfiles, docker_credentials)
 
     def build_image(self, docker_file, tag):
         # Set these environment variables at build time only, they should not be available at runtime
         cmd = [
-            "docker",
-            "build",
-            "--build-arg",
-            f"PIP_EXTRA_INDEX_URL={os.getenv('PIP_EXTRA_INDEX_URL')}",
-            "-t",
-            tag,
-            "-f",
-            f"./{docker_file}",
+            "docker", "build",
+            "--build-arg", f"PIP_EXTRA_INDEX_URL={os.getenv('PIP_EXTRA_INDEX_URL')}",
+            "-t", tag,
+            "-f", f"./{docker_file}",
             ".",
         ]
 
