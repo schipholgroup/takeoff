@@ -7,7 +7,7 @@ from twine.commands.upload import upload
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.application_name import ApplicationName
-from runway.credentials.azure_devops_artifact_store import DevopsArtifactStore
+from runway.credentials.artifact_store import ArtifactStore
 from runway.credentials.azure_storage_account import BlobStore
 from runway.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_bash_command
 
@@ -91,7 +91,7 @@ class PublishArtifact(DeploymentStep):
 
     def publish_to_pypi(self):
         if get_tag():
-            credentials = DevopsArtifactStore(
+            credentials = ArtifactStore(
                 vault_name=self.vault_name, vault_client=self.vault_client
             ).store_settings(self.config)
             upload(upload_settings=credentials, dists=["dist/*"])
