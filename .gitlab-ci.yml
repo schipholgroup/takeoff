@@ -5,7 +5,7 @@ stages:
 services:
   - docker:dind
 
-lint:
+lint_python:
   image: python:3.7
   stage: test
   script:
@@ -22,6 +22,13 @@ lint_yaml:
   stage: test
   script:
     - yamllint -d relaxed .
+
+lint_black:
+  image: python:3.7
+  stage: test
+  script:
+    - pip install black
+    - black -l 110 --check runway
 
 runway:
   image: docker:latest

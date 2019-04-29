@@ -9,7 +9,7 @@ from azure.mgmt.relay.models import AccessRights
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_databricks_secrets import CreateDatabricksSecrets
-from runway.credentials.KeyVaultCredentialsMixin import Secret
+from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_databricks import Databricks

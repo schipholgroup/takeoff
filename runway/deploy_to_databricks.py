@@ -111,8 +111,8 @@ class DeployToDatabricks(DeploymentStep):
             py_main_name = get_main_py_name(build_definition_name, self.env.artifact_tag, ".py")
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
-                whl_file=f"{root_library_folder}/{ wheel_name }",
-                python_file=f"{root_library_folder}/{ py_main_name }",
+                whl_file=f"{root_library_folder}/{wheel_name}",
+                python_file=f"{root_library_folder}/{py_main_name}",
             )
         else:  # java/scala jobs
             run_config = DeployToDatabricks._construct_job_config(

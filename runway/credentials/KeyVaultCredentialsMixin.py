@@ -6,22 +6,13 @@ from azure.keyvault import KeyVaultClient
 from azure.keyvault.models import SecretBundle
 
 from runway.util import get_matching_group, has_prefix_match, inverse_dictionary
+from runway.credentials.Secret import Secret
 
 
 @dataclass(frozen=True)
 class IdAndKey:
     keyvault_id: str
     databricks_secret_key: str
-
-
-@dataclass(frozen=True)
-class Secret:
-    key: str
-    val: str
-
-    @property
-    def env_key(self):
-        return self.key.upper().replace("-", "_")
 
 
 @dataclass

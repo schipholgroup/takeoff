@@ -46,10 +46,14 @@ class DockerImageBuilder(DeploymentStep):
     def build_image(self, docker_file, tag):
         # Set these environment variables at build time only, they should not be available at runtime
         cmd = [
-            "docker", "build",
-            "--build-arg", f"PIP_EXTRA_INDEX_URL={os.getenv('PIP_EXTRA_INDEX_URL')}",
-            "-t", tag,
-            "-f", f"./{docker_file}",
+            "docker",
+            "build",
+            "--build-arg",
+            f"PIP_EXTRA_INDEX_URL={os.getenv('PIP_EXTRA_INDEX_URL')}",
+            "-t",
+            tag,
+            "-f",
+            f"./{docker_file}",
             ".",
         ]
 

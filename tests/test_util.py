@@ -1,4 +1,3 @@
-import importlib
 import pytest
 import re
 
@@ -43,8 +42,7 @@ class TestPatternMatching(object):
         expected_result = "deployment.yml"
         assert result == expected_result
 
-    def test_get_full_yaml_filename_file_exists(self):
+    def test_get_full_yaml_filename_file_not_exists(self):
         filename = "my_stupid_file"
         with pytest.raises(FileNotFoundError):
             victim.get_full_yaml_filename(filename)
-

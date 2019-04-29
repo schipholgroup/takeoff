@@ -7,7 +7,9 @@ from databricks_cli.secrets.api import SecretApi
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.KeyVaultCredentialsMixin import Secret, KeyVaultCredentialsMixin
+from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.credentials.DeploymentYamlEnvironmentVariablesMixin import DeploymentYamlEnvironmentVariablesMixin
+from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_databricks import Databricks
 
@@ -48,9 +50,8 @@ class CreateDatabricksSecrets(DeploymentStep):
     def create_databricks_secrets(self):
         application_name = ApplicationName().get(self.config)
 
-        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
-            application_name
-        )
+        secrets = self._combine_secrets(application_name)
+
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         self._create_scope(databricks_client, application_name)
@@ -58,3 +59,12 @@ class CreateDatabricksSecrets(DeploymentStep):
 
         logging.info(f'------  {len(secrets)} secrets created in "{self.env.environment}"')
         pprint(self._list_secrets(databricks_client, application_name))
+
+    def _combine_secrets(self, application_name):
+        vault_secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
+            application_name
+        )
+        deployment_secrets = DeploymentYamlEnvironmentVariablesMixin(
+            self.env, self.config
+        ).get_deployment_secrets()
+        return list(set(vault_secrets + deployment_secrets))

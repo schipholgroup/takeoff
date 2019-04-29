@@ -23,8 +23,10 @@ environment_variables = {
 
 env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 
+
 def filename(s):
     return f"{s}.yml"
+
 
 def test_no_run_task():
     with pytest.raises(ValueError):
