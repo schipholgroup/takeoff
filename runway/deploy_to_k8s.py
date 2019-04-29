@@ -12,7 +12,8 @@ from kubernetes.client import CoreV1Api
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.create_application_insights import CreateApplicationInsights
-from runway.credentials.KeyVaultCredentialsMixin import Secret, KeyVaultCredentialsMixin
+from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.credentials.azure_active_directory_user import AzureUserCredentials
 from runway.credentials.azure_container_registry import DockerRegistry

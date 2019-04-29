@@ -11,7 +11,20 @@ Feel free to add missing ones to the dependencies here. As soon as these are sta
 https://github.com/Schiphol-Hub/runway-base-azure
 """
 setup_dependencies = []
-test_dependencies = []
+test_dependencies = [
+    "azure==4.0.0",
+    "databricks-cli==0.8.4",
+    "jinja2==2.10",
+    "gitpython==2.1.10",
+    "mock==2.0.0",
+    "kubernetes==7.0.0",
+    "pytest==3.8.2",
+    "pytest-cov==2.6.0",
+    "py4j==0.10.7",
+    "voluptuous==0.11.5",
+    "twine",
+]
+
 if {"pytest", "test"}.intersection(sys.argv):
     setup_dependencies = ["pytest-runner==4.2"]
 elif {"pep8", "flake8"}.intersection(sys.argv):
@@ -28,4 +41,7 @@ setup(
     setup_requires=setup_dependencies,
     tests_require=test_dependencies,
     scripts=["scripts/runway", "scripts/get_version"],
+    extras_require={
+        "test": test_dependencies
+    },
 )
