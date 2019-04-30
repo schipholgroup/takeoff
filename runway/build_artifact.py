@@ -24,7 +24,7 @@ class BuildArtifact(DeploymentStep):
     def build_python_wheel(self):
         # First make sure the correct version number is used.
         with open("version.py", "w+") as f:
-            f.write(f"__version__='{self.env.version}'")
+            f.write(f"__version__='{self.env.artifact_tag}'")
         # ensure any old artifacts are gone
         shutil.rmtree("dist/", ignore_errors=True)
 
