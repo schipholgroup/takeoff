@@ -20,6 +20,7 @@ jobs = [
 
 streaming_job_config = "tests/test_job_config.json.j2"
 batch_job_config = "tests/test_job_config_scheduled.json.j2"
+dynamic_schedule_job_config = "tests/test_job_config_schedule_dynamically.json.j2"
 
 
 class TestDeployToDatabricks(unittest.TestCase):
@@ -145,4 +146,330 @@ class TestDeployToDatabricks(unittest.TestCase):
             "some_int": 5,
             "libraries": [{"jar": "/path/app_name/app_name-bar.jar"}],
             "spark_jar_task": {"main_class_name": "foo.class", "parameters": ["--key", "val", "--key2", "val2"]},
+        }
+
+    def test_correct_schedule_as_parameter_in_databricks_json(self):
+        job_config = victim._construct_job_config(
+            config_file=dynamic_schedule_job_config,
+            application_name="job_with_schedule",
+            log_destination="app",
+            whl_file="some.whl",
+            python_file="some.py",
+            parameters=["--foo", "bar"],
+            schedule={
+                "quartz_cron_expression": "0 15 22 ? * *",
+                "timezone_id": "America/Los_Angeles"
+            }
+        )
+
+        assert job_config == {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/app"
+                    }
+                }
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                { "whl": "some.whl" },
+                { "jar": "some.jar" }
+            ],
+            "schedule": {
+                "quartz_cron_expression": "0 15 22 ? * *",
+                "timezone_id": "America/Los_Angeles"
+            },
+            "spark_python_task": {
+                "python_file": "some.py",
+                "parameters": ["--foo", "bar"]
+            }
+        }
+
+    def test_none_schedule_as_parameter_in_databricks_json(self):
+        job_config = victim._construct_job_config(
+            config_file=dynamic_schedule_job_config,
+            application_name="job_with_schedule",
+            log_destination="app",
+            whl_file="some.whl",
+            python_file="some.py",
+            parameters=["--foo", "bar"],
+            schedule=None
+        )
+
+        assert job_config == {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/app"
+                    }
+                }
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                { "whl": "some.whl" },
+                { "jar": "some.jar" }
+            ],
+            "spark_python_task": {
+                "python_file": "some.py",
+                "parameters": ["--foo", "bar"]
+            }
+        }
+
+    def test_missing_schedule_as_parameter_in_databricks_json(self):
+
+        job_config = victim._construct_job_config(
+            config_file=dynamic_schedule_job_config,
+            application_name="job_with_schedule",
+            log_destination="app",
+            whl_file="some.whl",
+            python_file="some.py",
+            parameters=["--foo", "bar"],
+        )
+
+        assert job_config == {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/app"
+                    }
+                }
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                { "whl": "some.whl" },
+                { "jar": "some.jar" }
+            ],
+            "spark_python_task": {
+                "python_file": "some.py",
+                "parameters": ["--foo", "bar"]
+            }
+        }
+
+    @mock.patch("runway.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_correct_schedule_as_parameter_in_job_config_without_dtap(self, _, __):
+        config = {"runway_common": {"databricks_library_path": "/path"}}
+        conf = {
+            "main_name": "some.py",
+            "config_file": dynamic_schedule_job_config,
+            "lang": "python",
+            "arguments": [{"key": "val"}, {"key2": "val2"}],
+            "schedule": {
+                "quartz_cron_expression": "0 15 22 ? * *",
+                "timezone_id": "America/Los_Angeles"
+            }
+        }
+
+        res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
+
+        assert res == {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/job_with_schedule"
+                    }
+                }
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                { "whl": "/path/version/version-bar-py3-none-any.whl" },
+                { "jar": "some.jar" }
+            ],
+            "schedule": {
+                "quartz_cron_expression": "0 15 22 ? * *",
+                "timezone_id": "America/Los_Angeles"
+            },
+            "spark_python_task": {
+                "python_file": "/path/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
+        }
+
+    @mock.patch("runway.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_correct_schedule_as_parameter_in_job_config_with_dtap_schedule(self, _, __):
+        config = {"runway_common": {"databricks_library_path": "/path"}}
+        conf = {
+            "main_name": "some.py",
+            "config_file": dynamic_schedule_job_config,
+            "lang": "python",
+            "arguments": [{"key": "val"}, {"key2": "val2"}],
+            "schedule": {
+                "dev": {
+                    "quartz_cron_expression": "0 15 22 ? * *",
+                    "timezone_id": "America/Los_Angeles"
+                }
+            }
+        }
+
+        res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
+
+        assert res == {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/job_with_schedule"
+                    }
+                }
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                { "whl": "/path/version/version-bar-py3-none-any.whl" },
+                { "jar": "some.jar" }
+            ],
+            "schedule": {
+                "quartz_cron_expression": "0 15 22 ? * *",
+                "timezone_id": "America/Los_Angeles"
+            },
+            "spark_python_task": {
+                "python_file": "/path/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
+        }
+
+    @mock.patch("runway.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_correct_schedule_as_parameter_in_job_config_with_dtap_schedule_for_other_env(self, _, __):
+        config = {"runway_common": {"databricks_library_path": "/path"}}
+        conf = {
+            "main_name": "some.py",
+            "config_file": dynamic_schedule_job_config,
+            "lang": "python",
+            "arguments": [{"key": "val"}, {"key2": "val2"}],
+            "schedule": {
+                "dev": {
+                    "quartz_cron_expression": "0 15 22 ? * *",
+                    "timezone_id": "America/Los_Angeles"
+                }
+            }
+        }
+
+        res = victim(ApplicationVersion("acp", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
+
+        assert res == {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/job_with_schedule"
+                    }
+                }
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                { "whl": "/path/version/version-bar-py3-none-any.whl" },
+                { "jar": "some.jar" }
+            ],
+            "spark_python_task": {
+                "python_file": "/path/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
+        }
+
+    @mock.patch("runway.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_no_schedule_as_parameter_in_job_config_without_dtap_schedule(self, _, __):
+        config = {"runway_common": {"databricks_library_path": "/path"}}
+        conf = {
+            "main_name": "some.py",
+            "config_file": dynamic_schedule_job_config,
+            "lang": "python",
+            "arguments": [{"key": "val"}, {"key2": "val2"}],
+        }
+
+        res = victim(ApplicationVersion("acp", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
+
+        assert res == {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/job_with_schedule"
+                    }
+                }
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                { "whl": "/path/version/version-bar-py3-none-any.whl" },
+                { "jar": "some.jar" }
+            ],
+            "spark_python_task": {
+                "python_file": "/path/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
+        }
+
+    @mock.patch("runway.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_correct_schedule_from_template_in_job_config(self, _, __):
+        config = {"runway_common": {"databricks_library_path": "/path"}}
+        conf = {
+            "main_name": "some.py",
+            "config_file": batch_job_config,
+            "lang": "python",
+            "arguments": [{"key": "val"}, {"key2": "val2"}],
+        }
+
+        res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
+
+        assert res == {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/job_with_schedule"
+                    }
+                }
+            },
+            "some_int": 5,
+            "name": "job_with_schedule",
+            "libraries": [
+                { "whl": "/path/version/version-bar-py3-none-any.whl" },
+                { "jar": "some.jar" }
+            ],
+            "schedule": {
+                "quartz_cron_expression": "0 15 22 ? * *",
+                "timezone_id": "America/Los_Angeles"
+            },
+            "spark_python_task": {
+                "python_file": "/path/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
         }

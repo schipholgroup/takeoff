@@ -23,6 +23,7 @@ test_dependencies = [
     "py4j==0.10.7",
     "voluptuous==0.11.5",
     "twine",
+    "black",
 ]
 
 if {"pytest", "test"}.intersection(sys.argv):
