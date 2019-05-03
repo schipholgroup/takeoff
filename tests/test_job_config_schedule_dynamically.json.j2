@@ -1,0 +1,26 @@
+{
+  "new_cluster": {
+    "spark_version": "4.1.x-scala2.11",
+    "spark_conf": {
+      "spark.sql.warehouse.dir": "/some_",
+      "some.setting": "true"
+    },
+    "cluster_log_conf": {
+      "dbfs": {
+        "destination": "dbfs:/mnt/sdh/logs/{{ log_destination }}"
+      }
+    }
+  },
+  "name": "{{ application_name }}",
+  "libraries": [
+    { "whl": "{{ whl_file }}" },
+    { "jar": "some.jar" }
+  ],
+  {% if schedule is defined and schedule is not none %}
+  "schedule" : {{ schedule | tojson }},
+  {% endif %}
+  "spark_python_task": {
+    "python_file": "{{ python_file }}",
+    "parameters": [{% for p in parameters %}"{{ p }}"{% if not loop.last %},{% endif %}{% endfor %}]
+  }
+}

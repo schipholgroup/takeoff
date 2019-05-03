@@ -3,7 +3,7 @@ import logging
 import pprint
 import re
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 import voluptuous as vol
 from databricks_cli.jobs.api import JobsApi
@@ -99,6 +99,7 @@ class DeployToDatabricks(DeploymentStep):
             application_name=job_name,
             log_destination=job_name,
             parameters=self._construct_arguments(job_config["arguments"]),
+            schedule=self._get_schedule(job_config),
         )
 
         root_library_folder = self.config["runway_common"]["databricks_library_path"]
@@ -119,6 +120,16 @@ class DeployToDatabricks(DeploymentStep):
                 **common_arguments, class_name=job_config["main_name"], jar_file=f"{artifact_path}.jar"
             )
         return run_config
+
+    def _get_schedule(self, job_config: dict) -> Optional[dict]:
+        schedule = job_config.get("schedule", None)
+        if schedule:
+            if "quartz_cron_expression" in schedule:
+                return schedule
+            else:
+                return schedule.get(self.env.environment.lower(), None)
+
+        return schedule
 
     def _construct_name(self, name) -> str:
         postfix = f"-{name}" if name else ""
