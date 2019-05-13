@@ -37,6 +37,6 @@ For more information see the [Runway documentation](https://github.com/Schiphol-
 Make sure you have installed and updated docker and run linting and tests with:
 
 ```bash
-docker-compose run --rm dockerception bash -c "python setup.py flake8"
-docker-compose run --rm dockerception bash -c "python setup.py test"
+docker run -v /local_git_path/runway:/runway_mount sdhcontainerregistryshared.azurecr.io/runway-base-azure  bash -c "cd runway_mount ; python setup.py test"
+docker run -v /local_git_path/runway:/runway_mount sdhcontainerregistryshared.azurecr.io/runway-base-azure  bash -c "cd runway_mount ; python setup.py flake8"
 ```
