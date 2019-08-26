@@ -18,7 +18,7 @@ env_variables = {'AZURE_TENANTID': 'David',
 class TestDeployToK8s(object):
     @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
     def test_validate_schema(self, _):
-        conf = {**runway_config, **{'task': 'K8sImageRollingUpdate',
+        conf = {**runway_config, **{'task': 'k8sImageRollingUpdate',
                                     'cluster_name': "Dave",
                                     'resource_group': "Mustaine",
                                     'deployment_name': "the-king",

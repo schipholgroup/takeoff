@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 SCHEMA = BASE_SCHEMA.extend(
     {
-        vol.Required("task"): vol.All(str, vol.Match(r"^K8sImageRollingUpdate$")),
+        vol.Required("task"): vol.All(str, vol.Match(r"^k8sImageRollingUpdate$")),
         # TODO This is a hack to target a specific resource group. This logic needs an overhaul soon.
         vol.Required("resource_group"): str,
         vol.Required("cluster_name"): str,
