@@ -61,7 +61,7 @@ class K8sImageRollingUpdate(DeploymentStep):
         """
         https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment
         """
-        new_image = f"{self.config['image']}:{self.env.arficact_tag}"
+        new_image = f"{self.config['image']}:{self.env.artifact_tag}"
         cmd = [
             "kubectl",
             "--namespace",
