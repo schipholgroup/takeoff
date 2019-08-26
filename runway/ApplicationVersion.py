@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from runway.util import get_tag
+
 
 @dataclass(frozen=True)
 class ApplicationVersion(object):
@@ -12,6 +14,11 @@ class ApplicationVersion(object):
     def on_feature_branch(self) -> bool:
         tag_pattern = re.compile("[0-9a-f]{7}")
         return True if tag_pattern.match(self.version) else False
+
+    @property
+    def on_release_tag(self):
+        tag = get_tag()
+        return tag is not None
 
     @property
     def artifact_tag(self) -> str:

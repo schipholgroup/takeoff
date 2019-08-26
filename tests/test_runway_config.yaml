@@ -2,7 +2,10 @@ runway_azure:
   resource_group: "sdh{dtap}"
   location: "west europe"
   vault_name: "https://sdhkeyvault{dtap}.vault.azure.net/"
-  subscription_id: ""
+
+common_environment_keys:
+  application_name: CI_PROJECT_NAME
+  branch_name: CI_COMMIT_REF_SLUG
 
 azure_keyvault_keys:
   azure_active_directory_user:
@@ -28,6 +31,18 @@ devops_environment_keys_dev:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_DEV"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_DEV"
+
+devops_environment_keys_acp:
+  azure_service_principal:
+    tenant: "AZURE_TENANTID"
+    client_id: "AZURE_KEYVAULT_SP_USERNAME_ACP"
+    secret: "AZURE_KEYVAULT_SP_PASSWORD_ACP"
+
+devops_environment_keys_prd:
+  azure_service_principal:
+    tenant: "AZURE_TENANTID"
+    client_id: "AZURE_KEYVAULT_SP_USERNAME_PRD"
+    secret: "AZURE_KEYVAULT_SP_PASSWORD_PRD"
 
 
 runway_azure_keyvault_shared_keys:

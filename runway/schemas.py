@@ -9,12 +9,18 @@ BASE_SCHEMA = vol.Schema(
                 vol.Optional("location", default="west europe"): str,
             }
         ),
+        vol.Required("common_environment_keys"): vol.Schema(
+            {
+                vol.Required("application_name", default="CI_PROJECT_NAME"): str,
+                vol.Required("branch_name", default="CI_COMMIT_REF_SLUG"): str,
+            }
+        ),
         vol.Required("azure_keyvault_keys"): vol.Schema(
             {
                 vol.Required("azure_active_directory_user"): vol.Schema(
                     {
-                        vol.Required("username", default="azure-username"),
-                        vol.Required("password", default="azure_password"),
+                        vol.Required("username", default="azure-username"): str,
+                        vol.Required("password", default="azure-password"): str,
                     }
                 ),
                 vol.Optional("azure_databricks"): vol.Schema(

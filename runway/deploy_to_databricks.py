@@ -51,8 +51,8 @@ class DeployToDatabricks(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 
-    def validate(self) -> dict:
-        return SCHEMA(self.config)
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     def run(self):
         run_config = self.validate()
