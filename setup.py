@@ -12,7 +12,6 @@ https://github.com/Schiphol-Hub/runway-base-azure
 """
 setup_dependencies = []
 test_dependencies = [
-    "azure==4.0.0",
     "databricks-cli==0.8.4",
     "jinja2==2.10",
     "gitpython==2.1.10",
