@@ -25,6 +25,7 @@ SCHEMA = BASE_SCHEMA.extend(
         vol.Required("deployment_name"): str,
         vol.Required("image"): str,
         vol.Optional("namespace", default="default"): str,
+        vol.Optional("always_deploy", default=False): bool,
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -45,7 +46,10 @@ class K8sImageRollingUpdate(DeploymentStep):
         For now only update the deployment image once a tag is created
         """
         run_config = self.validate()
-        if self.env.on_release_tag:
+        if run_config["always_deploy"]:
+            logger.info("Always-deploy flag set to true")
+            self.update_image(run_config)
+        elif self.env.on_release_tag:
             self.update_image(run_config)
 
     def update_image(self, conf):
@@ -62,6 +66,8 @@ class K8sImageRollingUpdate(DeploymentStep):
         https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment
         """
         new_image = f"{self.config['image']}:{self.env.artifact_tag}"
+        logger.info(f"Deploying image {new_image}")
+
         cmd = [
             "kubectl",
             "--namespace",
