@@ -77,7 +77,7 @@ class K8sImageRollingUpdate(DeploymentStep):
             "set",
             "image",
             f"deployment.v1.apps/{deployment}",
-            f"king-louie={new_image}",
+            f"{deployment}={new_image}",
         ]
         return_code = run_bash_command(cmd)
 
