@@ -18,10 +18,7 @@ import voluptuous as vol
 logger = logging.getLogger(__name__)
 
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
-    {
-        vol.Required("task"): vol.All(str, vol.Match(r"createApplicationInsights")),
-    },
-    extra=vol.ALLOW_EXTRA,
+    {vol.Required("task"): vol.All(str, vol.Match(r"createApplicationInsights"))}, extra=vol.ALLOW_EXTRA
 )
 
 

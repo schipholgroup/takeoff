@@ -19,10 +19,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
-    {
-        vol.Required("task"): vol.All(str, vol.Match(r"createDatabricksSecrets")),
-    },
-    extra=vol.ALLOW_EXTRA,
+    {vol.Required("task"): vol.All(str, vol.Match(r"createDatabricksSecrets"))}, extra=vol.ALLOW_EXTRA
 )
 
 

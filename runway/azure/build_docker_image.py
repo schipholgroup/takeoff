@@ -62,7 +62,8 @@ class DockerImageBuilder(DeploymentStep):
 
     def run(self):
         dockerfiles = [
-            DockerFile(df["file"], df["postfix"], df["custom_image_name"]) for df in self.config["dockerfiles"]
+            DockerFile(df["file"], df["postfix"], df["custom_image_name"])
+            for df in self.config["dockerfiles"]
         ]
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
 

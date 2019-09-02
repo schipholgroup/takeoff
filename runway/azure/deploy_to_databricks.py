@@ -23,21 +23,22 @@ logger = logging.getLogger(__name__)
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
         vol.Required("task"): vol.All(str, vol.Match(r"deployToDatabricks")),
-        vol.Required("jobs"): vol.All([
-            {
-                vol.Required("main_name"): str,
-                vol.Optional("config_file", default="databricks.json.j2"): str,
-                vol.Optional("name", default=""): str,
-                vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
-                vol.Optional("arguments", default=[{}]): [{}],
-                vol.Optional("schedule"): {
-                    vol.Required("quartz_cron_expression"): str,
-                    vol.Required("timezone_id"): str
+        vol.Required("jobs"): vol.All(
+            [
+                {
+                    vol.Required("main_name"): str,
+                    vol.Optional("config_file", default="databricks.json.j2"): str,
+                    vol.Optional("name", default=""): str,
+                    vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
+                    vol.Optional("arguments", default=[{}]): [{}],
+                    vol.Optional("schedule"): {
+                        vol.Required("quartz_cron_expression"): str,
+                        vol.Required("timezone_id"): str,
+                    },
                 }
-            },
-        ],
+            ],
             vol.Length(min=1),
-        )
+        ),
     },
     extra=vol.ALLOW_EXTRA,
 )

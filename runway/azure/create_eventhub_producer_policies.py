@@ -21,10 +21,7 @@ logging.basicConfig(level=logging.INFO)
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
         vol.Required("task"): vol.All(str, vol.Match(r"createEventhubProducerPolicies")),
-        vol.Required("policies"): vol.All(vol.Length(min=1), [{
-            vol.Required("eventhubEntity"): str,
-        }
-        ])
+        vol.Required("policies"): vol.All(vol.Length(min=1), [{vol.Required("eventhubEntity"): str}]),
     },
     extra=vol.ALLOW_EXTRA,
 )

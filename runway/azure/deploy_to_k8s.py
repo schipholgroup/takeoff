@@ -33,9 +33,8 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
         vol.Optional("service_ips"): {
             vol.Optional("dev"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")),
             vol.Optional("acp"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")),
-            vol.Optional("prd"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
-        }
-
+            vol.Optional("prd"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")),
+        },
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -142,7 +141,7 @@ class BaseDeployToK8s(DeploymentStep):
             api_client.create_namespace(body=namespace_to_create)
 
     def _create_or_patch_resource(
-            self, client, resource_type: str, name: str, namespace: str, resource_config: dict
+        self, client, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         list_function = getattr(client, f"list_namespaced_{resource_type}")
         patch_function = getattr(client, f"patch_namespaced_{resource_type}")

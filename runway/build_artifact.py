@@ -17,6 +17,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     extra=vol.ALLOW_EXTRA,
 )
 
+
 class BuildArtifact(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)

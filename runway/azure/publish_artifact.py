@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 def lang_must_match_target(fields):
     if "sbt" in fields["lang"] and "pypi" in fields["target"]:
-        raise vol.Invalid('Cannot publish jars to pypi')
+        raise vol.Invalid("Cannot publish jars to pypi")
     elif "pypi" in fields["lang"] and "ivy" in fields["target"]:
-        raise vol.Invalid('Cannot publish wheels to ivy')
+        raise vol.Invalid("Cannot publish wheels to ivy")
     return fields
 
 
@@ -28,8 +28,13 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
         vol.Required("task"): vol.All(str, vol.Match(r"publishArtifact")),
         vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"])),
-        vol.Optional("python_file_path", description=("The path relative to the root of your project to the python script"
-                                                      "that serves as entrypoint for a databricks job")): str,
+        vol.Optional(
+            "python_file_path",
+            description=(
+                "The path relative to the root of your project to the python script"
+                "that serves as entrypoint for a databricks job"
+            ),
+        ): str,
         vol.Required("target"): vol.All([str, vol.In(["blob", "pypi", "ivy"])]),
     },
     lang_must_match_target,
@@ -99,7 +104,7 @@ class PublishArtifact(DeploymentStep):
         self._upload_file_to_blob(blob_service, file, filename)
 
     def _upload_file_to_blob(
-            self, client: BlockBlobService, source: str, destination: str, container: str = None
+        self, client: BlockBlobService, source: str, destination: str, container: str = None
     ):
         if not container:
             container = self.config["runway_common"]["artifacts_shared_blob_container_name"]
