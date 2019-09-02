@@ -16,7 +16,23 @@ class TestBuildArtifact(unittest.TestCase):
     def test_validate_minimal_schema(self, _):
         conf = {**runway_config(), **BASE_CONF}
 
-        victim(ApplicationVersion("dev", "v", "branch"), conf)
+        victim(FAKE_ENV, conf)
+
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_build_python(self, _):
+        conf = {**runway_config(), **BASE_CONF}
+
+        with mock.patch.object(victim, "build_python_wheel") as m:
+            victim(FAKE_ENV, conf).run()
+        m.assert_called_once()
+
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_build_sbt(self, _):
+        conf = {**runway_config(), **BASE_CONF, "lang": "sbt"}
+
+        with mock.patch.object(victim, "build_sbt_assembly_jar") as m:
+            victim(FAKE_ENV, conf).run()
+        m.assert_called_once()
 
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     @mock.patch.object(victim, "_write_version")
@@ -55,3 +71,8 @@ class TestBuildArtifact(unittest.TestCase):
             with mock.patch("runway.build_artifact.run_bash_command", return_value=1) as m:
                 victim(FAKE_ENV, conf).build_sbt_assembly_jar()
             m.assert_called_once_with(["sbt", "clean", "assembly"])
+
+    def test_remove_old_artifacts(self):
+        with mock.patch("runway.build_artifact.shutil") as m:
+            victim._remove_old_artifacts("some/path")
+        m.rmtree.assert_called_once_with("some/path", ignore_errors=True)
