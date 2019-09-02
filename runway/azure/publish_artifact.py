@@ -1,17 +1,15 @@
 import glob
 import logging
-from pprint import pprint
 
 import voluptuous as vol
-
 from azure.storage.blob import BlockBlobService
 from twine.commands.upload import upload
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.artifact_store import ArtifactStore
 from runway.azure.credentials.storage_account import BlobStore
+from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_bash_command
 
