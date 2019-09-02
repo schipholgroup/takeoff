@@ -29,7 +29,9 @@ class BuildArtifact(DeploymentStep):
             self.build_sbt_assembly_jar()
         else:
             logging.info("Currently only python artifact building is supported")
-        # TODO: add support for building jars
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     def build_python_wheel(self):
         # First make sure the correct version number is used.

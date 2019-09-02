@@ -17,28 +17,33 @@ logger = logging.getLogger(__name__)
 
 
 def lang_must_match_target(fields):
-    if "sbt" in fields["lang"] and "pypi" in fields["target"]:
+    if "sbt" == fields["lang"] and "pypi" in fields["target"]:
         raise vol.Invalid("Cannot publish jars to pypi")
-    elif "pypi" in fields["lang"] and "ivy" in fields["target"]:
+    elif "python" == fields["lang"] and "ivy" in fields["target"]:
         raise vol.Invalid("Cannot publish wheels to ivy")
     return fields
 
 
-SCHEMA = RUNWAY_BASE_SCHEMA.extend(
-    {
-        vol.Required("task"): vol.All(str, vol.Match(r"publishArtifact")),
-        vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"])),
-        vol.Optional(
-            "python_file_path",
-            description=(
-                "The path relative to the root of your project to the python script"
-                "that serves as entrypoint for a databricks job"
-            ),
-        ): str,
-        vol.Required("target"): vol.All([str, vol.In(["blob", "pypi", "ivy"])]),
-    },
-    lang_must_match_target,
-    extra=vol.ALLOW_EXTRA,
+SCHEMA = vol.All(
+    RUNWAY_BASE_SCHEMA,
+    vol.Schema(
+        vol.All(
+            {
+                vol.Required("task"): vol.All(str, vol.Match(r"publishArtifact")),
+                vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"])),
+                vol.Required("target"): vol.All([str, vol.In(["blob", "pypi", "ivy"])]),
+                vol.Optional(
+                    "python_file_path",
+                    description=(
+                        "The path relative to the root of your project to the python script"
+                        "that serves as entrypoint for a databricks job"
+                    ),
+                ): str,
+            },
+            lang_must_match_target,
+        ),
+        extra=vol.ALLOW_EXTRA,
+    ),
 )
 
 
@@ -51,6 +56,9 @@ class PublishArtifact(DeploymentStep):
             self.publish_python_package()
         elif self.config["lang"] in {"sbt"}:
             self.publish_jvm_package()
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     @staticmethod
     def _get_jar() -> str:

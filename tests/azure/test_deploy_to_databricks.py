@@ -2,7 +2,7 @@ import os
 import unittest
 
 import pytest
-import voluptuous
+import voluptuous as vol
 from mock import mock
 
 from runway.ApplicationVersion import ApplicationVersion
@@ -104,7 +104,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         config = {**runway_config(),
                   **BASE_CONF,
                   "jobs": []}
-        with pytest.raises(voluptuous.error.MultipleInvalid):
+        with pytest.raises(vol.MultipleInvalid):
             victim(ApplicationVersion("foo", "bar", "baz"), config)
 
     def test_create_arguments(self):

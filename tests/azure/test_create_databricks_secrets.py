@@ -10,6 +10,12 @@ BASE_CONF = {'task': 'createDatabricksSecrets'}
 
 
 class TestCreateDatabricksSecrets(unittest.TestCase):
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_minimal_schema(self, _):
+        conf = {**runway_config(), **BASE_CONF}
+
+        victim(ApplicationVersion("dev", "v", "branch"), conf)
+
     def test_scope_exists(self):
         scopes = {"scopes": [{"name": "foo"}, {"name": "bar"}]}
 
