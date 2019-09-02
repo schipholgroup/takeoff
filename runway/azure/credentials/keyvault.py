@@ -1,10 +1,10 @@
 from azure.keyvault import KeyVaultClient
 import logging
 from runway.ApplicationVersion import ApplicationVersion
-from runway.azure.credentials.azure_service_principal import AzureServicePrincipalCredentials
+from runway.azure.credentials.service_principal import ServicePrincipalCredentials
 
 
-class AzureKeyvaultClient(object):
+class KeyvaultClient(object):
     @staticmethod
     def vault_and_client(config: dict, env: ApplicationVersion = None, dtap: str = None):
         if not env and not dtap:
@@ -14,6 +14,6 @@ class AzureKeyvaultClient(object):
         vault = config["runway_azure"]["vault_name"].format(dtap=dtap)
         logging.info(config)
         logging.info(dtap)
-        keyvault_client = KeyVaultClient(AzureServicePrincipalCredentials().credentials(config, dtap))
+        keyvault_client = KeyVaultClient(ServicePrincipalCredentials().credentials(config, dtap))
 
         return vault, keyvault_client

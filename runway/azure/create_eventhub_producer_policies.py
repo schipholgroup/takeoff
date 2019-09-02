@@ -9,9 +9,9 @@ from runway.DeploymentStep import DeploymentStep
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
-from runway.azure.credentials.azure_active_directory_user import AzureUserCredentials
-from runway.azure.credentials.azure_databricks import Databricks
-from runway.azure.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
+from runway.azure.credentials.databricks import Databricks
+from runway.azure.credentials.subscription_id import SubscriptionId
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -30,11 +30,11 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         eventhub_namespace = self.config["runway_common"]["eventhub_namespace"].format(dtap=formatted_dtap)
         resource_group = self.config["runway_azure"]["resource_group"].format(dtap=formatted_dtap)
 
-        credentials = AzureUserCredentials(
+        credentials = ActiveDirectoryUserCredentials(
             vault_name=self.vault_name, vault_client=self.vault_client
         ).credentials(self.config)
         eventhub_client = EventHubManagementClient(
-            credentials, AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
+            credentials, SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
         )
 
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)

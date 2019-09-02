@@ -10,7 +10,7 @@ import voluptuous as vol
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.application_name import ApplicationName
-from runway.azure.credentials.azure_container_registry import DockerRegistry
+from runway.azure.credentials.container_registry import DockerRegistry
 from runway.schemas import BASE_SCHEMA
 from runway.util import run_bash_command
 

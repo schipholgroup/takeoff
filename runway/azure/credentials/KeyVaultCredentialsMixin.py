@@ -20,7 +20,7 @@ class KeyVaultSecrets:
     secrets: List[Secret]
 
 
-class AzureKeyVaultCredentialsMixin(object):
+class KeyVaultCredentialsMixin(object):
     def __init__(self, vault_name: str, vault_client: KeyVaultClient):
         self.vault_client = vault_client
         self.vault_name = vault_name

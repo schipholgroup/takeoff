@@ -8,9 +8,9 @@ from runway.DeploymentStep import DeploymentStep
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
-from runway.azure.credentials.azure_active_directory_user import AzureUserCredentials
-from runway.azure.credentials.azure_databricks import Databricks
-from runway.azure.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
+from runway.azure.credentials.databricks import Databricks
+from runway.azure.credentials.subscription_id import SubscriptionId
 
 logger = logging.getLogger(__name__)
 
@@ -44,13 +44,13 @@ class CreateApplicationInsights(DeploymentStep):
         return insight
 
     def __create_client(self) -> ApplicationInsightsManagementClient:
-        azure_user_credentials = AzureUserCredentials(
+        azure_user_credentials = ActiveDirectoryUserCredentials(
             vault_name=self.vault_name, vault_client=self.vault_client
         ).credentials(self.config)
 
         return ApplicationInsightsManagementClient(
             azure_user_credentials,
-            AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
+            SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
         )
 
     def __find(self, client: ApplicationInsightsManagementClient, name: str):

@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from azure.mgmt.cosmosdb import CosmosDB
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.azure.credentials.azure_active_directory_user import AzureUserCredentials
-from runway.azure.credentials.azure_keyvault import AzureKeyvaultClient
-from runway.azure.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
+from runway.azure.credentials.keyvault import KeyvaultClient
+from runway.azure.credentials.subscription_id import SubscriptionId
 
 
 @dataclass(frozen=True)
@@ -27,9 +27,9 @@ class Cosmos(object):
         self.config = config
 
     def _get_cosmos_management_client(self) -> CosmosDB:
-        vault, client = AzureKeyvaultClient.vault_and_client(self.config, self.env)
-        credentials = AzureUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
-        return CosmosDB(credentials, AzureSubscriptionId(vault, client).subscription_id(self.config))
+        vault, client = KeyvaultClient.vault_and_client(self.config, self.env)
+        credentials = ActiveDirectoryUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
+        return CosmosDB(credentials, SubscriptionId(vault, client).subscription_id(self.config))
 
     def _get_cosmos_instance(self) -> dict:
         dtap = self.env.environment.lower()
