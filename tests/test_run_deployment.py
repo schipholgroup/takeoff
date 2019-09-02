@@ -12,6 +12,7 @@ from runway.azure.create_eventhub_consumer_groups import (
 )
 from runway.azure.deploy_to_databricks import DeployToDatabricks
 from runway.run_deployment import run_task
+import voluptuous as vol
 
 environment_variables = {
     "WEBAPP_NAME": "my-app",
@@ -140,6 +141,9 @@ class MockedClass(DeploymentStep):
 
     def run(self):
         return 'yeah, science!'
+
+    def schema(self) -> vol.Schema:
+        return vol.Schema({}, extra=vol.ALLOW_EXTRA)
 
 
 @mock.patch.dict('runway.deployment_step.deployment_steps', {'mocked': MockedClass})

@@ -27,11 +27,15 @@ logger = logging.getLogger(__name__)
 
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): vol.All(str, vol.Match(r"createEventhubProducerPolicies")),
-        vol.Required("policies"): vol.All(vol.Length(min=1), [{
-            vol.Required("eventhubEntity"): str,
+        vol.Required("task"): vol.All(str, vol.Match(r"deployToK8s")),
+        vol.Optional("deployment_config_path", default="k8s_config/deployment.yaml.j2"): str,
+        vol.Optional("service_config_path", default="k8s_config/service.yaml.j2"): str,
+        vol.Optional("service_ips"): {
+            vol.Optional("dev"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")),
+            vol.Optional("acp"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")),
+            vol.Optional("prd"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
         }
-        ])
+
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -45,6 +49,9 @@ class BaseDeployToK8s(DeploymentStep):
         # have to overwrite the default keyvault b/c of Vnet K8s cluster
         self.vault_name, self.vault_client = KeyvaultClient.vault_and_client(self.config, dtap=fixed_env)
         self.add_application_insights = self.config.get("add_application_insights", False)
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     def run(self):
         # get the ip address for this environment

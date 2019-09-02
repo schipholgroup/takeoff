@@ -56,7 +56,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
 
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
-    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "app-name"})
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "app-name", "CI_COMMIT_REF_SLUG": "foo"})
     def test_construct_name(self, _):
         config = {**runway_config(),
                   **BASE_CONF,
