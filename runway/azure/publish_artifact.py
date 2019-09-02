@@ -1,5 +1,7 @@
 import glob
 import logging
+from pprint import pprint
+
 import voluptuous as vol
 
 from azure.storage.blob import BlockBlobService
