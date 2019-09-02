@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from azure.mgmt.cosmosdb import CosmosDB
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.credentials.azure_active_directory_user import AzureUserCredentials
-from runway.credentials.azure_keyvault import AzureKeyvaultClient
-from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.azure.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.azure.credentials.azure_keyvault import AzureKeyvaultClient
+from runway.azure.credentials.azure_subscription_id import AzureSubscriptionId
 
 
 @dataclass(frozen=True)

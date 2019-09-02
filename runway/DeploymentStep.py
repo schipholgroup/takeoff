@@ -2,7 +2,9 @@ import abc
 import voluptuous as vol
 
 from runway import ApplicationVersion
-from runway.credentials.azure_keyvault import AzureKeyvaultClient
+
+# TODO move away from hardcoded depencendy on azure keyvault in this file
+from runway.azure.credentials.azure_keyvault import AzureKeyvaultClient
 
 
 class DeploymentStep(object):

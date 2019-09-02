@@ -5,11 +5,12 @@ import pytest
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.create_databricks_secrets import CreateDatabricksSecrets
-from runway.create_eventhub_consumer_groups import (
+
+from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
+from runway.azure.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
 )
-from runway.deploy_to_databricks import DeployToDatabricks
+from runway.azure.deploy_to_databricks import DeployToDatabricks
 from runway.run_deployment import run_task
 
 environment_variables = {

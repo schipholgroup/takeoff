@@ -14,7 +14,7 @@ from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.application_name import ApplicationName
-from runway.credentials.azure_databricks import Databricks
+from runway.azure.credentials.azure_databricks import Databricks
 from runway.util import has_prefix_match, get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)

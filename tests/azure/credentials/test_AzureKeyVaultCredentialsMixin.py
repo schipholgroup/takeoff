@@ -2,20 +2,20 @@ from unittest import mock
 
 from azure.keyvault.models import SecretBundle
 
-from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.azure.credentials.AzureKeyVaultCredentialsMixin import AzureKeyVaultCredentialsMixin
 
 
-class TestKeyVaultCredentialsMixin(object):
+class TestAzureKeyVaultCredentialsMixin(object):
     @mock.patch(
-        "runway.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin._credentials",
+        "runway.azure.credentials.AzureKeyVaultCredentialsMixin.AzureKeyVaultCredentialsMixin._credentials",
         return_value={"key1": "foo", "key2": "bar"},
     )
     def test_transform_key_to_credential_kwargs(self, _):
-        res = KeyVaultCredentialsMixin(None, None)._transform_key_to_credential_kwargs({"arg1": "key1"})
+        res = AzureKeyVaultCredentialsMixin(None, None)._transform_key_to_credential_kwargs({"arg1": "key1"})
         assert res == {"arg1": "foo"}
 
     def test_filter_keyvault_ids(self):
-        res = KeyVaultCredentialsMixin._filter_keyvault_ids(
+        res = AzureKeyVaultCredentialsMixin._filter_keyvault_ids(
             ["common-username", "common-password", "uncommon"], "common"
         )
         assert len(res) == 2
@@ -29,5 +29,5 @@ class TestKeyVaultCredentialsMixin(object):
             SecretBundle(id="some-other"),
         ]
 
-        res = KeyVaultCredentialsMixin(None, client)._credentials(["databricks-token", "databricks-host"])
+        res = AzureKeyVaultCredentialsMixin(None, client)._credentials(["databricks-token", "databricks-host"])
         assert len(res) == 2

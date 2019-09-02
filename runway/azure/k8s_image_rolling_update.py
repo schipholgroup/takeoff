@@ -8,9 +8,9 @@ from azure.mgmt.containerservice.models import CredentialResults
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.azure_active_directory_user import AzureUserCredentials
-from runway.credentials.azure_keyvault import AzureKeyvaultClient
-from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.azure.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.azure.credentials.azure_keyvault import AzureKeyvaultClient
+from runway.azure.credentials.azure_subscription_id import AzureSubscriptionId
 from runway.schemas import BASE_SCHEMA
 from runway.util import run_bash_command
 

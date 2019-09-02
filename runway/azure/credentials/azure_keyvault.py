@@ -1,7 +1,7 @@
 from azure.keyvault import KeyVaultClient
 import logging
 from runway.ApplicationVersion import ApplicationVersion
-from runway.credentials.azure_service_principal import AzureServicePrincipalCredentials
+from runway.azure.credentials.azure_service_principal import AzureServicePrincipalCredentials
 
 
 class AzureKeyvaultClient(object):

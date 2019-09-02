@@ -5,12 +5,12 @@ from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.create_databricks_secrets import CreateDatabricksSecrets
+from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
-from runway.credentials.azure_active_directory_user import AzureUserCredentials
-from runway.credentials.azure_databricks import Databricks
-from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.azure.credentials.azure_active_directory_user import AzureUserCredentials
+from runway.azure.credentials.azure_databricks import Databricks
+from runway.azure.credentials.azure_subscription_id import AzureSubscriptionId
 
 logger = logging.getLogger(__name__)
 

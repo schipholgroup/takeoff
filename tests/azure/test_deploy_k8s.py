@@ -6,7 +6,7 @@ from kubernetes.client import CoreV1Api
 from kubernetes.client import V1SecretList
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.deploy_to_k8s import DeployToK8s
+from runway.azure.deploy_to_k8s import DeployToK8s
 
 with open('tests/test_runway_config.yaml', 'r') as f:
     runway_config = yaml.safe_load(f.read())

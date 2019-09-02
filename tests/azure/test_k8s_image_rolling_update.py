@@ -4,7 +4,7 @@ from unittest import mock
 import yaml
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.k8s_image_rolling_update import K8sImageRollingUpdate as victim
+from runway.azure.k8s_image_rolling_update import K8sImageRollingUpdate as victim
 
 with open('tests/test_runway_config.yaml', 'r') as f:
     runway_config = yaml.safe_load(f.read())

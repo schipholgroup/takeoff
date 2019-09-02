@@ -5,7 +5,7 @@ from unittest import mock
 import yaml
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.create_eventhub_consumer_groups import (
+from runway.azure.create_eventhub_consumer_groups import (
     ConsumerGroup,
     EventHubConsumerGroup,
     CreateEventhubConsumerGroups as victim,

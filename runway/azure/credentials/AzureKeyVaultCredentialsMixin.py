@@ -20,7 +20,7 @@ class KeyVaultSecrets:
     secrets: List[Secret]
 
 
-class KeyVaultCredentialsMixin(object):
+class AzureKeyVaultCredentialsMixin(object):
     def __init__(self, vault_name: str, vault_client: KeyVaultClient):
         self.vault_client = vault_client
         self.vault_name = vault_name
@@ -58,7 +58,7 @@ class KeyVaultCredentialsMixin(object):
             }
 
         """
-        credentials: Dict[str, Secret] = self._credentials(list(keys.values()))
+        credentials: Dict[str, str] = self._credentials(list(keys.values()))
         credential_kwargs = {
             function_argument: credentials[env_variable]
             for env_variable, function_argument in inverse_dictionary(keys).items()
