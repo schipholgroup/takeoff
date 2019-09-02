@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.util import current_filename
 
 

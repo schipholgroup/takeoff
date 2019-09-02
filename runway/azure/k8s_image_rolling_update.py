@@ -8,9 +8,9 @@ from azure.mgmt.containerservice.models import CredentialResults
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.azure_active_directory_user import AzureUserCredentials
-from runway.credentials.azure_keyvault import AzureKeyvaultClient
-from runway.credentials.azure_subscription_id import AzureSubscriptionId
+from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
+from runway.azure.credentials.keyvault import KeyvaultClient
+from runway.azure.credentials.subscription_id import SubscriptionId
 from runway.schemas import BASE_SCHEMA
 from runway.util import run_bash_command
 
@@ -36,7 +36,7 @@ class K8sImageRollingUpdate(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
         # have to overwrite the default keyvault b/c of Vnet K8s cluster
-        self.vault_name, self.vault_client = AzureKeyvaultClient.vault_and_client(self.config, env=env)
+        self.vault_name, self.vault_client = KeyvaultClient.vault_and_client(self.config, env=env)
 
     def schema(self) -> vol.Schema:
         return SCHEMA
@@ -100,15 +100,13 @@ class K8sImageRollingUpdate(DeploymentStep):
 
     def _authenticate_with_k8s(self):
         # get azure container service client
-        credentials = AzureUserCredentials(
+        credentials = ActiveDirectoryUserCredentials(
             vault_name=self.vault_name, vault_client=self.vault_client
         ).credentials(self.config)
 
         client = ContainerServiceClient(
             credentials=credentials,
-            subscription_id=AzureSubscriptionId(self.vault_name, self.vault_client).subscription_id(
-                self.config
-            ),
+            subscription_id=SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
         )
 
         # authenticate with k8s

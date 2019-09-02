@@ -1,6 +1,6 @@
 from databricks_cli.sdk import ApiClient
 
-from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.util import current_filename
 
 

@@ -5,7 +5,6 @@ from runway.credentials.branch_name import BranchName
 from runway.util import get_tag, get_short_hash, get_full_yaml_filename, load_yaml
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def get_environment(config) -> ApplicationVersion:

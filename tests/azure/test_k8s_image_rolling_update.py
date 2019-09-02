@@ -4,7 +4,7 @@ from unittest import mock
 import yaml
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.k8s_image_rolling_update import K8sImageRollingUpdate as victim
+from runway.azure.k8s_image_rolling_update import K8sImageRollingUpdate as victim
 
 with open('tests/test_runway_config.yaml', 'r') as f:
     runway_config = yaml.safe_load(f.read())
@@ -15,8 +15,8 @@ env_variables = {'AZURE_TENANTID': 'David',
 
 
 @mock.patch.dict(os.environ, env_variables)
-class TestDeployToK8s(object):
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+class TestK8sImageRollingUpdate(object):
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_validate_schema(self, _):
         conf = {**runway_config, **{'task': 'k8sImageRollingUpdate',
                                     'cluster_name': "Dave",

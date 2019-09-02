@@ -1,6 +1,6 @@
 from twine.settings import Settings
 
-from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.util import current_filename
 
 
