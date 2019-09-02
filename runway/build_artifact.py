@@ -3,10 +3,19 @@ import shutil
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
+from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import run_bash_command
+import voluptuous as vol
 
 logger = logging.getLogger(__name__)
 
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
+    {
+        vol.Required("task"): vol.All(str, vol.Match(r"buildArtifact")),
+        vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"])),
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 class BuildArtifact(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):

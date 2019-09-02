@@ -12,14 +12,26 @@ from runway.credentials.DeploymentYamlEnvironmentVariablesMixin import Deploymen
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.databricks import Databricks
+from runway.schemas import RUNWAY_BASE_SCHEMA
+import voluptuous as vol
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
+    {
+        vol.Required("task"): vol.All(str, vol.Match(r"createDatabricksSecrets")),
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 class CreateDatabricksSecrets(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     def run(self):
         self.create_databricks_secrets()

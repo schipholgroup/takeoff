@@ -19,9 +19,22 @@ from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCr
 from runway.azure.credentials.container_registry import DockerRegistry
 from runway.azure.credentials.keyvault import KeyvaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import render_file_with_jinja, b64_encode
+import voluptuous as vol
 
 logger = logging.getLogger(__name__)
+
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
+    {
+        vol.Required("task"): vol.All(str, vol.Match(r"createEventhubProducerPolicies")),
+        vol.Required("policies"): vol.All(vol.Length(min=1), [{
+            vol.Required("eventhubEntity"): str,
+        }
+        ])
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 # assumes kubectl is available
@@ -122,7 +135,7 @@ class BaseDeployToK8s(DeploymentStep):
             api_client.create_namespace(body=namespace_to_create)
 
     def _create_or_patch_resource(
-        self, client, resource_type: str, name: str, namespace: str, resource_config: dict
+            self, client, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         list_function = getattr(client, f"list_namespaced_{resource_type}")
         patch_function = getattr(client, f"patch_namespaced_{resource_type}")

@@ -14,9 +14,22 @@ from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.schemas import RUNWAY_BASE_SCHEMA
+import voluptuous as vol
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
+    {
+        vol.Required("task"): vol.All(str, vol.Match(r"createEventhubConsumerGroups")),
+        vol.Required("groups"): vol.All(vol.Length(min=1), [{
+            vol.Required("eventhubEntity"): str,
+            vol.Required("consumerGroup"): str,
+        }
+        ])
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 @dataclass(frozen=True)
@@ -56,6 +69,9 @@ class EventHubConsumerGroup(object):
 class CreateEventhubConsumerGroups(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     def run(self):
         groups = [
@@ -99,7 +115,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         ]
 
     def _get_requested_consumer_groups(
-        self, parsed_groups: List[EventHubConsumerGroup]
+            self, parsed_groups: List[EventHubConsumerGroup]
     ) -> List[ConsumerGroup]:
         formatted_dtap = self.env.environment.lower()
         eventhub_namespace = self.config["runway_common"]["eventhub_namespace"].format(dtap=formatted_dtap)
@@ -142,7 +158,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     def _create_connection_strings(
-        self, client: EventHubManagementClient, eventhub_entities: Set[EventHub]
+            self, client: EventHubManagementClient, eventhub_entities: Set[EventHub]
     ) -> List[ConnectingString]:
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
@@ -192,7 +208,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
 
         for group in consumer_groups_to_create:
             if CreateEventhubConsumerGroups._eventhub_exists(
-                eventhub_client, group
+                    eventhub_client, group
             ) and not CreateEventhubConsumerGroups._group_exists(eventhub_client, group):
                 self._create_consumer_group(client=eventhub_client, group=group)
 

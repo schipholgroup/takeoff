@@ -11,13 +11,26 @@ from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.schemas import RUNWAY_BASE_SCHEMA
+
+import voluptuous as vol
 
 logger = logging.getLogger(__name__)
+
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
+    {
+        vol.Required("task"): vol.All(str, vol.Match(r"createApplicationInsights")),
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 class CreateApplicationInsights(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     def create_application_insights(self, kind: str, application_type: str) -> ApplicationInsightsComponent:
 
