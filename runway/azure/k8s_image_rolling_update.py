@@ -11,12 +11,12 @@ from runway.DeploymentStep import DeploymentStep
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.keyvault import KeyvaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
-from runway.schemas import BASE_SCHEMA
+from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import run_bash_command
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = BASE_SCHEMA.extend(
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
         vol.Required("task"): vol.All(str, vol.Match(r"^k8sImageRollingUpdate$")),
         # TODO This is a hack to target a specific resource group. This logic needs an overhaul soon.
