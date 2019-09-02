@@ -11,12 +11,12 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.azure_container_registry import DockerRegistry
-from runway.schemas import BASE_SCHEMA
+from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import run_bash_command
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = BASE_SCHEMA.extend(
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
         vol.Required("task"): vol.All(str, vol.Match(r"buildDockerImage")),
         vol.Optional(
