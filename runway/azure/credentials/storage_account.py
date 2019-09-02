@@ -1,6 +1,6 @@
 from azure.storage.blob import BlockBlobService
 
-from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.util import current_filename
 
 

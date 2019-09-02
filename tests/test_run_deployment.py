@@ -5,11 +5,12 @@ import pytest
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.create_databricks_secrets import CreateDatabricksSecrets
-from runway.create_eventhub_consumer_groups import (
+
+from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
+from runway.azure.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
 )
-from runway.deploy_to_databricks import DeployToDatabricks
+from runway.azure.deploy_to_databricks import DeployToDatabricks
 from runway.run_deployment import run_task
 
 environment_variables = {
@@ -142,7 +143,7 @@ class MockedClass(DeploymentStep):
 
 
 @mock.patch.dict('runway.deployment_step.deployment_steps', {'mocked': MockedClass})
-@mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+@mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
 def test_run_task(_):
     from runway.run_deployment import run_task
     res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})

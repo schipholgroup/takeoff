@@ -7,11 +7,11 @@ from databricks_cli.secrets.api import SecretApi
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.credentials.DeploymentYamlEnvironmentVariablesMixin import DeploymentYamlEnvironmentVariablesMixin
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
-from runway.credentials.azure_databricks import Databricks
+from runway.azure.credentials.databricks import Databricks
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

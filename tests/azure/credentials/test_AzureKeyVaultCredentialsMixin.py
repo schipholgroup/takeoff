@@ -2,12 +2,12 @@ from unittest import mock
 
 from azure.keyvault.models import SecretBundle
 
-from runway.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 
 
-class TestKeyVaultCredentialsMixin(object):
+class TestAzureKeyVaultCredentialsMixin(object):
     @mock.patch(
-        "runway.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin._credentials",
+        "runway.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin._credentials",
         return_value={"key1": "foo", "key2": "bar"},
     )
     def test_transform_key_to_credential_kwargs(self, _):

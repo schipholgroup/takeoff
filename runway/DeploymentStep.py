@@ -2,14 +2,16 @@ import abc
 import voluptuous as vol
 
 from runway import ApplicationVersion
-from runway.credentials.azure_keyvault import AzureKeyvaultClient
+
+# TODO move away from hardcoded depencendy on azure keyvault in this file
+from runway.azure.credentials.keyvault import KeyvaultClient
 
 
 class DeploymentStep(object):
     def __init__(self, env: ApplicationVersion, config: dict):
         self.env = env
         self.config = config
-        self.vault_name, self.vault_client = AzureKeyvaultClient.vault_and_client(self.config, self.env)
+        self.vault_name, self.vault_client = KeyvaultClient.vault_and_client(self.config, self.env)
 
     @abc.abstractmethod
     def run(self):
