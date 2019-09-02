@@ -42,7 +42,7 @@ class TestDeployToDatabricks(unittest.TestCase):
     def test_find_application_job_id_if_postfix(self):
         assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
 
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "app-name"})
     def test_construct_name(self, _):
         config = {'common_environment_keys': {'application_name': 'CI_PROJECT_NAME'}}
@@ -84,19 +84,19 @@ class TestDeployToDatabricks(unittest.TestCase):
                    "some_int": 5,
                    "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]}} == job_config
 
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_invalid_config_empty_schema(self, _):
         config = {"runway_common": {"databricks_library_path": "/path"}}
         with pytest.raises(voluptuous.error.MultipleInvalid):
             victim(ApplicationVersion("foo", "bar", "baz"), config).validate()
 
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_invalid_config_empty_jobs(self, _):
         config = {"runway_common": {"databricks_library_path": "/path"}, "jobs": []}
         with pytest.raises(voluptuous.error.MultipleInvalid):
             victim(ApplicationVersion("foo", "bar", "baz"), config).validate()
 
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_valid_config(self, _):
         config = {
             "runway_common": {"databricks_library_path": "/path"},
@@ -124,7 +124,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         assert res["arguments"] == [{"key": "val"}, {"key2": "val2"}]
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_yaml_to_databricks_json(self, _, __):
         config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
@@ -261,7 +261,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         }
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_without_dtap(self, _, __):
         config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
@@ -306,7 +306,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         }
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_with_dtap_schedule(self, _, __):
         config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
@@ -353,7 +353,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         }
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_with_dtap_schedule_for_other_env(self, _, __):
         config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
@@ -396,7 +396,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         }
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_no_schedule_as_parameter_in_job_config_without_dtap_schedule(self, _, __):
         config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
@@ -433,7 +433,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         }
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_from_template_in_job_config(self, _, __):
         config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {

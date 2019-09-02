@@ -28,7 +28,9 @@ class Cosmos(object):
 
     def _get_cosmos_management_client(self) -> CosmosDB:
         vault, client = KeyvaultClient.vault_and_client(self.config, self.env)
-        credentials = ActiveDirectoryUserCredentials(vault_name=vault, vault_client=client).credentials(self.config)
+        credentials = ActiveDirectoryUserCredentials(vault_name=vault, vault_client=client).credentials(
+            self.config
+        )
         return CosmosDB(credentials, SubscriptionId(vault, client).subscription_id(self.config))
 
     def _get_cosmos_instance(self) -> dict:

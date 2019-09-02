@@ -88,9 +88,7 @@ class BaseDeployToK8s(DeploymentStep):
 
         client = ContainerServiceClient(
             credentials=credentials,
-            subscription_id=SubscriptionId(self.vault_name, self.vault_client).subscription_id(
-                self.config
-            ),
+            subscription_id=SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
         )
 
         # authenticate with k8s

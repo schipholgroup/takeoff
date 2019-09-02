@@ -17,7 +17,7 @@ with open('tests/test_runway_config.yaml', 'r') as f:
 
 class TestCreateEventhubConsumerGroups(unittest.TestCase):
 
-    @mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_get_requested_consumer_groups(self, _):
         env = ApplicationVersion('DEV', 'local', 'foo')
         consumer_groups = victim(env, runway_config)._get_requested_consumer_groups(

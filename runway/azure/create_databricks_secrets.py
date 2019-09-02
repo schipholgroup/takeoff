@@ -61,9 +61,9 @@ class CreateDatabricksSecrets(DeploymentStep):
         pprint(self._list_secrets(databricks_client, application_name))
 
     def _combine_secrets(self, application_name):
-        vault_secrets = KeyVaultCredentialsMixin(
-            self.vault_name, self.vault_client
-        ).get_keyvault_secrets(application_name)
+        vault_secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
+            application_name
+        )
         deployment_secrets = DeploymentYamlEnvironmentVariablesMixin(
             self.env, self.config
         ).get_deployment_secrets()
