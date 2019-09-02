@@ -17,7 +17,8 @@ RUNWAY_COMMON_SCHEMA = vol.Schema(
                 vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str,
                 vol.Optional("databricks_library_path", default="dbfs:/mnt/libraries"): str,
                 vol.Optional("eventhub_namespace", default="sdheventhub{dtap}"): str,
-            })
+            }
+        ),
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -28,7 +29,7 @@ ENVIROMENT_KEYS_SCHEMA = {
             vol.Required("application_name", default="CI_PROJECT_NAME"): str,
             vol.Required("branch_name", default="CI_COMMIT_REF_SLUG"): str,
         }
-    ),
+    )
 }
 
 KEYVAULT_KEYS_SCHEMA = {
@@ -68,8 +69,7 @@ KEYVAULT_KEYS_SCHEMA = {
             ),
             vol.Optional("azure_subscription_id", default="subscription-id"): str,
         }
-    ),
-
+    )
 }
 
 CI_KEYS_SCHEMA = {
@@ -109,9 +109,5 @@ CI_KEYS_SCHEMA = {
 }
 
 RUNWAY_BASE_SCHEMA = RUNWAY_COMMON_SCHEMA.extend(
-    {
-        **ENVIROMENT_KEYS_SCHEMA,
-        **KEYVAULT_KEYS_SCHEMA,
-        **CI_KEYS_SCHEMA
-    }
+    {**ENVIROMENT_KEYS_SCHEMA, **KEYVAULT_KEYS_SCHEMA, **CI_KEYS_SCHEMA}
 )

@@ -45,21 +45,18 @@ class K8sImageRollingUpdate(DeploymentStep):
         """
         For now only update the deployment image once a tag is created
         """
-        run_config = self.validate()
-        if run_config["always_deploy"]:
-            logger.info("Always-deploy flag set to true")
-            self.update_image(run_config)
-        elif self.env.on_release_tag:
-            self.update_image(run_config)
+        if self.config["always_deploy"] or self.env.on_release_tag:
+            logger.info("Deploying new k8s image")
+            self.update_image()
 
-    def update_image(self, conf):
+    def update_image(self):
         # get the ip address for this environment
         self._authenticate_with_k8s()
         # load the kubeconfig we just fetched
         kubernetes.config.load_kube_config()
         logger.info("Kubeconfig loaded")
 
-        self._apply_rolling_update(conf["namespace"], conf["deployment_name"])
+        self._apply_rolling_update(self.config["namespace"], self.config["deployment_name"])
 
     def _apply_rolling_update(self, namespace, deployment):
         """
