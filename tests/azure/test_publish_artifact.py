@@ -4,10 +4,8 @@ import unittest
 import azure
 import mock
 import pytest
-import twine
 import voluptuous as vol
 
-import runway
 from runway.ApplicationVersion import ApplicationVersion
 from runway.azure.publish_artifact import PublishArtifact as victim
 from runway.azure.publish_artifact import lang_must_match_target
