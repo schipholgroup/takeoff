@@ -36,6 +36,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
             vol.Optional("acp"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
             vol.Optional("prd"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
         },
+        "azure": {vol.Required("kubernetes_naming"): str},
     },
     extra=vol.ALLOW_EXTRA,
 )

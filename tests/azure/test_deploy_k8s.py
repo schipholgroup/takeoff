@@ -1,9 +1,9 @@
 import os
+from dataclasses import dataclass
 from unittest import mock
 
 import pytest
 import voluptuous as vol
-from dataclasses import dataclass
 from kubernetes.client import CoreV1Api
 from kubernetes.client import V1SecretList
 
@@ -11,7 +11,6 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.azure.deploy_to_k8s import DeployToK8s
 from runway.credentials.Secret import Secret
 from tests.azure import runway_config
-
 
 env_variables = {'AZURE_TENANTID': 'David',
                  'AZURE_KEYVAULT_SP_USERNAME_DEV': 'Doctor',
@@ -54,6 +53,7 @@ def victim():
     with mock.patch.dict(os.environ, env_variables) and \
          mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None)):
         conf = {**runway_config(), **BASE_CONF}
+        conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
         return DeployToK8s(ApplicationVersion("dev", "v", "branch"), conf)
 
 
@@ -61,6 +61,7 @@ class TestDeployToK8s(object):
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_validate_minimal_schema(self, _):
         conf = {**runway_config(), **BASE_CONF}
+        conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
 
         res = DeployToK8s(ApplicationVersion("dev", "v", "branch"), conf)
         res.config['deployment_config_path'] = "k8s_config/deployment.yaml.j2"
@@ -70,6 +71,7 @@ class TestDeployToK8s(object):
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_validate_schema_invalid_ip(self, _):
         conf = {**runway_config(), **BASE_CONF, "service_ips": {"dev": "Dave"}}
+        conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
 
         with pytest.raises(vol.MultipleInvalid):
             DeployToK8s(ApplicationVersion("dev", "v", "branch"), conf)
