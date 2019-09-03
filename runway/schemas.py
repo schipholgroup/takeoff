@@ -2,14 +2,14 @@ import voluptuous as vol
 
 RUNWAY_COMMON_SCHEMA = vol.Schema(
     {
-        vol.Optional("runway_azure"): vol.Schema(
+        vol.Optional("azure"): vol.Schema(
             {
                 vol.Required("resource_group_naming", default="rg{env}"): str,
                 vol.Required("keyvault_naming", default="keyvault{env}"): str,
                 vol.Optional("location", default="west europe"): str,
             }
         ),
-        vol.Optional("runway_common"): vol.Schema(
+        vol.Optional("common"): vol.Schema(
             {
                 vol.Optional("shared_registry"): str,
                 vol.Optional("k8s_vnet_name"): str,
@@ -18,7 +18,7 @@ RUNWAY_COMMON_SCHEMA = vol.Schema(
                 vol.Optional("databricks_library_path"): str,
             }
         ),
-        vol.Optional("runway_plugins",
+        vol.Optional("plugins",
                      description="A list of absolute paths containing runway plugins"):
             vol.All([str], vol.Length(min=1))
     },

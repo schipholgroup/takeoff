@@ -27,7 +27,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
         vol.Required("groups"): vol.All(
             vol.Length(min=1), [{vol.Required("eventhubEntity"): str, vol.Required("consumerGroup"): str}]
         ),
-        'runway_azure': {
+        'azure': {
             vol.Required("eventhub_naming"): str
         }
     },

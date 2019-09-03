@@ -1,4 +1,4 @@
-runway_azure:
+azure:
   resource_group_naming: "rg{env}"
   keyvault_naming: "https://keyvault{env}.vault.azure.net/"
   location: "west europe"
@@ -54,7 +54,7 @@ runway_azure_keyvault_shared_keys:
 - registry_username
 - registry_password
 
-runway_common:
+common:
   shared_registry: "some-registry"
   k8s_name: sdhkubernetes{dtap}
   k8s_vnet_name: sdh-kubernetes
