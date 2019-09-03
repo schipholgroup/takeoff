@@ -122,7 +122,7 @@ class BaseDeployToK8s(DeploymentStep):
         self._write_kube_config(credential_results)
 
     @staticmethod
-    def find_needle(needle, haystack):
+    def is_needle_in_haystack(needle, haystack):
         # Helper method to abstract away checking for existence of a k8s entity
         # this assumes the k8s structure of entities (i.e. items->metadata->name
         for dep in haystack["items"]:
@@ -132,11 +132,11 @@ class BaseDeployToK8s(DeploymentStep):
 
     def _k8s_resource_exists(self, resource_name: str, namespace: str, k8s_resource_listing_function):
         existing_services = k8s_resource_listing_function(namespace=namespace).to_dict()
-        return self.find_needle(resource_name, existing_services)
+        return self.is_needle_in_haystack(resource_name, existing_services)
 
     def _k8s_namespace_exists(self, namespace: str):
         existing_namespaces = self.core_v1_api.list_namespace().to_dict()
-        return self.find_needle(namespace, existing_namespaces)
+        return self.is_needle_in_haystack(namespace, existing_namespaces)
 
     def _create_namespace_if_not_exists(self, k8s_namespace: str):
         # very simple way to ensure the namespace exists

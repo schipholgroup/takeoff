@@ -74,13 +74,13 @@ class TestDeployToK8s(object):
         with pytest.raises(vol.MultipleInvalid):
             DeployToK8s(ApplicationVersion("dev", "v", "branch"), conf)
 
-    def test_find_needle(self):
+    def test_is_needle_in_haystack(self):
         haystack = K8sResponse("hello").to_dict()
-        assert DeployToK8s.find_needle('something', haystack)
+        assert DeployToK8s.is_needle_in_haystack('something', haystack)
 
     def test_find_unfindable_needle(self):
         haystack = K8sResponse("hello").to_dict()
-        assert not DeployToK8s.find_needle('my-unfindable-needle', haystack)
+        assert not DeployToK8s.is_needle_in_haystack('my-unfindable-needle', haystack)
 
     def test_k8s_resource_exists(self, victim):
         assert victim._k8s_resource_exists("something", "", K8sResponse)
@@ -96,7 +96,7 @@ class TestDeployToK8s(object):
     def test_k8s_namespace_does_not_exist(self, _, victim):
         assert not victim._k8s_namespace_exists("unfindable")
 
-    @mock.patch.object(DeployToK8s, "find_needle", return_value=False)
+    @mock.patch.object(DeployToK8s, "is_needle_in_haystack", return_value=False)
     def test_create_resource(self, _, victim):
         with mock.patch.object(CoreV1Api, "list_namespaced_secret", return_value=(V1SecretList(items=[]))) as mock_list:
             with mock.patch.object(CoreV1Api, "patch_namespaced_secret", return_value=None) as mock_patch:
@@ -108,11 +108,11 @@ class TestDeployToK8s(object):
                         namespace="some_namespace",
                         resource_config={}
                     )
-                    mock_list.assert_called_once_with(namespace="some_namespace")
-                    mock_create.assert_called_once_with(namespace="some_namespace", body={})
-                    mock_patch.assert_not_called()
+        mock_list.assert_called_once_with(namespace="some_namespace")
+        mock_create.assert_called_once_with(namespace="some_namespace", body={})
+        mock_patch.assert_not_called()
 
-    @mock.patch.object(DeployToK8s, "find_needle", return_value=True)
+    @mock.patch.object(DeployToK8s, "is_needle_in_haystack", return_value=True)
     def test_patch_resource(self, _, victim):
         with mock.patch.object(CoreV1Api, "list_namespaced_secret", return_value=(V1SecretList(items=[]))) as mock_list:
             with mock.patch.object(CoreV1Api, "patch_namespaced_secret", return_value=None) as mock_patch:
@@ -155,18 +155,18 @@ class TestDeployToK8s(object):
     @mock.patch.dict(os.environ, env_variables)
     @mock.patch("runway.azure.deploy_to_k8s.DeployToK8s._k8s_resource_exists", return_value=False)
     def test_create_deployment(self, _, victim):
-        with mock.patch.object(victim.extensions_v1_beta_api, "create_namespaced_deployment") as create_mock, \
-                mock.patch.object(victim.extensions_v1_beta_api, "patch_namespaced_deployment") as patch_mock:
-            victim._create_or_patch_deployment({}, "some_namespace")
+        with mock.patch.object(victim.extensions_v1_beta_api, "create_namespaced_deployment") as create_mock:
+            with mock.patch.object(victim.extensions_v1_beta_api, "patch_namespaced_deployment") as patch_mock:
+                victim._create_or_patch_deployment({}, "some_namespace")
         create_mock.assert_called_once_with(namespace='some_namespace', body={})
         patch_mock.assert_not_called()
 
     @mock.patch.dict(os.environ, env_variables)
     @mock.patch("runway.azure.deploy_to_k8s.DeployToK8s._k8s_resource_exists", return_value=True)
     def test_patch_deployment(self, _, victim):
-        with mock.patch.object(victim.extensions_v1_beta_api, "create_namespaced_deployment") as create_mock, \
-                mock.patch.object(victim.extensions_v1_beta_api, "patch_namespaced_deployment") as patch_mock:
-            victim._create_or_patch_deployment({}, "some_namespace")
+        with mock.patch.object(victim.extensions_v1_beta_api, "create_namespaced_deployment") as create_mock:
+            with mock.patch.object(victim.extensions_v1_beta_api, "patch_namespaced_deployment") as patch_mock:
+                victim._create_or_patch_deployment({}, "some_namespace")
         patch_mock.assert_called_once_with(name='my_little_pony', namespace='some_namespace', body={})
         create_mock.assert_not_called()
 
@@ -174,9 +174,9 @@ class TestDeployToK8s(object):
     @mock.patch("runway.azure.deploy_to_k8s.DeployToK8s._k8s_resource_exists", return_value=False)
     def test_create_service(self, _, victim):
         metadata_config = {"metadata": {"name": "my-service"}}
-        with mock.patch.object(victim.core_v1_api, "create_namespaced_service") as create_mock, \
-                mock.patch.object(victim.core_v1_api, "patch_namespaced_service") as patch_mock:
-            victim._create_or_patch_service(metadata_config, "some_namespace")
+        with mock.patch.object(victim.core_v1_api, "create_namespaced_service") as create_mock:
+            with mock.patch.object(victim.core_v1_api, "patch_namespaced_service") as patch_mock:
+                victim._create_or_patch_service(metadata_config, "some_namespace")
         create_mock.assert_called_once_with(namespace='some_namespace', body=metadata_config)
         patch_mock.assert_not_called()
 
@@ -184,9 +184,9 @@ class TestDeployToK8s(object):
     @mock.patch("runway.azure.deploy_to_k8s.DeployToK8s._k8s_resource_exists", return_value=True)
     def test_patch_service(self, _, victim):
         metadata_config = {"metadata": {"name": "my-service"}}
-        with mock.patch.object(victim.core_v1_api, "create_namespaced_service") as create_mock, \
-                mock.patch.object(victim.core_v1_api, "patch_namespaced_service") as patch_mock:
-            victim._create_or_patch_service(metadata_config, "some_namespace")
+        with mock.patch.object(victim.core_v1_api, "create_namespaced_service") as create_mock:
+            with mock.patch.object(victim.core_v1_api, "patch_namespaced_service") as patch_mock:
+                victim._create_or_patch_service(metadata_config, "some_namespace")
         patch_mock.assert_called_once_with(name='my-service', namespace='some_namespace', body={"metadata": {"name": "my-service"}})
         create_mock.assert_not_called()
 
@@ -223,9 +223,9 @@ class TestDeployToK8s(object):
             'type': 'Opaque'
         }
 
-        with mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock, \
-                mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
-            victim._create_or_patch_secrets(secrets, "some_namespace")
+        with mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock:
+            with mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
+                victim._create_or_patch_secrets(secrets, "some_namespace")
         create_mock.assert_called_once_with(namespace='some_namespace', body=expected_body)
         patch_mock.assert_not_called()
 
@@ -262,9 +262,9 @@ class TestDeployToK8s(object):
             'type': 'Opaque'
         }
 
-        with mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock, \
-                mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
-            victim._create_or_patch_secrets(secrets, "some_namespace")
+        with mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock:
+            with mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
+                victim._create_or_patch_secrets(secrets, "some_namespace")
         patch_mock.assert_called_once_with(namespace='some_namespace', body=expected_body, name='my_little_pony-secret')
         create_mock.assert_not_called()
 
@@ -299,10 +299,10 @@ class TestDeployToK8s(object):
             'type': 'kubernetes.io/dockerconfigjson'
         }
 
-        with mock.patch("runway.azure.deploy_to_k8s.DockerRegistry", return_value=RegistryCredentials('my-registry', 'my-username', 'my-password')) as a, \
-                mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock, \
-                mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
-            victim._create_docker_registry_secret()
+        with mock.patch("runway.azure.deploy_to_k8s.DockerRegistry", return_value=RegistryCredentials('my-registry', 'my-username', 'my-password')):
+            with mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock:
+                with mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
+                    victim._create_docker_registry_secret()
         create_mock.assert_called_once_with(body=expected_body, namespace='my_little_pony')
         patch_mock.assert_not_called()
 
