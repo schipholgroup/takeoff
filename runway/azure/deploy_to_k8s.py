@@ -22,7 +22,6 @@ from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import render_file_with_jinja, b64_encode
-import voluptuous as vol
 
 logger = logging.getLogger(__name__)
 

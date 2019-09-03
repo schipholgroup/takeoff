@@ -7,7 +7,6 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import run_bash_command
-import voluptuous as vol
 
 logger = logging.getLogger(__name__)
 
