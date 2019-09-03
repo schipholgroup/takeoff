@@ -22,7 +22,7 @@ class TestDockerImageBuilder(unittest.TestCase):
         conf = {**runway_config(),
                 **{'task': 'buildDockerImage',
                    "dockerfiles": [{
-                       "file": "Dockerfil_custom",
+                       "file": "Dockerfile_custom",
                        "postfix": "Dave",
                        "custom_image_name": "Mustaine"
                    }]}}

@@ -1,26 +1,26 @@
 import logging
 from typing import List
 
+import voluptuous as vol
 from azure.mgmt.eventhub import EventHubManagementClient
 from azure.mgmt.relay.models import AccessRights
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
-from runway.credentials.Secret import Secret
-from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.credentials.Secret import Secret
+from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
-import voluptuous as vol
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): vol.All(str, vol.Match(r"createEventhubProducerPolicies")),
+        vol.Required("task"): "createEventhubProducerPolicies",
         vol.Required("policies"): vol.All(vol.Length(min=1), [{vol.Required("eventhubEntity"): str}]),
     },
     extra=vol.ALLOW_EXTRA,

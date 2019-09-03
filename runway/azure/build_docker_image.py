@@ -9,8 +9,8 @@ import voluptuous as vol
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.container_registry import DockerRegistry
+from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import run_bash_command
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): vol.All(str, vol.Match(r"buildDockerImage")),
+        vol.Required("task"): "buildDockerImage",
         vol.Optional(
             "dockerfiles", default=[{"file": "Dockerfile", "postfix": None, "custom_image_name": None}]
         ): [

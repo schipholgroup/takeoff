@@ -13,8 +13,8 @@ from databricks_cli.sdk import ApiClient
 from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.databricks import Databricks
+from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import has_prefix_match, get_whl_name, get_main_py_name
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): vol.All(str, vol.Match(r"deployToDatabricks")),
+        vol.Required("task"): "deployToDatabricks",
         vol.Required("jobs"): vol.All(
             [
                 {

@@ -3,6 +3,7 @@ import logging
 import os
 from pprint import pprint
 
+import voluptuous as vol
 import yaml
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
 from azure.mgmt.containerservice.models import CredentialResults
@@ -13,27 +14,28 @@ from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.azure.create_application_insights import CreateApplicationInsights
 from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
-from runway.credentials.Secret import Secret
-from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.container_registry import DockerRegistry
 from runway.azure.credentials.keyvault import KeyvaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.credentials.Secret import Secret
+from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import render_file_with_jinja, b64_encode
 import voluptuous as vol
 
 logger = logging.getLogger(__name__)
 
+IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): vol.All(str, vol.Match(r"deployToK8s")),
+        vol.Required("task"): "deployToK8s",
         vol.Optional("deployment_config_path", default="k8s_config/deployment.yaml.j2"): str,
         vol.Optional("service_config_path", default="k8s_config/service.yaml.j2"): str,
         vol.Optional("service_ips"): {
-            vol.Optional("dev"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")),
-            vol.Optional("acp"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")),
-            vol.Optional("prd"): vol.All(str, vol.Match(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")),
+            vol.Optional("dev"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
+            vol.Optional("acp"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
+            vol.Optional("prd"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
         },
     },
     extra=vol.ALLOW_EXTRA,

@@ -1,6 +1,8 @@
 import logging
 import shutil
 
+import voluptuous as vol
+
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.schemas import RUNWAY_BASE_SCHEMA
@@ -10,10 +12,7 @@ import voluptuous as vol
 logger = logging.getLogger(__name__)
 
 SCHEMA = RUNWAY_BASE_SCHEMA.extend(
-    {
-        vol.Required("task"): vol.All(str, vol.Match(r"buildArtifact")),
-        vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"])),
-    },
+    {vol.Required("task"): "buildArtifact", vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"]))},
     extra=vol.ALLOW_EXTRA,
 )
 

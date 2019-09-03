@@ -1,25 +1,22 @@
 import logging
 
+import voluptuous as vol
 from azure.mgmt.applicationinsights import ApplicationInsightsManagementClient
 from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
-from runway.credentials.Secret import Secret
-from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.credentials.Secret import Secret
+from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
-
-import voluptuous as vol
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = RUNWAY_BASE_SCHEMA.extend(
-    {vol.Required("task"): vol.All(str, vol.Match(r"createApplicationInsights"))}, extra=vol.ALLOW_EXTRA
-)
+SCHEMA = RUNWAY_BASE_SCHEMA.extend({vol.Required("task"): "createApplicationInsights"}, extra=vol.ALLOW_EXTRA)
 
 
 class CreateApplicationInsights(DeploymentStep):

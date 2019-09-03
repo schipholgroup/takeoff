@@ -29,7 +29,7 @@ SCHEMA = vol.All(
     vol.Schema(
         vol.All(
             {
-                vol.Required("task"): vol.All(str, vol.Match(r"publishArtifact")),
+                vol.Required("task"): "publishArtifact",
                 vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"])),
                 vol.Required("target"): vol.All([str, vol.In(["blob", "pypi", "ivy"])]),
                 vol.Optional(
