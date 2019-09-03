@@ -149,7 +149,7 @@ class BaseDeployToK8s(DeploymentStep):
             self.core_v1_api.create_namespace(body=namespace_to_create)
 
     def _create_or_patch_resource(
-            self, client, resource_type: str, name: str, namespace: str, resource_config: dict
+        self, client, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         list_function = getattr(client, f"list_namespaced_{resource_type}")
         patch_function = getattr(client, f"patch_namespaced_{resource_type}")

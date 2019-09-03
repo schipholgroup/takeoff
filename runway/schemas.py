@@ -18,9 +18,9 @@ RUNWAY_COMMON_SCHEMA = vol.Schema(
                 vol.Optional("databricks_library_path"): str,
             }
         ),
-        vol.Optional("plugins",
-                     description="A list of absolute paths containing runway plugins"):
-            vol.All([str], vol.Length(min=1))
+        vol.Optional("plugins", description="A list of absolute paths containing runway plugins"): vol.All(
+            [str], vol.Length(min=1)
+        ),
     },
     extra=vol.ALLOW_EXTRA,
 )

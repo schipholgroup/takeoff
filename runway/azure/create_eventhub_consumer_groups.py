@@ -27,9 +27,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
         vol.Required("groups"): vol.All(
             vol.Length(min=1), [{vol.Required("eventhubEntity"): str, vol.Required("consumerGroup"): str}]
         ),
-        'azure': {
-            vol.Required("eventhub_naming"): str
-        }
+        "azure": {vol.Required("eventhub_naming"): str},
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -118,7 +116,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         ]
 
     def _get_requested_consumer_groups(
-            self, parsed_groups: List[EventHubConsumerGroup]
+        self, parsed_groups: List[EventHubConsumerGroup]
     ) -> List[ConsumerGroup]:
         pprint(self.config)
         eventhub_namespace = get_eventhub_name(self.config, self.env)
@@ -161,7 +159,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     def _create_connection_strings(
-            self, client: EventHubManagementClient, eventhub_entities: Set[EventHub]
+        self, client: EventHubManagementClient, eventhub_entities: Set[EventHub]
     ) -> List[ConnectingString]:
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
@@ -211,7 +209,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
 
         for group in consumer_groups_to_create:
             if CreateEventhubConsumerGroups._eventhub_exists(
-                    eventhub_client, group
+                eventhub_client, group
             ) and not CreateEventhubConsumerGroups._group_exists(eventhub_client, group):
                 self._create_consumer_group(client=eventhub_client, group=group)
 

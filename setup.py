@@ -17,7 +17,7 @@ test_dependencies = [
     "jinja2==2.10",
     "gitpython==2.1.10",
     "mock==2.0.0",
-    "kubernetes==9.0.1",
+    "kubernetes==7.0.0",
     "pytest==3.8.2",
     "pytest-cov==2.6.0",
     "py4j==0.10.7",

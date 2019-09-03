@@ -132,7 +132,6 @@ def load_runway_plugins():
     """https://packaging.python.org/guides/creating-and-discovering-plugins/"""
     return {
         name: importlib.import_module(name)
-        for finder, name, ispkg
-        in pkgutil.iter_modules()
-        if name.startswith('runway_')
+        for finder, name, ispkg in pkgutil.iter_modules()
+        if name.startswith("runway_")
     }

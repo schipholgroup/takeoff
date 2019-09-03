@@ -35,14 +35,15 @@ def get_environment(config) -> ApplicationVersion:
 
 def add_runway_plugin_paths(dirs: List[str]):
     import sys
+
     sys.path.extend(dirs)
 
 
 def main():
     deployment_config = load_yaml(get_full_yaml_filename("deployment"))
     runway_config = load_yaml(get_full_yaml_filename("runway_config"))
-    if 'runway_plugins' in runway_config:
-        paths = runway_config['runway_plugins']
+    if "runway_plugins" in runway_config:
+        paths = runway_config["runway_plugins"]
         logger.info(f"Adding plugins from {paths}")
         add_runway_plugin_paths(paths)
 
