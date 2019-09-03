@@ -17,7 +17,7 @@ from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCr
 from runway.azure.credentials.container_registry import DockerRegistry
 from runway.azure.credentials.keyvault import KeyvaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
-from runway.azure.util import get_resource_group_name
+from runway.azure.util import get_resource_group_name, get_kubernetes_name
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
@@ -41,14 +41,10 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
 )
 
 
-class BaseDeployToK8s(DeploymentStep):
-    def __init__(self, env: ApplicationVersion, config: dict, fixed_env):
+class DeployToK8s(DeploymentStep):
+    def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
-        self.fixed_env = fixed_env
-
-        # have to overwrite the default keyvault b/c of Vnet K8s cluster
-        fixed = ApplicationVersion(self.fixed_env, self.env.version, self.env.branch)
-        self.vault_name, self.vault_client = KeyvaultClient.vault_and_client(self.config, fixed)
+        self.vault_name, self.vault_client = KeyvaultClient.vault_and_client(self.config, self.env)
         self.add_application_insights = self.config.get("add_application_insights", False)
 
         self.core_v1_api = CoreV1Api()
@@ -103,9 +99,7 @@ class BaseDeployToK8s(DeploymentStep):
         logger.info("Kubeconfig successfully written")
 
     def _authenticate_with_k8s(self):
-        # TODO: this needs to change
-        fixed = ApplicationVersion(self.fixed_env, self.env.version, self.env.branch)
-        resource_group = get_resource_group_name(self.config, fixed)
+        resource_group = get_resource_group_name(self.config, self.env)
 
         # get azure container service client
         credentials = ActiveDirectoryUserCredentials(
@@ -255,35 +249,8 @@ class BaseDeployToK8s(DeploymentStep):
 
     @property
     def k8s_namespace(self):
-        raise NotImplementedError()
-
-    @property
-    def cluster_name(self):
-        raise NotImplementedError()
-
-
-# TODO: we should get rid of this vnet stuff
-class DeployToVnetK8s(BaseDeployToK8s):
-    def __init__(self, env: ApplicationVersion, config: dict):
-        super().__init__(env, config, "prd")
-
-    @property
-    def k8s_namespace(self):
-        return f"{ApplicationName().get(self.config)}-{self.env.environment.lower()}"
-
-    @property
-    def cluster_name(self):
-        return self.config["common"]["k8s_vnet_name"]
-
-
-class DeployToK8s(BaseDeployToK8s):
-    def __init__(self, env: ApplicationVersion, config: dict):
-        super().__init__(env, config, env.environment.lower())
-
-    @property
-    def k8s_namespace(self):
         return ApplicationName().get(self.config)
 
     @property
     def cluster_name(self):
-        return self.config["common"]["k8s_name"].format(dtap=self.fixed_env)
+        return get_kubernetes_name(self.config, self.env)

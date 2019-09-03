@@ -56,7 +56,5 @@ runway_azure_keyvault_shared_keys:
 
 common:
   shared_registry: "some-registry"
-  k8s_name: sdhkubernetes{dtap}
-  k8s_vnet_name: sdh-kubernetes
   artifacts_shared_blob_container_name: libraries
   databricks_library_path: "dbfs:/mnt/libraries"
