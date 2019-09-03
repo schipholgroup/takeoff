@@ -36,6 +36,16 @@ class K8sResponse:
         }
 
 
+@dataclass
+class RegistryCredentials:
+    registry: str
+    username: str
+    password: str
+
+    def credentials(self, config):
+        return self
+
+
 BASE_CONF = {'task': 'deployToK8s'}
 
 
@@ -262,14 +272,6 @@ class TestDeployToK8s(object):
     @mock.patch.dict(os.environ, env_variables)
     @mock.patch("runway.azure.deploy_to_k8s.DeployToK8s._k8s_resource_exists", return_value=False)
     def test_create_docker_registry_secret(self, _, victim):
-        @dataclass
-        class RegistryCredentials:
-            registry: str
-            username: str
-            password: str
-
-            def credentials(self, config):
-                return self
 
         expected_body = {
             'api_version': None,
