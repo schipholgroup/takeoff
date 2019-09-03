@@ -2,24 +2,31 @@ import logging
 from pprint import pprint
 from typing import List
 
+import voluptuous as vol
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from runway.azure.credentials.databricks import Databricks
 from runway.credentials.DeploymentYamlEnvironmentVariablesMixin import DeploymentYamlEnvironmentVariablesMixin
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
-from runway.azure.credentials.databricks import Databricks
+from runway.schemas import RUNWAY_BASE_SCHEMA
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+SCHEMA = RUNWAY_BASE_SCHEMA.extend({vol.Required("task"): "createDatabricksSecrets"}, extra=vol.ALLOW_EXTRA)
 
 
 class CreateDatabricksSecrets(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     def run(self):
         self.create_databricks_secrets()

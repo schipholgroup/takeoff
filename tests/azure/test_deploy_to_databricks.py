@@ -2,11 +2,12 @@ import os
 import unittest
 
 import pytest
-import voluptuous
+import voluptuous as vol
 from mock import mock
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.azure.deploy_to_databricks import JobConfig, SCHEMA, DeployToDatabricks as victim
+from tests.azure import runway_config
 
 jobs = [
     JobConfig("foo-SNAPSHOT", 1),
@@ -22,8 +23,20 @@ streaming_job_config = "tests/azure/test_job_config.json.j2"
 batch_job_config = "tests/azure/test_job_config_scheduled.json.j2"
 dynamic_schedule_job_config = "tests/azure/test_job_config_schedule_dynamically.json.j2"
 
+BASE_CONF = {'task': 'deployToDatabricks', 'jobs': [{"main_name": "Dave"}]}
+
 
 class TestDeployToDatabricks(unittest.TestCase):
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_schema(self, _):
+        conf = {**runway_config(), **BASE_CONF}
+
+        res = victim(ApplicationVersion("dev", "v", "branch"), conf)
+        assert res.config['jobs'][0]['config_file'] == 'databricks.json.j2'
+        assert res.config['jobs'][0]['name'] == ''
+        assert res.config['jobs'][0]['lang'] == 'python'
+        assert res.config['jobs'][0]['arguments'] == [{}]
+
     def test_find_application_job_id_if_snapshot(self):
         assert victim._application_job_id("foo", "master", jobs) == [1]
 
@@ -43,12 +56,14 @@ class TestDeployToDatabricks(unittest.TestCase):
         assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
 
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
-    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "app-name"})
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "app-name", "CI_COMMIT_REF_SLUG": "foo"})
     def test_construct_name(self, _):
-        config = {'common_environment_keys': {'application_name': 'CI_PROJECT_NAME'}}
-        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), config)._construct_name("") == "app-name"
-        assert victim(ApplicationVersion("env", "1b8e36f1", "some-branch"), config)._construct_name(
-            "foo") == "app-name-foo"
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **{'common_environment_keys': {'application_name': 'CI_PROJECT_NAME'}}}
+        env = ApplicationVersion("env", "1b8e36f1", "some-branch")
+        assert victim(env, config)._construct_name("") == "app-name"
+        assert victim(env, config)._construct_name("foo") == "app-name-foo"
 
     def test_is_streaming_job(self):
         job_config = victim._construct_job_config(config_file=streaming_job_config)
@@ -85,54 +100,51 @@ class TestDeployToDatabricks(unittest.TestCase):
                    "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]}} == job_config
 
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_invalid_config_empty_schema(self, _):
-        config = {"runway_common": {"databricks_library_path": "/path"}}
-        with pytest.raises(voluptuous.error.MultipleInvalid):
-            victim(ApplicationVersion("foo", "bar", "baz"), config).validate()
-
-    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_invalid_config_empty_jobs(self, _):
-        config = {"runway_common": {"databricks_library_path": "/path"}, "jobs": []}
-        with pytest.raises(voluptuous.error.MultipleInvalid):
-            victim(ApplicationVersion("foo", "bar", "baz"), config).validate()
-
-    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_valid_config(self, _):
-        config = {
-            "runway_common": {"databricks_library_path": "/path"},
-            "task": "databricks",
-            "jobs": [{"main_name": "pyfile"}],
-        }
-        run_config = victim(ApplicationVersion("foo", "bar", "baz"), config).validate()
-        assert run_config["jobs"][0]["lang"] == "python"
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  "jobs": []}
+        with pytest.raises(vol.MultipleInvalid):
+            victim(ApplicationVersion("foo", "bar", "baz"), config)
 
     def test_create_arguments(self):
         assert victim._construct_arguments([{"foo": "bar"}]) == ["--foo", "bar"]
         assert victim._construct_arguments([{"foo": "bar"}, {"baz": "foobar"}]) == ["--foo", "bar", "--baz", "foobar"]
 
     def test_schema_validity(self):
-        res = SCHEMA({"jobs": [{"main_name": "foo", "name": "some-name"}]})["jobs"][0]
+        conf = {**runway_config(),
+                **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name"}]}
+                }
+        res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{}]
         assert res["lang"] == "python"
 
-        res = SCHEMA({"jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}]}]})["jobs"][0]
+        conf = {**runway_config(),
+                **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}]}]}
+                }
+        res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{"key": "val"}]
 
-        res = SCHEMA(
-            {"jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}, {"key2": "val2"}]}]}
-        )["jobs"][0]
+        conf = {**runway_config(),
+                **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}, {"key2": "val2"}]}]}
+                }
+        res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{"key": "val"}, {"key2": "val2"}]
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_yaml_to_databricks_json(self, _, __):
-        config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
             "main_name": "foo.class",
             "config_file": "tests/azure/test_databricks.json.j2",
             "lang": "scala",
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf,
+                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  }
 
         res = victim(ApplicationVersion("foo", "bar", "baz"), config)._create_config("job_name", conf, "app_name")
 
@@ -177,8 +189,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             },
             "name": "job_with_schedule",
             "libraries": [
-                { "whl": "some.whl" },
-                { "jar": "some.jar" }
+                {"whl": "some.whl"},
+                {"jar": "some.jar"}
             ],
             "schedule": {
                 "quartz_cron_expression": "0 15 22 ? * *",
@@ -216,8 +228,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             },
             "name": "job_with_schedule",
             "libraries": [
-                { "whl": "some.whl" },
-                { "jar": "some.jar" }
+                {"whl": "some.whl"},
+                {"jar": "some.jar"}
             ],
             "spark_python_task": {
                 "python_file": "some.py",
@@ -226,7 +238,6 @@ class TestDeployToDatabricks(unittest.TestCase):
         }
 
     def test_missing_schedule_as_parameter_in_databricks_json(self):
-
         job_config = victim._construct_job_config(
             config_file=dynamic_schedule_job_config,
             application_name="job_with_schedule",
@@ -251,8 +262,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             },
             "name": "job_with_schedule",
             "libraries": [
-                { "whl": "some.whl" },
-                { "jar": "some.jar" }
+                {"whl": "some.whl"},
+                {"jar": "some.jar"}
             ],
             "spark_python_task": {
                 "python_file": "some.py",
@@ -263,7 +274,6 @@ class TestDeployToDatabricks(unittest.TestCase):
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_without_dtap(self, _, __):
-        config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
@@ -274,6 +284,11 @@ class TestDeployToDatabricks(unittest.TestCase):
                 "timezone_id": "America/Los_Angeles"
             }
         }
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf,
+                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  }
 
         res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
 
@@ -292,8 +307,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             },
             "name": "job_with_schedule",
             "libraries": [
-                { "whl": "/path/version/version-bar-py3-none-any.whl" },
-                { "jar": "some.jar" }
+                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "schedule": {
                 "quartz_cron_expression": "0 15 22 ? * *",
@@ -308,7 +323,6 @@ class TestDeployToDatabricks(unittest.TestCase):
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_with_dtap_schedule(self, _, __):
-        config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
@@ -321,6 +335,11 @@ class TestDeployToDatabricks(unittest.TestCase):
                 }
             }
         }
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf,
+                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  }
 
         res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
 
@@ -339,8 +358,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             },
             "name": "job_with_schedule",
             "libraries": [
-                { "whl": "/path/version/version-bar-py3-none-any.whl" },
-                { "jar": "some.jar" }
+                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "schedule": {
                 "quartz_cron_expression": "0 15 22 ? * *",
@@ -355,7 +374,6 @@ class TestDeployToDatabricks(unittest.TestCase):
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_with_dtap_schedule_for_other_env(self, _, __):
-        config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
@@ -368,6 +386,11 @@ class TestDeployToDatabricks(unittest.TestCase):
                 }
             }
         }
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf,
+                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  }
 
         res = victim(ApplicationVersion("acp", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
 
@@ -386,8 +409,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             },
             "name": "job_with_schedule",
             "libraries": [
-                { "whl": "/path/version/version-bar-py3-none-any.whl" },
-                { "jar": "some.jar" }
+                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "spark_python_task": {
                 "python_file": "/path/version/version-main-bar.py",
@@ -398,13 +421,18 @@ class TestDeployToDatabricks(unittest.TestCase):
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_no_schedule_as_parameter_in_job_config_without_dtap_schedule(self, _, __):
-        config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
             "lang": "python",
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
+
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf,
+                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  }
 
         res = victim(ApplicationVersion("acp", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
 
@@ -423,8 +451,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             },
             "name": "job_with_schedule",
             "libraries": [
-                { "whl": "/path/version/version-bar-py3-none-any.whl" },
-                { "jar": "some.jar" }
+                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "spark_python_task": {
                 "python_file": "/path/version/version-main-bar.py",
@@ -435,13 +463,18 @@ class TestDeployToDatabricks(unittest.TestCase):
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_from_template_in_job_config(self, _, __):
-        config = {"runway_common": {"databricks_library_path": "/path"}}
         conf = {
             "main_name": "some.py",
             "config_file": batch_job_config,
             "lang": "python",
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
+
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf,
+                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  }
 
         res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
 
@@ -461,8 +494,8 @@ class TestDeployToDatabricks(unittest.TestCase):
             "some_int": 5,
             "name": "job_with_schedule",
             "libraries": [
-                { "whl": "/path/version/version-bar-py3-none-any.whl" },
-                { "jar": "some.jar" }
+                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "schedule": {
                 "quartz_cron_expression": "0 15 22 ? * *",

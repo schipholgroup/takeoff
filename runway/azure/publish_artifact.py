@@ -1,17 +1,50 @@
 import glob
 import logging
 
+import voluptuous as vol
 from azure.storage.blob import BlockBlobService
 from twine.commands.upload import upload
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.artifact_store import ArtifactStore
 from runway.azure.credentials.storage_account import BlobStore
+from runway.credentials.application_name import ApplicationName
+from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_bash_command
 
 logger = logging.getLogger(__name__)
+
+
+def lang_must_match_target(fields):
+    if "sbt" == fields["lang"] and "pypi" in fields["target"]:
+        raise vol.Invalid("Cannot publish jars to pypi")
+    elif "python" == fields["lang"] and "ivy" in fields["target"]:
+        raise vol.Invalid("Cannot publish wheels to ivy")
+    return fields
+
+
+SCHEMA = vol.All(
+    RUNWAY_BASE_SCHEMA,
+    vol.Schema(
+        vol.All(
+            {
+                vol.Required("task"): "publishArtifact",
+                vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"])),
+                vol.Required("target"): vol.All([str, vol.In(["blob", "pypi", "ivy"])]),
+                vol.Optional(
+                    "python_file_path",
+                    description=(
+                        "The path relative to the root of your project to the python script"
+                        "that serves as entrypoint for a databricks job"
+                    ),
+                ): str,
+            },
+            lang_must_match_target,
+        ),
+        extra=vol.ALLOW_EXTRA,
+    ),
+)
 
 
 class PublishArtifact(DeploymentStep):
@@ -23,6 +56,9 @@ class PublishArtifact(DeploymentStep):
             self.publish_python_package()
         elif self.config["lang"] in {"sbt"}:
             self.publish_jvm_package()
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     @staticmethod
     def _get_jar() -> str:
@@ -55,8 +91,8 @@ class PublishArtifact(DeploymentStep):
         for target in self.config["target"]:
             if target == "blob":
                 self.publish_to_blob(file=self._get_jar(), file_ext=".jar")
-            elif target == "jfrog":
-                self.publish_to_artifactory()
+            elif target == "ivy":
+                self.publish_to_ivy()
             else:
                 logging.info("Invalid target for artifact")
 
@@ -98,7 +134,7 @@ class PublishArtifact(DeploymentStep):
         else:
             logging.info("Not on a release tag, not publishing artifact on pypi.")
 
-    def publish_to_artifactory(self):
+    def publish_to_ivy(self):
         version = self.env.artifact_tag
         postfix = "-SNAPSHOT" if not get_tag() else ""
         cmd = ["sbt", f'set version := "{version}{postfix}"', "publish"]

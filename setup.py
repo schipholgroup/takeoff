@@ -27,7 +27,7 @@ test_dependencies = [
 
 if {"pytest", "test"}.intersection(sys.argv):
     setup_dependencies = ["pytest-runner==4.2"]
-elif {"pep8", "flake8"}.intersection(sys.argv):
+elif {"lint", "flake8"}.intersection(sys.argv):
     setup_dependencies = ["flake8==3.5.0"]
 
 setup(

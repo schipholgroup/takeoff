@@ -2,7 +2,8 @@ import os
 import unittest
 from unittest import mock
 
-import yaml
+import pytest
+import voluptuous as vol
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.azure.create_eventhub_consumer_groups import (
@@ -10,17 +11,31 @@ from runway.azure.create_eventhub_consumer_groups import (
     EventHubConsumerGroup,
     CreateEventhubConsumerGroups as victim,
 )
+from tests.azure import runway_config
 
-with open('tests/test_runway_config.yaml', 'r') as f:
-    runway_config = yaml.safe_load(f.read())
+BASE_CONF = {'task': 'createEventhubConsumerGroups',
+             "groups": [{"eventhubEntity": "Dave", "consumerGroup": "Mustaine"}]}
 
 
 class TestCreateEventhubConsumerGroups(unittest.TestCase):
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_minimal_schema(self, _):
+        conf = {**runway_config(), **BASE_CONF}
+
+        victim(ApplicationVersion("dev", "v", "branch"), conf)
+
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_minimal_schema_missing_key(self, _):
+        conf = {**runway_config(), 'task': 'createEventhubConsumerGroups'}
+        with pytest.raises(vol.MultipleInvalid):
+            victim(ApplicationVersion("dev", "v", "branch"), conf)
 
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_get_requested_consumer_groups(self, _):
         env = ApplicationVersion('DEV', 'local', 'foo')
-        consumer_groups = victim(env, runway_config)._get_requested_consumer_groups(
+        config = {**runway_config(),
+                  **BASE_CONF}
+        consumer_groups = victim(env, config)._get_requested_consumer_groups(
             [EventHubConsumerGroup("hub1", "my-app-group1")])
         assert len(consumer_groups) == 1
         asserting_groups = [
