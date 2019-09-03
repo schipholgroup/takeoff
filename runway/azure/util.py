@@ -17,9 +17,7 @@ def default_naming(key):
 
 
 def get_resource_group_name(config: dict, env: ApplicationVersion):
-    f = _get_naming_function(
-        "get_resource_group_name", default=default_naming("resource_group_naming")
-    )
+    f = _get_naming_function("get_resource_group_name", default=default_naming("resource_group_naming"))
     return f(config, env)
 
 
