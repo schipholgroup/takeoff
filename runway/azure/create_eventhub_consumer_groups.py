@@ -1,6 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass
+from pprint import pprint
 from typing import List, Set
 
 import voluptuous as vol
@@ -119,6 +120,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
     def _get_requested_consumer_groups(
             self, parsed_groups: List[EventHubConsumerGroup]
     ) -> List[ConsumerGroup]:
+        pprint(self.config)
         eventhub_namespace = get_eventhub_name(self.config, self.env)
         resource_group = get_resource_group_name(self.config, self.env)
 

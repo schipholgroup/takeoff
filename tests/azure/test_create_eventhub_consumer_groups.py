@@ -15,13 +15,14 @@ from tests.azure import runway_config
 
 BASE_CONF = {'task': 'createEventhubConsumerGroups',
              "groups": [{"eventhubEntity": "Dave", "consumerGroup": "Mustaine"}],
-             "runway_azure": {"eventhub_naming": "eventhub{env}"}}
+             }
 
 
 class TestCreateEventhubConsumerGroups(unittest.TestCase):
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_validate_minimal_schema(self, _):
         conf = {**runway_config(), **BASE_CONF}
+        conf['runway_azure'].update({"eventhub_naming": "eventhub{env}"})
 
         victim(ApplicationVersion("dev", "v", "branch"), conf)
 
@@ -36,6 +37,7 @@ class TestCreateEventhubConsumerGroups(unittest.TestCase):
         env = ApplicationVersion('DEV', 'local', 'foo')
         config = {**runway_config(),
                   **BASE_CONF}
+        config['runway_azure'].update({"eventhub_naming": "eventhub{env}"})
         consumer_groups = victim(env, config)._get_requested_consumer_groups(
             [EventHubConsumerGroup("hub1", "my-app-group1")])
         assert len(consumer_groups) == 1
