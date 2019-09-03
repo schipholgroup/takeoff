@@ -1,11 +1,19 @@
 import logging
 import shutil
 
+import voluptuous as vol
+
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
+from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import run_bash_command
 
 logger = logging.getLogger(__name__)
+
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
+    {vol.Required("task"): "buildArtifact", vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"]))},
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 class BuildArtifact(DeploymentStep):
@@ -19,7 +27,9 @@ class BuildArtifact(DeploymentStep):
             self.build_sbt_assembly_jar()
         else:
             logging.info("Currently only python artifact building is supported")
-        # TODO: add support for building jars
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
 
     def build_python_wheel(self):
         # First make sure the correct version number is used.

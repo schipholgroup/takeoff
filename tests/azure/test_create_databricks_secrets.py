@@ -4,9 +4,18 @@ import mock
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets as victim
 from runway.ApplicationVersion import ApplicationVersion
 from runway.credentials.Secret import Secret
+from tests.azure import runway_config
+
+BASE_CONF = {'task': 'createDatabricksSecrets'}
 
 
 class TestCreateDatabricksSecrets(unittest.TestCase):
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_minimal_schema(self, _):
+        conf = {**runway_config(), **BASE_CONF}
+
+        victim(ApplicationVersion("dev", "v", "branch"), conf)
+
     def test_scope_exists(self):
         scopes = {"scopes": [{"name": "foo"}, {"name": "bar"}]}
 
@@ -17,7 +26,9 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_without_deployment_secrets(self, mock_secrets, mock_client):
-        create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), {})
+        config = {**runway_config(),
+                  **BASE_CONF}
+        create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), config)
         combined_secrets = create_secrets._combine_secrets("some-app-name")
         assert len(combined_secrets) == 2
 
@@ -25,7 +36,9 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 return_value=[])
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_without_deployment_and_keyvault_secrets(self, mock_secrets, mock_client):
-        create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), {})
+        config = {**runway_config(),
+                  **BASE_CONF}
+        create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), config)
         combined_secrets = create_secrets._combine_secrets("some-app-name")
         assert len(combined_secrets) == 0
 
@@ -33,7 +46,7 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 return_value=[])
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_without_keyvault_secrets(self, mock_secrets, mock_client):
-        config = {
+        conf = {
             'task': 'createDatabricksSecrets',
             'dev': [
                 {'FOO': 'foo_value'},
@@ -45,6 +58,10 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 {'BAR': 'baracc_value'},
             ]
         }
+
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf}
 
         create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), config)
         combined_secrets = create_secrets._combine_secrets("some-app-name")
@@ -54,7 +71,7 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_with_deployment_and_keyvault_secrets(self, mock_secrets, mock_client):
-        config = {
+        conf = {
             'task': 'createDatabricksSecrets',
             'dev': [
                 {'FOO': 'foo_value'},
@@ -66,6 +83,9 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 {'BAR': 'baracc_value'},
             ]
         }
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf}
 
         create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), config)
         combined_secrets = create_secrets._combine_secrets("some-app-name")
@@ -75,7 +95,7 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 return_value=[Secret('FOO', 'foo'), Secret('BAR', 'bar')])
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_with_duplicate_deployment_and_keyvault_secrets(self, mock_secrets, mock_client):
-        config = {
+        conf = {
             'task': 'createDatabricksSecrets',
             'dev': [
                 {'FOO': 'foo_value'},
@@ -87,6 +107,10 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 {'BAR': 'baracc_value'},
             ]
         }
+
+        config = {**runway_config(),
+                  **BASE_CONF,
+                  **conf}
 
         create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), config)
         combined_secrets = create_secrets._combine_secrets("some-app-name")

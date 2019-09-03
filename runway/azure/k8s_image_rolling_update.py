@@ -11,14 +11,14 @@ from runway.DeploymentStep import DeploymentStep
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.keyvault import KeyvaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
-from runway.schemas import BASE_SCHEMA
+from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import run_bash_command
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = BASE_SCHEMA.extend(
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): vol.All(str, vol.Match(r"^k8sImageRollingUpdate$")),
+        vol.Required("task"): "k8sImageRollingUpdate",
         # TODO This is a hack to target a specific resource group. This logic needs an overhaul soon.
         vol.Required("resource_group"): str,
         vol.Required("cluster_name"): str,
@@ -45,21 +45,18 @@ class K8sImageRollingUpdate(DeploymentStep):
         """
         For now only update the deployment image once a tag is created
         """
-        run_config = self.validate()
-        if run_config["always_deploy"]:
-            logger.info("Always-deploy flag set to true")
-            self.update_image(run_config)
-        elif self.env.on_release_tag:
-            self.update_image(run_config)
+        if self.config["always_deploy"] or self.env.on_release_tag:
+            logger.info("Deploying new k8s image")
+            self.update_image()
 
-    def update_image(self, conf):
+    def update_image(self):
         # get the ip address for this environment
         self._authenticate_with_k8s()
         # load the kubeconfig we just fetched
         kubernetes.config.load_kube_config()
         logger.info("Kubeconfig loaded")
 
-        self._apply_rolling_update(conf["namespace"], conf["deployment_name"])
+        self._apply_rolling_update(self.config["namespace"], self.config["deployment_name"])
 
     def _apply_rolling_update(self, namespace, deployment):
         """

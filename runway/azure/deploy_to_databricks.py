@@ -13,29 +13,32 @@ from databricks_cli.sdk import ApiClient
 from runway import util
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-from runway.credentials.application_name import ApplicationName
 from runway.azure.credentials.databricks import Databricks
+from runway.credentials.application_name import ApplicationName
+from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import has_prefix_match, get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = vol.Schema(
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
+        vol.Required("task"): "deployToDatabricks",
         vol.Required("jobs"): vol.All(
             [
-                vol.Schema(
-                    {
-                        vol.Required("main_name"): str,
-                        vol.Optional("config_file", default="databricks.json.j2"): str,
-                        vol.Optional("name", default=""): str,
-                        vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
-                        vol.Optional("arguments", default=[{}]): [{}],
+                {
+                    vol.Required("main_name"): str,
+                    vol.Optional("config_file", default="databricks.json.j2"): str,
+                    vol.Optional("name", default=""): str,
+                    vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
+                    vol.Optional("arguments", default=[{}]): [{}],
+                    vol.Optional("schedule"): {
+                        vol.Required("quartz_cron_expression"): str,
+                        vol.Required("timezone_id"): str,
                     },
-                    extra=vol.ALLOW_EXTRA,
-                )
+                }
             ],
             vol.Length(min=1),
-        )
+        ),
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -55,8 +58,7 @@ class DeployToDatabricks(DeploymentStep):
         return SCHEMA
 
     def run(self):
-        run_config = self.validate()
-        self.deploy_to_databricks(run_config)
+        self.deploy_to_databricks()
 
     @staticmethod
     def _job_is_streaming(job_config: dict):
@@ -68,7 +70,7 @@ class DeployToDatabricks(DeploymentStep):
         """
         return "schedule" not in job_config.keys()
 
-    def deploy_to_databricks(self, run_config: dict):
+    def deploy_to_databricks(self):
         """
         The application parameters (cosmos and eventhub) will be removed from this file as they
         will be set as databricks secrets eventually
@@ -80,7 +82,7 @@ class DeployToDatabricks(DeploymentStep):
         application_name = ApplicationName().get(self.config)
         databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
-        for job in run_config["jobs"]:
+        for job in self.config["jobs"]:
             app_name = self._construct_name(job["name"])
             job_name = f"{app_name}-{self.env.artifact_tag}"
             job_config = self._create_config(job_name, job, application_name)
