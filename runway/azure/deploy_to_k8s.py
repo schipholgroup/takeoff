@@ -273,7 +273,7 @@ class DeployToVnetK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return self.config["runway_common"]["k8s_vnet_name"]
+        return self.config["common"]["k8s_vnet_name"]
 
 
 class DeployToK8s(BaseDeployToK8s):
@@ -286,4 +286,4 @@ class DeployToK8s(BaseDeployToK8s):
 
     @property
     def cluster_name(self):
-        return self.config["runway_common"]["k8s_name"].format(dtap=self.fixed_env)
+        return self.config["common"]["k8s_name"].format(dtap=self.fixed_env)

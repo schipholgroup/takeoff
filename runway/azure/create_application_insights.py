@@ -44,7 +44,7 @@ class CreateApplicationInsights(DeploymentStep):
             logger.info("Creating new Application Insights...")
             # Create a new Application Insights
             comp = ApplicationInsightsComponent(
-                location=self.config["runway_azure"]["location"], kind=kind, application_type=application_type
+                location=self.config["azure"]["location"], kind=kind, application_type=application_type
             )
             insight = client.components.create_or_update(
                 get_resource_group_name(self.config, self.env), application_name, comp

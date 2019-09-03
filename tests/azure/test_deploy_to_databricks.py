@@ -143,7 +143,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         config = {**runway_config(),
                   **BASE_CONF,
                   **conf,
-                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  **{"common": {"databricks_library_path": "/path"}}
                   }
 
         res = victim(ApplicationVersion("foo", "bar", "baz"), config)._create_config("job_name", conf, "app_name")
@@ -287,7 +287,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         config = {**runway_config(),
                   **BASE_CONF,
                   **conf,
-                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  **{"common": {"databricks_library_path": "/path"}}
                   }
 
         res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
@@ -338,7 +338,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         config = {**runway_config(),
                   **BASE_CONF,
                   **conf,
-                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  **{"common": {"databricks_library_path": "/path"}}
                   }
 
         res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
@@ -389,7 +389,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         config = {**runway_config(),
                   **BASE_CONF,
                   **conf,
-                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  **{"common": {"databricks_library_path": "/path"}}
                   }
 
         res = victim(ApplicationVersion("acp", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
@@ -431,7 +431,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         config = {**runway_config(),
                   **BASE_CONF,
                   **conf,
-                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  **{"common": {"databricks_library_path": "/path"}}
                   }
 
         res = victim(ApplicationVersion("acp", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
@@ -473,7 +473,7 @@ class TestDeployToDatabricks(unittest.TestCase):
         config = {**runway_config(),
                   **BASE_CONF,
                   **conf,
-                  **{"runway_common": {"databricks_library_path": "/path"}}
+                  **{"common": {"databricks_library_path": "/path"}}
                   }
 
         res = victim(ApplicationVersion("dev", "bar", "baz"), config)._create_config("job_with_schedule", conf, "application_with_schedule")
