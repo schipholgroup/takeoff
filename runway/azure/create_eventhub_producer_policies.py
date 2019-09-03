@@ -11,6 +11,7 @@ from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.azure.util import get_eventhub_name, get_resource_group_name
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
@@ -39,9 +40,8 @@ class CreateEventhubProducerPolicies(DeploymentStep):
         self.create_eventhub_producer_policies(policies)
 
     def create_eventhub_producer_policies(self, producer_policies: List[str]):
-        formatted_dtap = self.env.environment.lower()
-        eventhub_namespace = self.config["runway_common"]["eventhub_namespace"].format(dtap=formatted_dtap)
-        resource_group = self.config["runway_azure"]["resource_group"].format(dtap=formatted_dtap)
+        eventhub_namespace = get_eventhub_name(self.config, self.env)
+        resource_group = get_resource_group_name(self.config, self.env)
 
         credentials = ActiveDirectoryUserCredentials(
             vault_name=self.vault_name, vault_client=self.vault_client
@@ -60,7 +60,7 @@ class CreateEventhubProducerPolicies(DeploymentStep):
             common_azure_parameters = {
                 "resource_group_name": resource_group,
                 "namespace_name": eventhub_namespace,
-                "event_hub_name": policy + formatted_dtap,
+                "event_hub_name": policy + self.env.enviroment_lower,
                 "authorization_rule_name": f"{ApplicationName().get(self.config)}-send-policy",
             }
 

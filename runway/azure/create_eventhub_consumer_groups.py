@@ -13,6 +13,7 @@ from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.azure.util import get_resource_group_name, get_eventhub_name
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
@@ -25,6 +26,9 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
         vol.Required("groups"): vol.All(
             vol.Length(min=1), [{vol.Required("eventhubEntity"): str, vol.Required("consumerGroup"): str}]
         ),
+        'runway_azure': {
+            vol.Required("eventhub_naming"): str
+        }
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -52,7 +56,7 @@ class ConnectingString(object):
 
     @property
     def eventhub_entity_without_environment(self):
-        """The eventhub entity is postfixed with the environment, for example: 'sdhcisseventhubdev'.
+        """The eventhub entity is postfixed with the environment, for example: 'eventhubdev'.
         To have secrets in databricks environment agnostic, we remove that postfix.
         """
         return self.eventhub_entity[:-3]
@@ -113,15 +117,14 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         ]
 
     def _get_requested_consumer_groups(
-        self, parsed_groups: List[EventHubConsumerGroup]
+            self, parsed_groups: List[EventHubConsumerGroup]
     ) -> List[ConsumerGroup]:
-        formatted_dtap = self.env.environment.lower()
-        eventhub_namespace = self.config["runway_common"]["eventhub_namespace"].format(dtap=formatted_dtap)
-        resource_group = self.config["runway_azure"]["resource_group"].format(dtap=formatted_dtap)
+        eventhub_namespace = get_eventhub_name(self.config, self.env)
+        resource_group = get_resource_group_name(self.config, self.env)
 
         return [
             ConsumerGroup(
-                group.eventhub_entity_name + formatted_dtap,
+                group.eventhub_entity_name + self.env.environment_lower,
                 group.consumer_group,
                 eventhub_namespace,
                 resource_group,
@@ -156,7 +159,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
     def _create_connection_strings(
-        self, client: EventHubManagementClient, eventhub_entities: Set[EventHub]
+            self, client: EventHubManagementClient, eventhub_entities: Set[EventHub]
     ) -> List[ConnectingString]:
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
@@ -206,7 +209,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
 
         for group in consumer_groups_to_create:
             if CreateEventhubConsumerGroups._eventhub_exists(
-                eventhub_client, group
+                    eventhub_client, group
             ) and not CreateEventhubConsumerGroups._group_exists(eventhub_client, group):
                 self._create_consumer_group(client=eventhub_client, group=group)
 

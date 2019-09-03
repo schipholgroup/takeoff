@@ -17,6 +17,7 @@ from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCr
 from runway.azure.credentials.container_registry import DockerRegistry
 from runway.azure.credentials.keyvault import KeyvaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.azure.util import get_resource_group_name
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
@@ -46,7 +47,8 @@ class BaseDeployToK8s(DeploymentStep):
         self.fixed_env = fixed_env
 
         # have to overwrite the default keyvault b/c of Vnet K8s cluster
-        self.vault_name, self.vault_client = KeyvaultClient.vault_and_client(self.config, dtap=fixed_env)
+        fixed = ApplicationVersion(self.fixed_env, self.env.version, self.env.branch)
+        self.vault_name, self.vault_client = KeyvaultClient.vault_and_client(self.config, fixed)
         self.add_application_insights = self.config.get("add_application_insights", False)
 
         self.core_v1_api = CoreV1Api()
@@ -102,7 +104,8 @@ class BaseDeployToK8s(DeploymentStep):
 
     def _authenticate_with_k8s(self):
         # TODO: this needs to change
-        resource_group = f"sdh{self.fixed_env}"
+        fixed = ApplicationVersion(self.fixed_env, self.env.version, self.env.branch)
+        resource_group = get_resource_group_name(self.config, fixed)
 
         # get azure container service client
         credentials = ActiveDirectoryUserCredentials(
@@ -146,7 +149,7 @@ class BaseDeployToK8s(DeploymentStep):
             self.core_v1_api.create_namespace(body=namespace_to_create)
 
     def _create_or_patch_resource(
-        self, client, resource_type: str, name: str, namespace: str, resource_config: dict
+            self, client, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         list_function = getattr(client, f"list_namespaced_{resource_type}")
         patch_function = getattr(client, f"patch_namespaced_{resource_type}")

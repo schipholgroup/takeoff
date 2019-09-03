@@ -10,6 +10,7 @@ from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.azure.util import get_resource_group_name
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
@@ -46,7 +47,7 @@ class CreateApplicationInsights(DeploymentStep):
                 location=self.config["runway_azure"]["location"], kind=kind, application_type=application_type
             )
             insight = client.components.create_or_update(
-                f"sdh{self.env.environment.lower()}", application_name, comp
+                get_resource_group_name(self.config, self.env), application_name, comp
             )
         return insight
 

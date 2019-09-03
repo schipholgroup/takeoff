@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 
+import voluptuous as vol
 from azure.mgmt.cosmosdb import CosmosDB
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.keyvault import KeyvaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
+from runway.azure.util import get_resource_group_name, get_cosmos_name
+from runway.schemas import RUNWAY_BASE_SCHEMA
 
 
 @dataclass(frozen=True)
@@ -21,10 +24,13 @@ class CosmosCredentials(object):
     key: str
 
 
+SCHEMA = RUNWAY_BASE_SCHEMA.extend({vol.Required("cosmos_naming", default="cosmos{env}"): str})
+
+
 class Cosmos(object):
     def __init__(self, env: ApplicationVersion, config: dict):
         self.env = env
-        self.config = config
+        self.config = SCHEMA.validate(config)
 
     def _get_cosmos_management_client(self) -> CosmosDB:
         vault, client = KeyvaultClient.vault_and_client(self.config, self.env)
@@ -34,10 +40,9 @@ class Cosmos(object):
         return CosmosDB(credentials, SubscriptionId(vault, client).subscription_id(self.config))
 
     def _get_cosmos_instance(self) -> dict:
-        dtap = self.env.environment.lower()
         return {
-            "resource_group_name": f"sdh{dtap}".format(dtap=dtap),
-            "account_name": f"sdhcosmos{dtap}".format(dtap=dtap),
+            "resource_group_name": get_resource_group_name(self.config, self.env),
+            "account_name": get_cosmos_name(self.config, self.env),
         }
 
     @staticmethod

@@ -14,7 +14,8 @@ from runway.azure.create_eventhub_consumer_groups import (
 from tests.azure import runway_config
 
 BASE_CONF = {'task': 'createEventhubConsumerGroups',
-             "groups": [{"eventhubEntity": "Dave", "consumerGroup": "Mustaine"}]}
+             "groups": [{"eventhubEntity": "Dave", "consumerGroup": "Mustaine"}],
+             "runway_azure": {"eventhub_naming": "eventhub{env}"}}
 
 
 class TestCreateEventhubConsumerGroups(unittest.TestCase):
@@ -39,7 +40,7 @@ class TestCreateEventhubConsumerGroups(unittest.TestCase):
             [EventHubConsumerGroup("hub1", "my-app-group1")])
         assert len(consumer_groups) == 1
         asserting_groups = [
-            ConsumerGroup("hub1dev", "my-app-group1", "sdheventhubdev", "sdhdev")
+            ConsumerGroup("hub1dev", "my-app-group1", "eventhubdev", "rgdev")
         ]
         assert all(_ in consumer_groups for _ in asserting_groups)
 

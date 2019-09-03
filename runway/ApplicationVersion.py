@@ -26,3 +26,7 @@ class ApplicationVersion(object):
             return self.branch
         else:
             return self.version
+
+    @property
+    def environment_lower(self):
+        return self.environment.lower()
