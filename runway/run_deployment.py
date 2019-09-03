@@ -35,8 +35,7 @@ def get_environment(config) -> ApplicationVersion:
 
 def add_runway_plugin_paths(dirs: List[str]):
     import sys
-    for d in dirs:
-        sys.path.append(d)
+    sys.path.extend(dirs)
 
 
 def main():
