@@ -23,8 +23,8 @@ def deploy_env_logic(config) -> ApplicationVersion:
 
 def find_dap_function():
     for plugin in load_runway_plugins().values():
-        if hasattr(plugin, "dap"):
-            return plugin.dap
+        if hasattr(plugin, "deploy_env_logic"):
+            return plugin.deploy_env_logic
     return deploy_env_logic
 
 

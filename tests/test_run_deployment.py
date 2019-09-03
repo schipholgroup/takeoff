@@ -1,4 +1,5 @@
 import os
+import sys
 from unittest import mock
 
 import pytest
@@ -173,15 +174,17 @@ def test_read_runway_plugins(_, mock_load_yaml, __):
 
     from runway.run_deployment import main
 
-    with mock.patch("runway.run_deployment.get_environment") as _:
-        with mock.patch("runway.run_deployment.add_runway_plugin_paths") as mock_plugins:
+    with mock.patch("runway.run_deployment.get_environment") as mock_env:
+        with mock.patch("runway.run_deployment.add_runway_plugin_paths") as m:
             main()
-        assert mock_plugins.assert_called_once_with(paths)
+    m.assert_called_once_with(paths)
 
 
-def test_add_custom_path(_):
+def test_add_custom_path():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_runway_plugin_paths(paths)
 
     dap = find_dap_function()
+
     assert dap().branch == "master"
+    sys.path.remove(paths[0])
