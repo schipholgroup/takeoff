@@ -2,17 +2,17 @@ import os
 from unittest import mock
 
 import pytest
+import voluptuous as vol
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
-
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.azure.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
 )
 from runway.azure.deploy_to_databricks import DeployToDatabricks
-from runway.run_deployment import run_task
-import voluptuous as vol
+from runway.run_deployment import run_task, add_runway_plugin_paths, find_dap_function
+from tests.azure import runway_config
 
 environment_variables = {
     "WEBAPP_NAME": "my-app",
@@ -153,3 +153,35 @@ def test_run_task(_):
     res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})
 
     assert res == 'yeah, science!'
+
+
+@mock.patch.dict(os.environ, environment_variables)
+@mock.patch("runway.run_deployment.get_full_yaml_filename", side_effect=filename)
+@mock.patch("runway.run_deployment.load_yaml")
+@mock.patch.object(DeployToDatabricks, 'run', return_value=None)
+def test_read_runway_plugins(_, mock_load_yaml, __):
+    paths = [os.path.dirname(os.path.realpath(__file__))]
+
+    def load(s):
+        if s == 'deployment.yml':
+            return {"steps": []}
+        elif s == 'runway_config.yml':
+            return {**runway_config(),
+                    "runway_plugins": paths}
+
+    mock_load_yaml.side_effect = load
+
+    from runway.run_deployment import main
+
+    with mock.patch("runway.run_deployment.get_environment") as _:
+        with mock.patch("runway.run_deployment.add_runway_plugin_paths") as mock_plugins:
+            main()
+        assert mock_plugins.assert_called_once_with(paths)
+
+
+def test_add_custom_path(_):
+    paths = [os.path.dirname(os.path.realpath(__file__))]
+    add_runway_plugin_paths(paths)
+
+    dap = find_dap_function()
+    assert dap().branch == "master"

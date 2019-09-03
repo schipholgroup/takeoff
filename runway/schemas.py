@@ -19,6 +19,9 @@ RUNWAY_COMMON_SCHEMA = vol.Schema(
                 vol.Optional("eventhub_namespace", default="sdheventhub{dtap}"): str,
             }
         ),
+        vol.Optional("runway_plugins",
+                     description="A list of absolute paths containing runway plugins"):
+            vol.All([str], vol.Length(min=1))
     },
     extra=vol.ALLOW_EXTRA,
 )
