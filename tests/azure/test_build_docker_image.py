@@ -2,8 +2,8 @@ import unittest
 
 import mock
 
-from runway.azure.build_docker_image import DockerImageBuilder as victim
 from runway.ApplicationVersion import ApplicationVersion
+from runway.azure.build_docker_image import DockerImageBuilder as victim
 from tests.azure import runway_config
 
 

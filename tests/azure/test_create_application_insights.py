@@ -2,8 +2,8 @@ import unittest
 
 import mock
 
-from runway.azure.create_application_insights import CreateApplicationInsights as victim
 from runway.ApplicationVersion import ApplicationVersion
+from runway.azure.create_application_insights import CreateApplicationInsights as victim
 from tests.azure import runway_config
 
 
