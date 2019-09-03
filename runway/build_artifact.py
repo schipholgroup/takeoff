@@ -31,12 +31,19 @@ class BuildArtifact(DeploymentStep):
     def schema(self) -> vol.Schema:
         return SCHEMA
 
-    def build_python_wheel(self):
-        # First make sure the correct version number is used.
+    def _write_version(self):
+        """First make sure the correct version number is used."""
         with open("version.py", "w+") as f:
             f.write(f"__version__='{self.env.version}'")
-        # ensure any old artifacts are gone
-        shutil.rmtree("dist/", ignore_errors=True)
+
+    @staticmethod
+    def _remove_old_artifacts(path):
+        """Ensure any old artifacts are gone"""
+        shutil.rmtree(path, ignore_errors=True)
+
+    def build_python_wheel(self):
+        self._write_version()
+        self._remove_old_artifacts("dist/")
 
         cmd = ["python", "setup.py", "bdist_wheel"]
         return_code = run_bash_command(cmd)
@@ -46,7 +53,7 @@ class BuildArtifact(DeploymentStep):
 
     def build_sbt_assembly_jar(self):
         # ensure any old artifacts are gone
-        shutil.rmtree("target/", ignore_errors=True)
+        self._remove_old_artifacts("target/")
 
         cmd = ["sbt", "clean", "assembly"]
         return_code = run_bash_command(cmd)

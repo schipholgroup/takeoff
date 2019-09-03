@@ -63,7 +63,7 @@ KEYVAULT_KEYS_SCHEMA = {
                     vol.Required("account_key", default="azure-shared-blob-password"): str,
                 }
             ),
-            vol.Optional("azure_devops_artifact_store"): vol.Schema(
+            vol.Optional("artifact_store"): vol.Schema(
                 {
                     vol.Required("repository_url", default="artifact-store-upload-url"): str,
                     vol.Required("username", default="artifact-store-username"): str,

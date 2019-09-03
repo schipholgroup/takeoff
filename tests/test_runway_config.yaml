@@ -21,10 +21,10 @@ azure_keyvault_keys:
   azure_storage_account:
     account_name: "azure-shared-blob-username"
     account_key: "azure-shared-blob-password"
-  azure_devops_artifact_store:
-    repository_url: "artifact-store-upload-url"
-    username: "artifact-store-username"
-    password: "artifact-store-password"
+  artifact_store:
+    repository_url: "artifactory-upload-url"
+    username: "artifactory-username"
+    password: "artifactory-password"
 
 devops_environment_keys_dev:
   azure_service_principal:
