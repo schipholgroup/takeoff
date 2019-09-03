@@ -1,5 +1,5 @@
 from runway.ApplicationVersion import ApplicationVersion
 
 
-def dap() -> ApplicationVersion:
+def deploy_env_logic() -> ApplicationVersion:
     return ApplicationVersion("env", "v", "master")

@@ -8,7 +8,7 @@ from runway.util import get_tag, get_short_hash, get_full_yaml_filename, load_ya
 logger = logging.getLogger(__name__)
 
 
-def dap(config) -> ApplicationVersion:
+def deploy_env_logic(config) -> ApplicationVersion:
     branch = BranchName().get(config)
     tag = get_tag()
     git_hash = get_short_hash()
@@ -25,7 +25,7 @@ def find_dap_function():
     for plugin in load_runway_plugins().values():
         if hasattr(plugin, "dap"):
             return plugin.dap
-    return dap
+    return deploy_env_logic
 
 
 def get_environment(config) -> ApplicationVersion:
