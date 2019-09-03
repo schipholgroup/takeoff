@@ -42,8 +42,9 @@ BASE_CONF = {'task': 'deployToK8s'}
 @pytest.fixture(scope="session")
 def victim():
     with mock.patch.dict(os.environ, env_variables) and \
-         mock.patch("runway.DeploymentStep.AzureKeyvaultClient.vault_and_client", return_value=(None, None)):
-        return DeployToK8s(ApplicationVersion("dev", "v", "branch"), runway_config)
+         mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None)):
+        conf = {**runway_config(), **BASE_CONF}
+        return DeployToK8s(ApplicationVersion("dev", "v", "branch"), conf)
 
 
 class TestDeployToK8s(object):
