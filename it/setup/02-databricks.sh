@@ -4,7 +4,7 @@ echo "============================================"
 echo "== Configure Databricks API \"jobs/list\" =="
 echo "============================================"
 
-curl -v -X PUT "http://localhost:80/mockserver/expectation" -d @- <<_EOF
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF
 {
   "httpRequest": {
     "path": "/api/2.0/jobs/list",
@@ -52,7 +52,7 @@ echo "================================================="
 echo "== Configure Databricks API \"jobs/runs/list\" =="
 echo "================================================="
 
-curl -v -X PUT "http://localhost:80/mockserver/expectation" -d @- <<_EOF
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF
 {
   "httpRequest": {
     "path": "/api/2.0/jobs/runs/list",
@@ -116,7 +116,7 @@ echo "===================================================="
 echo "== Configure Databricks API \"/jobs/runs/cancel\" =="
 echo "===================================================="
 
-curl -v -X PUT "http://localhost:80/mockserver/expectation" -d @- <<_EOF
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF
 {
   "httpRequest": {
     "path": "/api/2.0/jobs/runs/cancel",
@@ -144,7 +144,7 @@ echo "===================================================="
 echo "== Configure Databricks API \"/jobs/delete\" =="
 echo "===================================================="
 
-curl -v -X PUT "http://localhost:80/mockserver/expectation" -d @- <<_EOF
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF
 {
   "httpRequest": {
     "path": "/api/2.0/jobs/delete",
@@ -172,7 +172,7 @@ echo "== Configure Databricks API \"/jobs/create\" =="
 echo "==============================================="
 
 # Mock result for api/2.0/jobs/list endpoint
-curl -v -X PUT "http://localhost:80/mockserver/expectation" -d @- <<_EOF
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF
 {
   "httpRequest": {
     "path": "/api/2.0/jobs/create",
@@ -182,7 +182,7 @@ curl -v -X PUT "http://localhost:80/mockserver/expectation" -d @- <<_EOF
     },
     body: {
       "type" : "JSON",
-      "json": "{\"name\": \"takeoff-integration-tests\", \"new_cluster\": {\"spark_version\": \"5.2.x-scala2.11\", \"node_type_id\": \"Standard_DS4_v2\", \"spark_conf\": {\"spark.sql.warehouse.dir\": \"dbfs:/data/\", \"spark.sql.hive.metastore.jars\": \"builtin\", \"spark.sql.hive.metastore.version\": \"1.2.1\"}, \"spark_env_vars\": {\"PYSPARK_PYTHON\": \"/databricks/python3/bin/python3\"}, \"num_workers\": 1}, \"max_retries\": 5, \"libraries\": [{\"whl\": \"dbfs://libraries/takeoff/takeoff-integration_tests-py3-none-any.whl\"}], \"spark_python_task\": {\"python_file\": \"dbfs://libraries/takeoff/takeoff-main-integration_tests.py\", \"parameters\": [\"--database\", \"dave\", \"--table\", \"mustaine\"]}}",
+      "json": "{\"name\": \"takeoff-integration-tests\", \"new_cluster\": {\"spark_version\": \"5.2.x-scala2.11\", \"node_type_id\": \"Standard_DS4_v2\", \"spark_conf\": {\"spark.sql.warehouse.dir\": \"dbfs:/data/\", \"spark.sql.hive.metastore.jars\": \"builtin\", \"spark.sql.hive.metastore.version\": \"1.2.1\"}, \"spark_env_vars\": {\"PYSPARK_PYTHON\": \"/databricks/python3/bin/python3\"}, \"num_workers\": 1}, \"max_retries\": 5, \"libraries\": [{\"whl\": \"dbfs:/libraries/takeoff/takeoff-integration_tests-py3-none-any.whl\"}], \"spark_python_task\": {\"python_file\": \"dbfs://libraries/takeoff/takeoff-main-integration_tests.py\", \"parameters\": [\"--database\", \"dave\", \"--table\", \"mustaine\"]}}",
       "matchType": "ONLY_MATCHING_FIELDS"
     }
   },
@@ -201,7 +201,7 @@ echo "== Configure Databricks API \"/jobs/run-now\" =="
 echo "================================================"
 
 # Mock result for api/2.0/jobs/list endpoint
-curl -v -X PUT "http://localhost:80/mockserver/expectation" -d @- <<_EOF
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF
 {
   "httpRequest": {
     "path": "/api/2.0/jobs/run-now",

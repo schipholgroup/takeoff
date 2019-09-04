@@ -13,7 +13,7 @@ common_environment_keys:
   branch_name: CI_BRANCH_NAME
 
 common:
-  databricks_library_path: "dbfs://libraries"
+  databricks_library_path: "dbfs:/libraries"
 
 ci_environment_keys_dev:
   service_principal:

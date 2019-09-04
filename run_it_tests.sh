@@ -16,3 +16,5 @@ echo "== Taking off                          =="
 echo "========================================="
 
 docker-compose -f it/docker-compose-takeoff.yml up
+
+docker-compose -f it/docker-compose-dependencies.yml down

@@ -6,7 +6,7 @@ services:
     container_name: mockserver
     image: jamesdbloom/mockserver:mockserver-5.5.1
     ports:
-      - 80:1080
+      - 1080:1080
       - 1081:1081
     environment:
       - LOG_LEVEL=INFO
