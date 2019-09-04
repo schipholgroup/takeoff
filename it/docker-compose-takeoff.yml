@@ -6,11 +6,11 @@ services:
     container_name: takeoff
     build:
       dockerfile: ./Dockerfile
-      context: ../.
+      context: .
     env_file:
-      - env_real
+      - ./env_real
     volumes:
-      - ./dev_project_files:/src
+      - ./:/src
       - ../.git:/src/.git
     network_mode: host
-    entrypoint: runway
+    entrypoint: ./run_it_tests.sh

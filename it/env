@@ -1,3 +1,5 @@
+PYTHONWARNINGS="ignore:Unverified HTTPS request"
+
 AZURE_KEYVAULT_SP_PASSWORD_DEV="spdevpassword"
 AZURE_KEYVAULT_SP_USERNAME_DEV="spdevusername"
 AZURE_TENANTID="tenantid"
