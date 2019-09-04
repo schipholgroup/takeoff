@@ -38,7 +38,7 @@ AZURE_KEYVAULT_KEYS_SCHEMA = {
 
 ENVIROMENT_KEYS_SCHEMA = {
     vol.Required("application_name", default="CI_PROJECT_NAME"): str,
-    vol.Required("branch_name", default="CI_COMMIT_REF_SLUG"): str
+    vol.Required("branch_name", default="CI_COMMIT_REF_SLUG"): str,
 }
 
 CI_KEYS_SCHEMA = {
@@ -85,18 +85,17 @@ CI_KEYS_SCHEMA = {
                 }
             )
         }
-    )
+    ),
 }
 
 AZURE_SCHEMA = {
     vol.Required("resource_group_naming", default="rg{env}"): str,
     vol.Required("keyvault_naming", default="keyvault{env}"): str,
     vol.Optional("location", default="west europe"): str,
-    vol.Optional("keyvault_keys"): AZURE_KEYVAULT_KEYS_SCHEMA
+    vol.Optional("keyvault_keys"): AZURE_KEYVAULT_KEYS_SCHEMA,
 }
 
 COMMON_SCHEMA = {
-
     vol.Optional("shared_registry"): str,
     vol.Optional("k8s_vnet_name"): str,
     vol.Optional("k8s_name"): str,
@@ -112,7 +111,7 @@ RUNWAY_BASE_SCHEMA = vol.Schema(
         vol.Optional("plugins", description="A list of absolute paths containing runway plugins"): vol.All(
             [str], vol.Length(min=1)
         ),
-        **CI_KEYS_SCHEMA
+        **CI_KEYS_SCHEMA,
     },
     extra=vol.ALLOW_EXTRA,
 )
