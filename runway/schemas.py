@@ -103,7 +103,8 @@ COMMON_SCHEMA = {
     vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str,
     vol.Optional("databricks_library_path"): str,
 }
-RUNWAY_COMMON_SCHEMA = vol.Schema(
+
+RUNWAY_BASE_SCHEMA = vol.Schema(
     {
         vol.Required("common_environment_keys"): ENVIROMENT_KEYS_SCHEMA,
         vol.Optional("azure"): AZURE_SCHEMA,
@@ -111,8 +112,7 @@ RUNWAY_COMMON_SCHEMA = vol.Schema(
         vol.Optional("plugins", description="A list of absolute paths containing runway plugins"): vol.All(
             [str], vol.Length(min=1)
         ),
+        **CI_KEYS_SCHEMA
     },
     extra=vol.ALLOW_EXTRA,
 )
-
-RUNWAY_BASE_SCHEMA = RUNWAY_COMMON_SCHEMA.extend(CI_KEYS_SCHEMA)

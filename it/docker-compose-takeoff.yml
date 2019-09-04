@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+
+  takeoff:
+    container_name: takeoff
+    build:
+      dockerfile: ./Dockerfile
+      context: ../.
+    env_file:
+      - env_real
+    volumes:
+      - ./dev_project_files:/src
+      - ../.git:/src/.git
+    network_mode: host
+    entrypoint: runway
