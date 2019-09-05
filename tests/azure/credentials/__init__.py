@@ -19,6 +19,8 @@ VALUES = [('az-username', 'azuser'),
           ('az-password', 'azpass'),
           ('artifact-store-username', 'artifactuser'),
           ('artifact-store-password', 'artifactpass'),
+          ('container-registry-username', 'registryuser'),
+          ('container-registry-password', 'registrypass')
           ]
 
 PREFIX = "https://keyvaultdev.vault.azure.net/secrets/"
@@ -32,7 +34,10 @@ class KeyVaultBaseTest(unittest.TestCase):
                  "password": "artifact-store-password"},
             "active_directory_user":
                 {"username": "az-username",
-                 "password": "az-password"}
+                 "password": "az-password"},
+            "container_registry":
+                {"username": "container-registry-username",
+                 "password": "container-registry-password"}
         }}}
 
     def construct_keyvault_mock(self):
