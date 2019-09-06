@@ -5,7 +5,7 @@ from azure.mgmt.cosmosdb import CosmosDB
 
 from runway.ApplicationVersion import ApplicationVersion
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
-from runway.azure.credentials.keyvault import KeyvaultClient
+from runway.azure.credentials.keyvault import KeyVaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
 from runway.azure.util import get_resource_group_name, get_cosmos_name
 from runway.schemas import RUNWAY_BASE_SCHEMA
@@ -46,7 +46,7 @@ class Cosmos(object):
         self.config = SCHEMA.validate(config)
 
     def _get_cosmos_management_client(self) -> CosmosDB:
-        vault, client = KeyvaultClient.vault_and_client(self.config, self.env)
+        vault, client = KeyVaultClient.vault_and_client(self.config, self.env)
         credentials = ActiveDirectoryUserCredentials(vault_name=vault, vault_client=client).credentials(
             self.config
         )
