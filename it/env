@@ -1,6 +1,0 @@
-AZURE_KEYVAULT_SP_PASSWORD_DEV="spdevpassword"
-AZURE_KEYVAULT_SP_USERNAME_DEV="spdevusername"
-AZURE_TENANTID="some-fake-tenant"
-
-CI_PROJECT_NAME="takeoff"
-CI_BRANCH_NAME="integration-tests"

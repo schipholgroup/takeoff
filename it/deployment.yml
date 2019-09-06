@@ -1,9 +1,0 @@
-steps:
-  - task: deployToDatabricks
-    jobs:
-      - main_name: ./dev_project_files/main
-        config_file: ./dev_project_files/databricks.json.j2
-        lang: python
-        arguments:
-          - database: dave
-            table: mustaine
