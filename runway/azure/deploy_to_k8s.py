@@ -15,7 +15,7 @@ from runway.DeploymentStep import DeploymentStep
 from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.container_registry import DockerRegistry
-from runway.azure.credentials.keyvault import KeyvaultClient
+from runway.azure.credentials.keyvault import KeyVaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
 from runway.azure.util import get_resource_group_name, get_kubernetes_name
 from runway.credentials.Secret import Secret
@@ -54,7 +54,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
 class DeployToK8s(DeploymentStep):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
-        self.vault_name, self.vault_client = KeyvaultClient.vault_and_client(self.config, self.env)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
         self.add_application_insights = self.config.get("add_application_insights", False)
 
         self.core_v1_api = CoreV1Api()
