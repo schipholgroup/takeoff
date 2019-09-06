@@ -1,5 +1,5 @@
 from runway.azure.credentials.artifact_store import ArtifactStore as victim
-from tests.azure.credentials import KeyVaultBaseTest
+from tests.azure.credentials.base_keyvault_test import KeyVaultBaseTest
 
 
 class TestActiveDirectoryUserCredentials(KeyVaultBaseTest):

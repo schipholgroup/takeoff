@@ -9,5 +9,4 @@ class Databricks(KeyVaultCredentialsMixin):
         credential_kwargs = super()._transform_key_to_credential_kwargs(
             config["azure"]["keyvault_keys"][current_filename(__file__)]
         )
-        # return ApiClient(**credential_kwargs)
-        return ApiClient(token="azuredatabrickstoken", host="http://localhost")
+        return ApiClient(**credential_kwargs)

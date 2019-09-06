@@ -1,5 +1,5 @@
 from runway.azure.credentials.container_registry import DockerRegistry as victim
-from tests.azure.credentials import KeyVaultBaseTest
+from tests.azure.credentials.base_keyvault_test import KeyVaultBaseTest
 
 
 class TestDockerRegistry(KeyVaultBaseTest):

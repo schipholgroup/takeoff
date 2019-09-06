@@ -1,5 +1,5 @@
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials as victim
-from tests.azure.credentials import KeyVaultBaseTest
+from tests.azure.credentials.base_keyvault_test import KeyVaultBaseTest
 
 
 class TestActiveDirectoryUserCredentials(KeyVaultBaseTest):
