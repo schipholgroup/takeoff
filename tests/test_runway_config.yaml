@@ -3,7 +3,12 @@ azure:
   keyvault_naming: "https://keyvault{env}.vault.azure.net/"
   location: "west europe"
 
-common_environment_keys:
+  common:
+    shared_registry: "some-registry"
+    artifacts_shared_blob_container_name: libraries
+    databricks_library_path: "dbfs:/mnt/libraries"
+
+environment_keys:
   application_name: CI_PROJECT_NAME
   branch_name: CI_COMMIT_REF_SLUG
 
@@ -26,35 +31,21 @@ azure_keyvault_keys:
     username: "artifactory-username"
     password: "artifactory-password"
 
-devops_environment_keys_dev:
-  azure_service_principal:
+ci_environment_keys_dev:
+  service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_DEV"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_DEV"
 
-devops_environment_keys_acp:
-  azure_service_principal:
+ci_environment_keys_acp:
+  service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_ACP"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_ACP"
 
-devops_environment_keys_prd:
-  azure_service_principal:
+ci_environment_keys_prd:
+  service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_PRD"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_PRD"
 
-
-runway_azure_keyvault_shared_keys:
-- azure_shared_blob_username
-- azure_shared_blob_password
-- artifact_store_username
-- artifact_store_password
-- artifact_store_index_url
-- registry_username
-- registry_password
-
-common:
-  shared_registry: "some-registry"
-  artifacts_shared_blob_container_name: libraries
-  databricks_library_path: "dbfs:/mnt/libraries"

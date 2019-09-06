@@ -37,7 +37,7 @@ class KeyVaultCredentialsMixin(object):
 
         Example:
             config = {
-                "azure_keyvault_keys": {
+                "keyvault_keys": {
                     "aad_user": {
                         "username": "azure-username",
                         "password": "azure-password"

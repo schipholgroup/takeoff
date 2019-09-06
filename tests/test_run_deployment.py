@@ -177,7 +177,7 @@ def test_add_custom_path():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_runway_plugin_paths(paths)
 
-    dap = find_env_function()
+    env = find_env_function()
 
-    assert dap().branch == "master"
+    assert env().branch == "master"
     sys.path.remove(paths[0])

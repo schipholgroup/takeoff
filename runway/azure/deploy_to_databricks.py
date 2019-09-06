@@ -167,9 +167,10 @@ class DeployToDatabricks(DeploymentStep):
             logger.info(f"Could not find jobs in list of {pprint.pformat(job_configs)}")
 
         for job_id in job_ids:
-            logger.info(f"Found Job with ID {job_id} and removing it")
+            logger.info(f"Found Job with ID {job_id}")
             if is_streaming:
                 DeployToDatabricks._kill_it_with_fire(runs_api, job_id)
+            logger.info(f"Deleting Job with ID {job_id}")
             jobs_api.delete_job(job_id)
 
     @staticmethod
@@ -182,23 +183,27 @@ class DeployToDatabricks(DeploymentStep):
 
     @staticmethod
     def _kill_it_with_fire(runs_api, job_id):
+        logger.info(f"Finding runs for job_id {job_id}")
         runs = runs_api.list_runs(job_id, active_only=True, completed_only=None, offset=None, limit=None)
         # If the runs is empty, there are no jobs at all
         # TODO: Check if the has_more flag is true, this means we need to go over the pages
         if "runs" in runs:
             active_run_ids = [_["run_id"] for _ in runs["runs"]]
+            logger.info(f"Canceling active runs {active_run_ids}")
             [runs_api.cancel_run(_) for _ in active_run_ids]
 
     @staticmethod
     def _submit_job(client: ApiClient, job_config: dict, is_streaming: bool):
         jobs_api = JobsApi(client)
         job_resp = jobs_api.create_job(job_config)
+        logger.info(f"Created Job with ID {job_resp['job_id']}")
 
         if is_streaming:
-            jobs_api.run_now(
+            resp = jobs_api.run_now(
                 job_id=job_resp["job_id"],
                 jar_params=None,
                 notebook_params=None,
                 python_params=None,
                 spark_submit_params=None,
             )
+            logger.info(f"Created run with ID {resp['run_id']}")
