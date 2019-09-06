@@ -24,7 +24,20 @@ class CosmosCredentials(object):
     key: str
 
 
-SCHEMA = RUNWAY_BASE_SCHEMA.extend({vol.Required("cosmos_naming", default="cosmos{env}"): str})
+SCHEMA = RUNWAY_BASE_SCHEMA.extend(
+    {
+        "azure": {
+            vol.Required(
+                "cosmos_naming",
+                description=(
+                    "Naming convention for the resource."
+                    "This should include the {env} parameter. For example"
+                    "cosmos_{env}"
+                ),
+            ): str
+        }
+    }
+)
 
 
 class Cosmos(object):

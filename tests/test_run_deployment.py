@@ -12,6 +12,7 @@ from runway.azure.create_eventhub_consumer_groups import (
     CreateEventhubConsumerGroups,
 )
 from runway.azure.deploy_to_databricks import DeployToDatabricks
+from runway.run_deployment import main
 from runway.run_deployment import run_task, add_runway_plugin_paths, find_dap_function
 from tests.azure import runway_config
 
@@ -56,8 +57,6 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
 
     mock_get_version.return_value = env
 
-    from runway.run_deployment import main
-
     with mock.patch.object(CreateEventhubConsumerGroups, "__init__", return_value=None) as mock_task:
         main()
         mock_task.assert_called_once_with(
@@ -88,8 +87,6 @@ def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
     mock_load_yaml.side_effect = load
     mock_get_version.return_value = env
 
-    from runway.run_deployment import main
-
     with mock.patch.object(CreateDatabricksSecrets, "__init__", return_value=None) as mock_task:
         main()
         mock_task.assert_called_once_with(env, {'task': 'createDatabricksSecrets'})
@@ -110,8 +107,6 @@ def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version, __):
     # Since we're loading 2 yamls we need a side effect that mocks both
     mock_load_yaml.side_effect = load
     mock_get_version.return_value = env
-
-    from runway.run_deployment import main
 
     with mock.patch.object(
             DeployToDatabricks, "__init__", return_value=None
@@ -172,8 +167,6 @@ def test_read_runway_plugins(_, mock_load_yaml, __):
 
     mock_load_yaml.side_effect = load
 
-    from runway.run_deployment import main
-
     with mock.patch("runway.run_deployment.get_environment") as mock_env:
         with mock.patch("runway.run_deployment.add_runway_plugin_paths") as m:
             main()
@@ -184,7 +177,7 @@ def test_add_custom_path():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_runway_plugin_paths(paths)
 
-    dap = find_dap_function()
+    dap = find_env_function()
 
     assert dap().branch == "master"
     sys.path.remove(paths[0])

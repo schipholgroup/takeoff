@@ -26,6 +26,16 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
         vol.Required("image"): str,
         vol.Optional("namespace", default="default"): str,
         vol.Optional("always_deploy", default=False): bool,
+        "azure": {
+            vol.Required(
+                "kubernetes_naming",
+                description=(
+                    "Naming convention for the resource."
+                    "This should include the {env} parameter. For example"
+                    "aks_{env}"
+                ),
+            ): str
+        },
     },
     extra=vol.ALLOW_EXTRA,
 )

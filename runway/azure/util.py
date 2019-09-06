@@ -11,7 +11,7 @@ def _get_naming_function(function_name, default: callable) -> callable:
 
 def default_naming(key):
     def _format(config: dict, env: ApplicationVersion):
-        return config["azure"][key].format(env=env.environment_lower)
+        return config["azure"][key].format(env=env.environment_formatted)
 
     return _format
 

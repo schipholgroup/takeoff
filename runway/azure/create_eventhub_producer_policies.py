@@ -23,6 +23,16 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "createEventhubProducerPolicies",
         vol.Required("policies"): vol.All(vol.Length(min=1), [{vol.Required("eventhubEntity"): str}]),
+        "azure": {
+            vol.Required(
+                "eventhub_naming",
+                description=(
+                    "Naming convention for the resource."
+                    "This should include the {env} parameter. For example"
+                    "myeventhub_{env}"
+                ),
+            ): str
+        },
     },
     extra=vol.ALLOW_EXTRA,
 )

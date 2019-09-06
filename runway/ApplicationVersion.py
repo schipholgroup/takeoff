@@ -28,5 +28,5 @@ class ApplicationVersion(object):
             return self.version
 
     @property
-    def environment_lower(self):
+    def environment_formatted(self):
         return self.environment.lower()

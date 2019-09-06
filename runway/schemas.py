@@ -89,16 +89,28 @@ CI_KEYS_SCHEMA = {
 }
 
 AZURE_SCHEMA = {
-    vol.Required("resource_group_naming", default="rg{env}"): str,
-    vol.Required("keyvault_naming", default="keyvault{env}"): str,
+    vol.Required(
+        "resource_group_naming",
+        description=(
+            "Naming convention for the resource."
+            "This should include the {env} parameter. For example"
+            "rg{env}"
+        ),
+    ): str,
+    vol.Required(
+        "keyvault_naming",
+        description=(
+            "Naming convention for the resource."
+            "This should include the {env} parameter. For example"
+            "keyvault{env}"
+        ),
+    ): str,
     vol.Optional("location", default="west europe"): str,
     vol.Optional("keyvault_keys"): AZURE_KEYVAULT_KEYS_SCHEMA,
 }
 
 COMMON_SCHEMA = {
     vol.Optional("shared_registry"): str,
-    vol.Optional("k8s_vnet_name"): str,
-    vol.Optional("k8s_name"): str,
     vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str,
     vol.Optional("databricks_library_path"): str,
 }

@@ -21,7 +21,7 @@ def deploy_env_logic(config) -> ApplicationVersion:
         return ApplicationVersion("DEV", git_hash, branch)
 
 
-def find_dap_function():
+def find_env_function():
     for plugin in load_runway_plugins().values():
         if hasattr(plugin, "deploy_env_logic"):
             return plugin.deploy_env_logic
@@ -29,7 +29,7 @@ def find_dap_function():
 
 
 def get_environment(config) -> ApplicationVersion:
-    dap_fun = find_dap_function()
+    dap_fun = find_env_function()
     return dap_fun(config)
 
 

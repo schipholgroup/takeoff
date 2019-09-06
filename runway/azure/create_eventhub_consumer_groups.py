@@ -27,7 +27,16 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
         vol.Required("groups"): vol.All(
             vol.Length(min=1), [{vol.Required("eventhubEntity"): str, vol.Required("consumerGroup"): str}]
         ),
-        "azure": {vol.Required("eventhub_naming"): str},
+        "azure": {
+            vol.Required(
+                "eventhub_naming",
+                description=(
+                    "Naming convention for the resource."
+                    "This should include the {env} parameter. For example"
+                    "myeventhub_{env}"
+                ),
+            ): str
+        },
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -98,7 +107,7 @@ class CreateEventhubConsumerGroups(DeploymentStep):
         )
 
         if group.consumer_group in set(_.name for _ in consumer_groups):
-            print(
+            logging.warning(
                 f"Consumer group with name {group.consumer_group} in hub {group.eventhub_entity}"
                 " already exists, not creating."
             )
@@ -118,13 +127,12 @@ class CreateEventhubConsumerGroups(DeploymentStep):
     def _get_requested_consumer_groups(
         self, parsed_groups: List[EventHubConsumerGroup]
     ) -> List[ConsumerGroup]:
-        pprint(self.config)
         eventhub_namespace = get_eventhub_name(self.config, self.env)
         resource_group = get_resource_group_name(self.config, self.env)
 
         return [
             ConsumerGroup(
-                group.eventhub_entity_name + self.env.environment_lower,
+                group.eventhub_entity_name + self.env.environment_formatted,
                 group.consumer_group,
                 eventhub_namespace,
                 resource_group,
