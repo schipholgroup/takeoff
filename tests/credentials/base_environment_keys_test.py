@@ -18,7 +18,7 @@ CONFIG = {
     "ci_environment_keys_env": {
         "service_principal":
             {"client_id": "AZ_SP_CLIENT_ID_ENV",
-             "secret": "AZ_SP_CLIENT_ID_ENV"},
+             "secret": "AZ_SP_CLIENT_SECRET_ENV"},
     }}
 
 
