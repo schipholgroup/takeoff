@@ -76,3 +76,14 @@ class TestBuildArtifact(unittest.TestCase):
         with mock.patch("runway.build_artifact.shutil") as m:
             victim._remove_old_artifacts("some/path")
         m.rmtree.assert_called_once_with("some/path", ignore_errors=True)
+
+    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    def test_write_version(self, _):
+        mopen = mock.mock_open()
+        conf = {**runway_config(), **BASE_CONF}
+        with mock.patch("builtins.open", mopen):
+            victim(FAKE_ENV, conf)._write_version()
+
+        mopen.assert_called_once_with("version.py", "w+")
+        handle = mopen()
+        handle.write.assert_called_once_with("__version__='v'")

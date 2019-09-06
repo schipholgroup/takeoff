@@ -5,8 +5,8 @@ from typing import List, Dict
 from azure.keyvault import KeyVaultClient
 from azure.keyvault.models import SecretBundle
 
-from runway.util import get_matching_group, has_prefix_match, inverse_dictionary
 from runway.credentials.Secret import Secret
+from runway.util import get_matching_group, has_prefix_match, inverse_dictionary
 
 
 @dataclass(frozen=True)
@@ -100,9 +100,9 @@ class KeyVaultCredentialsMixin(object):
 
         This functions extracts only the actual key from the url/id
 
-        https://sdhkeyvaultdev.vault.azure.net/secrets/flights-arrivals-cosmos-collection
+        https://keyvaultdev.vault.azure.net/secrets/application-name-secret-collection
         to
-        flights-arrivals-cosmos-collection
+        application-name-secret-collection
         """
         return [_.id.split("/")[-1] for _ in secrets]
 
