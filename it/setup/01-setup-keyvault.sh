@@ -41,7 +41,7 @@ curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF_
     "path": "/some-fake-tenant/oauth2/token",
     "body": {
       "type": "REGEX",
-      "regex": "grant_type=password&scope=openid.*"
+      "regex": "grant_type=client_credentials.*"
     }
   },
   "httpResponse": {
@@ -67,6 +67,154 @@ curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF_
 
       }"
     }
+  }
+}
+_EOF_
+
+echo "================================================"
+echo "== Configure KeyVault secrets '/secrets' =="
+echo "================================================"
+
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF_
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/secrets",
+    "queryStringParameters" : {
+      "api-version" : [ "7.0" ]
+      }
+  },
+  "httpResponseTemplate": {
+    "template": "body = JSON.stringify(
+     [
+        {
+          attributes: {
+            created: '2018-11-16T08:00:00+00:00',
+            enabled: true,
+            expires: 'null',
+            notBefore: 'null',
+            recoveryLevel: 'Purgeable',
+            updated: '2018-11-16T08:00:00+00:00'
+          },
+          contentType: 'null',
+          id: 'https://keyvaultdev.vault.azure.net/secrets/azure-databricks-host',
+          managed: 'null',
+          tags: {
+            'file-encoding': 'utf-8'
+          }
+        },
+        {
+          attributes: {
+            created: '2018-11-16T08:00:00+00:00',
+            enabled: true,
+            expires: 'null',
+            notBefore: 'null',
+            recoveryLevel: 'Purgeable',
+            updated: '2018-11-16T08:00:00+00:00'
+          },
+          contentType: 'null',
+          id: 'https://keyvaultdev.vault.azure.net/secrets/azure-databricks-token',
+          managed: 'null',
+          tags: {
+            'file-encoding': 'utf-8'
+          }
+        }
+     ]
+    );
+    return {
+        statusCode: 200,
+        headers: {
+            'content-type': ['application/json']
+        },
+        body: body
+    };",
+    "templateType": "JAVASCRIPT"
+  }
+}
+_EOF_
+
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF_
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/secrets/azure-databricks-token",
+    "queryStringParameters" : {
+      "api-version" : [ "7.0" ]
+      }
+  },
+  "httpResponseTemplate": {
+    "template": "body = JSON.stringify(
+     [
+        {
+          attributes: {
+            created: '2018-11-16T08:00:00+00:00',
+            enabled: true,
+            expires: null,
+            notBefore: null,
+            recoveryLevel: 'Purgeable',
+            updated: '2018-11-16T08:00:00+00:00'
+          },
+          contentType: null,
+          id: 'https://keyvaultdev.vault.azure.net/secrets/azure-databricks-token',
+          managed: null,
+          tags: {
+            'file-encoding': 'utf-8'
+          }
+          value: 'dbtoken'
+        }
+     ]
+    );
+    return {
+        statusCode: 200,
+        headers: {
+            'content-type': ['application/json']
+        },
+        body: body
+    };",
+    "templateType": "JAVASCRIPT"
+  }
+}
+_EOF_
+
+curl -v -X PUT "http://localhost:1080/mockserver/expectation" -d @- <<_EOF_
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/secrets/azure-databricks-host",
+    "queryStringParameters" : {
+      "api-version" : [ "7.0" ]
+      }
+  },
+  "httpResponseTemplate": {
+    "template": "body = JSON.stringify(
+     [
+        {
+          attributes: {
+            created: '2018-11-16T08:00:00+00:00',
+            enabled: true,
+            expires: null,
+            notBefore: null,
+            recoveryLevel: 'Purgeable',
+            updated: '2018-11-16T08:00:00+00:00'
+          },
+          contentType: null,
+          id: 'https://keyvaultdev.vault.azure.net/secrets/azure-databricks-host',
+          managed: null,
+          tags: {
+            'file-encoding': 'utf-8'
+          }
+          value: 'localhost:1080'
+        }
+     ]
+    );
+    return {
+        statusCode: 200,
+        headers: {
+            'content-type': ['application/json']
+        },
+        body: body
+    };",
+    "templateType": "JAVASCRIPT"
   }
 }
 _EOF_

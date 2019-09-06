@@ -1,6 +1,6 @@
 azure:
-  resource_group_naming: "sdh{env}"
-  keyvault_naming: "https://sdhkeyvault{env}.vault.azure.net/"
+  resource_group_naming: "rg{env}"
+  keyvault_naming: "https://keyvault{env}.vault.azure.net/"
   location: "west europe"
 
   keyvault_keys:

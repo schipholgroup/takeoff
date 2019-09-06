@@ -3,6 +3,7 @@
 bash -c 'echo -e 127.0.0.1\\tlogin.microsoftonline.com >> /etc/hosts'
 bash -c 'echo -e 127.0.0.1\\tlogin.microsoft.com >> /etc/hosts'
 bash -c 'echo -e 127.0.0.1\\tmanagement.azure.com >> /etc/hosts'
+bash -c 'echo -e 127.0.0.1\\tkeyvaultdev.vault.azure.net >> /etc/hosts'
 
 bash -c 'cat > /etc/nginx/conf.d/locations.d/databricks-https-proxy.conf' << EOF
   location ~* /api/ {
@@ -15,6 +16,9 @@ bash -c 'cat > /etc/nginx/conf.d/locations.d/microsoft-https-proxy.conf' << EOF
     proxy_pass http://localhost:1081;
   }
   location ~* /some-fake-tenant/oauth2/token {
+    proxy_pass http://localhost:1081;
+  }
+  location ~* /secrets {
     proxy_pass http://localhost:1081;
   }
 EOF

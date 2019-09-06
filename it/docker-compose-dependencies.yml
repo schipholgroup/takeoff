@@ -9,5 +9,5 @@ services:
       - 1080:1080
       - 1081:1081
     environment:
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=DEBUG
       - SERVER_PORT="1080,1081"

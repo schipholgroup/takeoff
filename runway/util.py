@@ -1,5 +1,6 @@
 import base64
 import importlib
+import logging
 import os
 import pkgutil
 import subprocess
@@ -10,6 +11,7 @@ from git import Repo
 from jinja2 import Template
 from yaml import load
 
+logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class AzureSp(object):
@@ -135,3 +137,11 @@ def load_runway_plugins():
         for finder, name, ispkg in pkgutil.iter_modules()
         if name.startswith("runway_")
     }
+
+
+def _in_dev_mode() -> bool:
+    from distutils import util
+    dev_mode = bool(util.strtobool(os.environ.get('LOCAL_DEVELOPMENT', 'false')))
+    if dev_mode:
+        logger.warning("Running in development mode!")
+    return dev_mode
