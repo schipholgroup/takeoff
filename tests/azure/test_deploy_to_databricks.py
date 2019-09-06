@@ -273,7 +273,7 @@ class TestDeployToDatabricks(unittest.TestCase):
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_correct_schedule_as_parameter_in_job_config_without_dtap(self, _, __):
+    def test_correct_schedule_as_parameter_in_job_config_without_env(self, _, __):
         conf = {
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
@@ -322,7 +322,7 @@ class TestDeployToDatabricks(unittest.TestCase):
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_correct_schedule_as_parameter_in_job_config_with_dtap_schedule(self, _, __):
+    def test_correct_schedule_as_parameter_in_job_config_with_env_schedule(self, _, __):
         conf = {
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
@@ -373,7 +373,7 @@ class TestDeployToDatabricks(unittest.TestCase):
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_correct_schedule_as_parameter_in_job_config_with_dtap_schedule_for_other_env(self, _, __):
+    def test_correct_schedule_as_parameter_in_job_config_with_env_schedule_for_other_env(self, _, __):
         conf = {
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
@@ -420,7 +420,7 @@ class TestDeployToDatabricks(unittest.TestCase):
 
     @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
     @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
-    def test_no_schedule_as_parameter_in_job_config_without_dtap_schedule(self, _, __):
+    def test_no_schedule_as_parameter_in_job_config_without_env_schedule(self, _, __):
         conf = {
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,

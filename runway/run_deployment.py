@@ -29,8 +29,8 @@ def find_env_function():
 
 
 def get_environment(config) -> ApplicationVersion:
-    dap_fun = find_env_function()
-    return dap_fun(config)
+    env_fun = find_env_function()
+    return env_fun(config)
 
 
 def add_runway_plugin_paths(dirs: List[str]):

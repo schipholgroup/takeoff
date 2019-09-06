@@ -13,7 +13,7 @@ from runway.azure.create_eventhub_consumer_groups import (
 )
 from runway.azure.deploy_to_databricks import DeployToDatabricks
 from runway.run_deployment import main
-from runway.run_deployment import run_task, add_runway_plugin_paths, find_dap_function
+from runway.run_deployment import run_task, add_runway_plugin_paths, find_env_function
 from tests.azure import runway_config
 
 environment_variables = {
@@ -177,7 +177,7 @@ def test_add_custom_path():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_runway_plugin_paths(paths)
 
-    dap = find_env_function()
+    env = find_env_function()
 
-    assert dap().branch == "master"
+    assert env().branch == "master"
     sys.path.remove(paths[0])

@@ -10,7 +10,7 @@ class KeyvaultClient(object):
     def vault_and_client(config: dict, env: ApplicationVersion):
         vault = get_keyvault_name(config, env)
         keyvault_client = KeyVaultClient(
-            credentials=ServicePrincipalCredentials().credentials(config, env.environment_lower)
+            credentials=ServicePrincipalCredentials().credentials(config, env.environment_formatted)
         )
 
         return vault, keyvault_client
