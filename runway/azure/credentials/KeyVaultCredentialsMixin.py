@@ -27,8 +27,8 @@ class KeyVaultCredentialsMixin(object):
 
     def _transform_key_to_credential_kwargs(self, keys: Dict[str, str]):
         """
-        Tranforms a list with Azure Keyvault secret keys to a dictionary
-        containing a mapping from object argument name to Azure Keyvault
+        Tranforms a list with Azure KeyVault secret keys to a dictionary
+        containing a mapping from object argument name to Azure KeyVault
         secret value
 
         Args:
