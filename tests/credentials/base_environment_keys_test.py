@@ -11,6 +11,9 @@ OS_KEYS = {'AZ_SP_CLIENT_ID_ENV': 'd0aaa0de-c1ef-456f-a025-c5d6341193bb',
            }
 
 CONFIG = {
+    "azure": {
+        "keyvault_naming": "myvault{env}"
+    },
     "common_environment_keys": {
         "application_name": "CI_PROJECT_NAME",
         "branch_name": "CI_BRANCH_NAME"
