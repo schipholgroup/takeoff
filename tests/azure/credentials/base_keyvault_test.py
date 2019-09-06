@@ -25,6 +25,7 @@ VALUES = [('az-username', 'azuser'),
           ('databricks-token', 'dbtoken'),
           ('storage-account-name', 'blobname'),
           ('storage-account-key', 'blobkey'),
+          ('subscription-id', '09eaa212-d59f-4b00-8697-d21e52e9900d')
           ]
 
 PREFIX = "https://keyvaultdev.vault.azure.net/secrets/"
@@ -46,6 +47,7 @@ CONFIG = {"azure": {"keyvault_keys":
         "storage_account":
             {"account_name": "storage-account-name",
              "account_key": "storage-account-key"},
+        "subscription_id": "subscription-id",
     }}}
 
 
