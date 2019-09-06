@@ -14,7 +14,7 @@ CONFIG = {
     "azure": {
         "keyvault_naming": "myvault{env}"
     },
-    "common_environment_keys": {
+    "environment_keys": {
         "application_name": "CI_PROJECT_NAME",
         "branch_name": "CI_BRANCH_NAME"
     },

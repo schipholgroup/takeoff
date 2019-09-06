@@ -60,7 +60,7 @@ class TestDeployToDatabricks(unittest.TestCase):
     def test_construct_name(self, _):
         config = {**runway_config(),
                   **BASE_CONF,
-                  **{'common_environment_keys': {'application_name': 'CI_PROJECT_NAME'}}}
+                  **{'environment_keys': {'application_name': 'CI_PROJECT_NAME'}}}
         env = ApplicationVersion("env", "1b8e36f1", "some-branch")
         assert victim(env, config)._construct_name("") == "app-name"
         assert victim(env, config)._construct_name("foo") == "app-name-foo"

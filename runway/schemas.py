@@ -88,6 +88,11 @@ CI_KEYS_SCHEMA = {
     ),
 }
 
+AZURE_COMMON = {
+    vol.Optional("shared_registry"): str,
+    vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str,
+}
+
 AZURE_SCHEMA = {
     vol.Required(
         "resource_group_naming",
@@ -107,17 +112,14 @@ AZURE_SCHEMA = {
     ): str,
     vol.Optional("location", default="west europe"): str,
     vol.Optional("keyvault_keys"): AZURE_KEYVAULT_KEYS_SCHEMA,
+    vol.Optional("common"): AZURE_COMMON,
 }
 
-COMMON_SCHEMA = {
-    vol.Optional("shared_registry"): str,
-    vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str,
-    vol.Optional("databricks_library_path"): str,
-}
+COMMON_SCHEMA = {vol.Optional("databricks_library_path"): str}
 
 RUNWAY_BASE_SCHEMA = vol.Schema(
     {
-        vol.Required("common_environment_keys"): ENVIROMENT_KEYS_SCHEMA,
+        vol.Required("environment_keys"): ENVIROMENT_KEYS_SCHEMA,
         vol.Optional("azure"): AZURE_SCHEMA,
         vol.Optional("common"): COMMON_SCHEMA,
         vol.Optional("plugins", description="A list of absolute paths containing runway plugins"): vol.All(
