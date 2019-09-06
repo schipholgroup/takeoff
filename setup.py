@@ -1,6 +1,6 @@
 import sys
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as f:
     long_description = f.read()
@@ -37,12 +37,10 @@ setup(
     author="Schiphol Data Hub",
     long_description=long_description,
     author_email="SDH-Support@schiphol.nl",
-    packages=["runway", "runway/credentials"],
+    packages=find_packages(exclude=("tests*",)),
     install_requires=setup_dependencies,
     setup_requires=setup_dependencies,
     tests_require=test_dependencies,
     scripts=["scripts/runway", "scripts/get_version"],
-    extras_require={
-        "test": test_dependencies
-    },
+    extras_require={"test": test_dependencies},
 )

@@ -1,35 +1,35 @@
-runway_azure:
+azure:
   resource_group: "sdh{dtap}"
   location: "west europe"
   vault_name: "https://sdhkeyvault{dtap}.vault.azure.net/"
+  common:
+    shared_registry: sdhcontainerregistryshared.azurecr.io
 
-common_environment_keys:
+  keyvault_keys:
+    container_registry:
+      username: "registry-username"
+      password: "registry-password"
+      registry: "registry-server"
+
+environment_keys:
   application_name: CI_PROJECT_NAME
   branch_name: CI_COMMIT_REF_SLUG
 
-azure_keyvault_keys:
-  azure_container_registry:
-    username: "registry-username"
-    password: "registry-password"
-    registry: "registry-server"
-
-devops_environment_keys_dev:
+ci_environment_keys_dev:
   azure_service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_DEV"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_DEV"
 
-devops_environment_keys_acp:
+ci_environment_keys_acp:
   azure_service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_ACP"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_ACP"
 
-devops_environment_keys_prd:
+ci_environment_keys_prd:
   azure_service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_PRD"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_PRD"
 
-runway_common:
-  shared_registry: sdhcontainerregistryshared.azurecr.io
