@@ -40,7 +40,7 @@ def victim():
     m_client.event_hubs.list_authorization_rules.return_value = {MockEventhubClientResponse("rule1"), MockEventhubClientResponse("rule2")}
     m_client.event_hubs.list_keys.return_value = MockEventhubClientResponse('potatoes1', 'potato-connection')
 
-    with mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None)), \
+    with mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None)), \
          mock.patch("runway.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=m_client):
 
         conf = {**runway_config(), **BASE_CONF}
@@ -49,7 +49,7 @@ def victim():
 
 
 class TestConfigureEventhub(object):
-    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("runway.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=None)
     def test_validate_minimal_schema(self, _, __):
         conf = {**runway_config(), **BASE_CONF}
@@ -57,7 +57,7 @@ class TestConfigureEventhub(object):
 
         ConfigureEventhub(ApplicationVersion("dev", "v", "branch"), conf)
 
-    @mock.patch("runway.DeploymentStep.KeyvaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("runway.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=None)
     def test_validate_minimal_schema_missing_key(self, _, __):
         conf = {**runway_config(), 'task': 'createEventhubConsumerGroups'}
