@@ -104,7 +104,7 @@ class DeployToDatabricks(DeploymentStep):
             schedule=self._get_schedule(job_config),
         )
 
-        root_library_folder = self.config["runway_common"]["databricks_library_path"]
+        root_library_folder = self.config["common"]["databricks_library_path"]
         storage_base_path = f"{root_library_folder}/{application_name}"
         artifact_path = f"{storage_base_path}/{application_name}-{self.env.artifact_tag}"
 

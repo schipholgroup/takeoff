@@ -2,22 +2,38 @@ import voluptuous as vol
 
 RUNWAY_COMMON_SCHEMA = vol.Schema(
     {
-        vol.Optional("runway_azure"): vol.Schema(
+        vol.Optional("azure"): vol.Schema(
             {
-                vol.Required("resource_group"): str,
-                vol.Required("vault_name"): str,
+                vol.Required(
+                    "resource_group_naming",
+                    description=(
+                        "Naming convention for the resource."
+                        "This should include the {env} parameter. For example"
+                        "rg{env}"
+                    ),
+                ): str,
+                vol.Required(
+                    "keyvault_naming",
+                    description=(
+                        "Naming convention for the resource."
+                        "This should include the {env} parameter. For example"
+                        "keyvault{env}"
+                    ),
+                ): str,
                 vol.Optional("location", default="west europe"): str,
             }
         ),
-        vol.Optional("runway_common"): vol.Schema(
+        vol.Optional("common"): vol.Schema(
             {
-                vol.Optional("shared_registry", default="sdhcontainerregistryshared.azurecr.io"): str,
-                vol.Optional("k8s_vnet_name", default="sdh-kubernetes"): str,
-                vol.Optional("k8s_name", default="sdhkubernetes{dtap}"): str,
+                vol.Optional("shared_registry"): str,
+                vol.Optional("k8s_vnet_name"): str,
+                vol.Optional("k8s_name"): str,
                 vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str,
-                vol.Optional("databricks_library_path", default="dbfs:/mnt/libraries"): str,
-                vol.Optional("eventhub_namespace", default="sdheventhub{dtap}"): str,
+                vol.Optional("databricks_library_path"): str,
             }
+        ),
+        vol.Optional("plugins", description="A list of absolute paths containing runway plugins"): vol.All(
+            [str], vol.Length(min=1)
         ),
     },
     extra=vol.ALLOW_EXTRA,

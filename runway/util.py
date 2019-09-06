@@ -1,5 +1,7 @@
 import base64
+import importlib
 import os
+import pkgutil
 import subprocess
 from dataclasses import dataclass
 from typing import Pattern, Callable
@@ -124,3 +126,12 @@ def run_bash_command(command):
         if output:
             print(output.strip())
     return process.poll()
+
+
+def load_runway_plugins():
+    """https://packaging.python.org/guides/creating-and-discovering-plugins/"""
+    return {
+        name: importlib.import_module(name)
+        for finder, name, ispkg in pkgutil.iter_modules()
+        if name.startswith("runway_")
+    }

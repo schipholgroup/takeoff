@@ -115,7 +115,7 @@ class PublishArtifact(DeploymentStep):
         self, client: BlockBlobService, source: str, destination: str, container: str = None
     ):
         if not container:
-            container = self.config["runway_common"]["artifacts_shared_blob_container_name"]
+            container = self.config["common"]["artifacts_shared_blob_container_name"]
         logger.info(
             f"""uploading artifact from
              | from ${source}
