@@ -17,7 +17,13 @@ from takeoff.step import Step
 logger = logging.getLogger(__name__)
 
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
-    {vol.Required("task"): "createApplicationInsights"}, extra=vol.ALLOW_EXTRA
+    {
+        vol.Required("task"): "createApplicationInsights",
+        vol.Required("kind"): vol.Any("web", "ios", "other", "store", "java", "phone"),
+        vol.Required("applicationType"): vol.Any("web", "other"),
+        vol.Optional("createDatabricksSecret", default=False): bool,
+    },
+    extra=vol.ALLOW_EXTRA,
 )
 
 
@@ -28,31 +34,35 @@ class CreateApplicationInsights(Step):
     def schema(self) -> vol.Schema:
         return SCHEMA
 
-    def create_application_insights(self, kind: str, application_type: str) -> ApplicationInsightsComponent:
+    def run(self):
+        self.create_application_insights()
 
-        # Check some values
-        if kind not in {"web", "ios", "other", "store", "java", "phone"}:
-            raise ValueError("Unknown application insights kind: {}".format(kind))
-
-        if application_type not in {"web", "other"}:
-            raise ValueError("Unknown application insights application_type: {}".format(application_type))
-
+    def create_application_insights(self):
         application_name = ApplicationName().get(self.config)
-        client = self.__create_client()
+        client = self._create_client()
 
-        insight = self.__find(client, application_name)
+        insight = self._find_existing_instance(client, application_name)
         if not insight:
             logger.info("Creating new Application Insights...")
             # Create a new Application Insights
             comp = ApplicationInsightsComponent(
-                location=self.config["azure"]["location"], kind=kind, application_type=application_type
+                location=self.config["azure"]["location"],
+                kind=self.config["kind"],
+                application_type=self.config["applicationType"],
             )
             insight = client.components.create_or_update(
                 get_resource_group_name(self.config, self.env), application_name, comp
             )
-        return insight
+            if self.config["createDatabricksSecret"]:
+                instrumentation_secret = Secret("instrumentation-key", insight.instrumentation_key)
+                self.create_databricks_secret(application_name, instrumentation_secret)
 
-    def __create_client(self) -> ApplicationInsightsManagementClient:
+    def create_databricks_secret(self, application_name, instrumentation_secret):
+        db = CreateDatabricksSecretFromValue(self.env, self.config)
+        db._create_scope(application_name)
+        db._add_secrets(application_name, [instrumentation_secret])
+
+    def _create_client(self) -> ApplicationInsightsManagementClient:
         azure_user_credentials = ActiveDirectoryUserCredentials(
             vault_name=self.vault_name, vault_client=self.vault_client
         ).credentials(self.config)
@@ -62,23 +72,8 @@ class CreateApplicationInsights(Step):
             SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
         )
 
-    def __find(self, client: ApplicationInsightsManagementClient, name: str):
+    def _find_existing_instance(self, client: ApplicationInsightsManagementClient, name: str):
         for insight in client.components.list():
             if insight.name == name:
                 return insight
         return None
-
-
-class CreateDatabricksApplicationInsights(CreateApplicationInsights):
-    def run(self):
-        self.create_databricks_application_insights()
-
-    def create_databricks_application_insights(self):
-        application_name = ApplicationName().get(self.config)
-        insight = self.create_application_insights("other", "other")
-
-        instrumentation_secret = Secret("instrumentation-key", insight.instrumentation_key)
-
-        db = CreateDatabricksSecretFromValue(self.env, self.config)
-        db._create_scope(application_name)
-        db._add_secrets(application_name, [instrumentation_secret])
