@@ -36,12 +36,18 @@ class MockDatabricksClient:
         return None
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(autouse=True)
 @mock.patch.dict(os.environ, TEST_ENV_VARS)
 def victim():
     m_jobs_api_client = mock.MagicMock()
     m_runs_api_client = mock.MagicMock()
-    # m_client.event_hubs.list_keys.return_value = MockEventhubClientResponse('potatoes1', 'potato-connection')
+
+    m_jobs_api_client.list_jobs.return_value = {"jobs": [{"job_id": "id1", "settings":{"name": "job1"}}, {"job_id": "id2", "settings":{"name": "job2"}}]}
+    m_jobs_api_client.delete_job.return_value = True
+    m_jobs_api_client.create_job.return_value = {"job_id": "job1"}
+    m_jobs_api_client.run_now.return_value = {"run_id": "run1"}
+
+    m_runs_api_client.list_runs.return_value = {"runs": [{"run_id": "run1"}, {"run_id": "run2"}]}
 
     with mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
          mock.patch("runway.azure.deploy_to_databricks.Databricks", return_value=MockDatabricksClient()), \
@@ -159,7 +165,7 @@ class TestDeployToDatabricks(object):
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
 
-        res = victim._create_config("job_name", conf, "app_name")
+        res = victim.create_config("job_name", conf, "app_name")
 
         assert res == {
             "name": "job_name",
@@ -298,7 +304,7 @@ class TestDeployToDatabricks(object):
             }
         }
 
-        res = victim._create_config("job_with_schedule", conf, "application_with_schedule")
+        res = victim.create_config("job_with_schedule", conf, "application_with_schedule")
 
         assert res == {
             "new_cluster": {
@@ -344,7 +350,7 @@ class TestDeployToDatabricks(object):
             }
         }
 
-        res = victim._create_config("job_with_schedule", conf, "application_with_schedule")
+        res = victim.create_config("job_with_schedule", conf, "application_with_schedule")
 
         assert res == {
             "new_cluster": {
@@ -390,7 +396,7 @@ class TestDeployToDatabricks(object):
             }
         }
 
-        res = victim._create_config("job_with_schedule", conf, "application_with_schedule")
+        res = victim.create_config("job_with_schedule", conf, "application_with_schedule")
 
         assert res == {
             "new_cluster": {
@@ -426,7 +432,7 @@ class TestDeployToDatabricks(object):
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
 
-        res = victim._create_config("job_with_schedule", conf, "application_with_schedule")
+        res = victim.create_config("job_with_schedule", conf, "application_with_schedule")
 
         assert res == {
             "new_cluster": {
@@ -462,7 +468,7 @@ class TestDeployToDatabricks(object):
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
 
-        res = victim._create_config("job_with_schedule", conf, "application_with_schedule")
+        res = victim.create_config("job_with_schedule", conf, "application_with_schedule")
 
         assert res == {
             "new_cluster": {
@@ -492,3 +498,88 @@ class TestDeployToDatabricks(object):
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
+
+    @mock.patch.dict(os.environ, TEST_ENV_VARS)
+    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_deploy_to_databricks(self, _, victim):
+        job_config = {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true"
+                },
+                "cluster_log_conf": {
+                    "dbfs": {
+                        "destination": "dbfs:/mnt/sdh/logs/job_with_schedule"
+                    }
+                }
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
+            ],
+            "spark_python_task": {
+                "python_file": "/path/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
+        }
+        with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks.create_config", return_value=job_config) as config_mock:
+            with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks.remove_job") as remove_mock:
+                with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._submit_job") as submit_mock:
+                    victim.deploy_to_databricks()
+
+        # TODO: make called_with
+        remove_mock.assert_called_once()
+        submit_mock.assert_called_once()
+
+
+    @mock.patch.dict(os.environ, TEST_ENV_VARS)
+    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_remove_job_batch(self, _, victim):
+        with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=['id1', 'id2']):
+            victim.remove_job('my-job', 'my-branch', False)
+
+        calls = [mock.call("id1"),
+                 mock.call("id2")]
+
+        victim.jobs_api.delete_job.assert_has_calls(calls)
+
+    def test_remove_job_streaming(self, victim):
+        with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=['id1', 'id2']):
+            with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._kill_it_with_fire") as kill_mock:
+                victim.remove_job('my-job', 'my-branch', True)
+
+        calls = [mock.call("id1"), mock.call("id2")]
+
+        victim.jobs_api.delete_job.assert_has_calls(calls)
+        kill_mock.assert_has_calls(calls)
+
+    def test_remove_non_existing_job(self, victim):
+        with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=[]):
+            victim.remove_job('my-job', 'my-branch', False)
+
+        victim.jobs_api.delete_job.assert_not_called()
+
+    def test_kill_it_with_fire(self, victim):
+        victim._kill_it_with_fire('my-id')
+
+        calls = [mock.call("run1"), mock.call("run2")]
+        victim.runs_api.cancel_run.assert_has_calls(calls)
+
+    def test_submit_job_batch(self, victim):
+        victim._submit_job({}, False)
+
+        victim.jobs_api.create_job.assert_called_with({})
+
+    def test_submit_job_streaming(self, victim):
+        victim._submit_job({}, True)
+
+        victim.jobs_api.create_job.assert_called_with({})
+
+        victim.jobs_api.run_now.assert_called_with(jar_params=None,
+                                                 job_id="job1",
+                                                 notebook_params=None,
+                                                 python_params=None,
+                                                 spark_submit_params=None)

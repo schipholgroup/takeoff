@@ -85,17 +85,17 @@ class DeployToDatabricks(Step):
         for job in self.config["jobs"]:
             app_name = self._construct_name(job["name"])
             job_name = f"{app_name}-{self.env.artifact_tag}"
-            job_config = self._create_config(job_name, job, application_name)
+            job_config = self.create_config(job_name, job, application_name)
             is_streaming = self._job_is_streaming(job_config)
 
             logger.info("Removing old job")
-            self.__remove_job(app_name, self.env.artifact_tag, is_streaming=is_streaming)
+            self.remove_job(app_name, self.env.artifact_tag, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
             self._submit_job(job_config, is_streaming)
 
-    def _create_config(self, job_name: str, job_config: dict, application_name: str):
+    def create_config(self, job_name: str, job_config: dict, application_name: str):
         common_arguments = dict(
             config_file=job_config["config_file"],
             application_name=job_name,
@@ -150,15 +150,17 @@ class DeployToDatabricks(Step):
     def _construct_job_config(config_file: str, **kwargs) -> dict:
         return util.render_file_with_jinja(config_file, kwargs, json.loads)
 
-    def __remove_job(self, application_name: str, branch: str, is_streaming: bool):
+    def remove_job(self, application_name: str, branch: str, is_streaming: bool):
         """
         Removes the existing job and cancels any running job_run if the application is streaming.
         If the application is batch, it'll let the batch job finish but it will remove the job,
         making sure no other job_runs can start for that old job.
         """
 
-        job_configs = [JobConfig(_["settings"]["name"], _["job_id"]) for _ in self.jobs_api.list_jobs()["jobs"]]
-        job_ids = DeployToDatabricks._application_job_id(application_name, branch, job_configs)
+        job_configs = [
+            JobConfig(_["settings"]["name"], _["job_id"]) for _ in self.jobs_api.list_jobs()["jobs"]
+        ]
+        job_ids = self._application_job_id(application_name, branch, job_configs)
 
         if not job_ids:
             logger.info(f"Could not find jobs in list of {pprint.pformat(job_configs)}")
@@ -166,7 +168,7 @@ class DeployToDatabricks(Step):
         for job_id in job_ids:
             logger.info(f"Found Job with ID {job_id}")
             if is_streaming:
-                DeployToDatabricks._kill_it_with_fire(self.runs_api, job_id)
+                self._kill_it_with_fire(job_id)
             logger.info(f"Deleting Job with ID {job_id}")
             self.jobs_api.delete_job(job_id)
 
@@ -178,16 +180,15 @@ class DeployToDatabricks(Step):
 
         return [_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)]
 
-    @staticmethod
-    def _kill_it_with_fire(runs_api, job_id):
+    def _kill_it_with_fire(self, job_id):
         logger.info(f"Finding runs for job_id {job_id}")
-        runs = runs_api.list_runs(job_id, active_only=True, completed_only=None, offset=None, limit=None)
+        runs = self.runs_api.list_runs(job_id, active_only=True, completed_only=None, offset=None, limit=None)
         # If the runs is empty, there are no jobs at all
         # TODO: Check if the has_more flag is true, this means we need to go over the pages
         if "runs" in runs:
             active_run_ids = [_["run_id"] for _ in runs["runs"]]
             logger.info(f"Canceling active runs {active_run_ids}")
-            [runs_api.cancel_run(_) for _ in active_run_ids]
+            [self.runs_api.cancel_run(_) for _ in active_run_ids]
 
     def _submit_job(self, job_config: dict, is_streaming: bool):
         job_resp = self.jobs_api.create_job(job_config)
