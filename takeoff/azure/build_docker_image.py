@@ -3,7 +3,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 import voluptuous as vol
 
@@ -36,19 +36,21 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
 @dataclass(frozen=True)
 class DockerFile(object):
     dockerfile: str
-    postfix: str
-    custom_image_name: str
+    postfix: Union[str, None]
+    custom_image_name: Union[str, None]
 
 
 class DockerImageBuilder(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+        self.docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
 
-    @staticmethod
-    def populate_docker_config(docker_credentials):
-        creds = f"{docker_credentials.username}:{docker_credentials.password}".encode()
+    def populate_docker_config(self):
+        creds = f"{self.docker_credentials.username}:{self.docker_credentials.password}".encode()
 
-        docker_json = {"auths": {docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}}
+        docker_json = {
+            "auths": {self.docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}
+        }
 
         home = os.environ["HOME"]
         docker_dir = f"{home}/.docker"
@@ -60,18 +62,18 @@ class DockerImageBuilder(Step):
     def schema(self) -> vol.Schema:
         return SCHEMA
 
-    def run(self):
-        dockerfiles = [
+    def _construct_docker_build_config(self):
+        return [
             DockerFile(df["file"], df["postfix"], df["custom_image_name"])
             for df in self.config["dockerfiles"]
         ]
-        docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
 
-        self.populate_docker_config(docker_credentials)
-        self.deploy(dockerfiles, docker_credentials)
+    def run(self):
+        self.populate_docker_config()
+        self.deploy(self._construct_docker_build_config())
 
     @staticmethod
-    def build_image(self, docker_file: str, tag: str):
+    def build_image(docker_file: str, tag: str):
         # Set these environment variables at build time only, they should not be available at runtime
         cmd = [
             "docker",
@@ -103,19 +105,19 @@ class DockerImageBuilder(Step):
         if return_code != 0:
             raise ChildProcessError("Could not push image for some reason!")
 
-    def deploy(self, dockerfiles: List[DockerFile], docker_credentials):
+    def deploy(self, dockerfiles: List[DockerFile]):
         application_name = ApplicationName().get(self.config)
         for df in dockerfiles:
             tag = self.env.artifact_tag
 
             # only append a postfix if there is one provided
-            if df.postfix:
-                tag += df.postfix
-
-            repository = f"{docker_credentials.registry}/{application_name}"
+            repository = f"{self.docker_credentials.registry}/{application_name}"
 
             if df.custom_image_name:
                 repository = df.custom_image_name
+
+            if df.postfix:
+                repository += df.postfix
 
             image_tag = f"{repository}:{tag}"
             self.build_image(df.dockerfile, image_tag)
