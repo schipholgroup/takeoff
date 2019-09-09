@@ -8,7 +8,6 @@ from typing import List, Optional
 import voluptuous as vol
 from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
-from databricks_cli.sdk import ApiClient
 
 from runway import util
 from runway.ApplicationVersion import ApplicationVersion
@@ -53,6 +52,9 @@ class JobConfig(object):
 class DeployToDatabricks(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+        self.databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
+        self.jobs_api = JobsApi(self.databricks_client)
+        self.runs_api = RunsApi(self.databricks_client)
 
     def schema(self) -> vol.Schema:
         return SCHEMA
@@ -78,9 +80,7 @@ class DeployToDatabricks(Step):
         configuration. If the job is batch this will not start it manually, assuming the schedule
         has been set correctly.
         """
-
         application_name = ApplicationName().get(self.config)
-        databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
 
         for job in self.config["jobs"]:
             app_name = self._construct_name(job["name"])
@@ -89,11 +89,11 @@ class DeployToDatabricks(Step):
             is_streaming = self._job_is_streaming(job_config)
 
             logger.info("Removing old job")
-            self.__remove_job(databricks_client, app_name, self.env.artifact_tag, is_streaming=is_streaming)
+            self.__remove_job(app_name, self.env.artifact_tag, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
-            self._submit_job(databricks_client, job_config, is_streaming)
+            self._submit_job(job_config, is_streaming)
 
     def _create_config(self, job_name: str, job_config: dict, application_name: str):
         common_arguments = dict(
@@ -150,17 +150,14 @@ class DeployToDatabricks(Step):
     def _construct_job_config(config_file: str, **kwargs) -> dict:
         return util.render_file_with_jinja(config_file, kwargs, json.loads)
 
-    @staticmethod
-    def __remove_job(client, application_name: str, branch: str, is_streaming: bool):
+    def __remove_job(self, application_name: str, branch: str, is_streaming: bool):
         """
         Removes the existing job and cancels any running job_run if the application is streaming.
         If the application is batch, it'll let the batch job finish but it will remove the job,
         making sure no other job_runs can start for that old job.
         """
-        jobs_api = JobsApi(client)
-        runs_api = RunsApi(client)
 
-        job_configs = [JobConfig(_["settings"]["name"], _["job_id"]) for _ in jobs_api.list_jobs()["jobs"]]
+        job_configs = [JobConfig(_["settings"]["name"], _["job_id"]) for _ in self.jobs_api.list_jobs()["jobs"]]
         job_ids = DeployToDatabricks._application_job_id(application_name, branch, job_configs)
 
         if not job_ids:
@@ -169,9 +166,9 @@ class DeployToDatabricks(Step):
         for job_id in job_ids:
             logger.info(f"Found Job with ID {job_id}")
             if is_streaming:
-                DeployToDatabricks._kill_it_with_fire(runs_api, job_id)
+                DeployToDatabricks._kill_it_with_fire(self.runs_api, job_id)
             logger.info(f"Deleting Job with ID {job_id}")
-            jobs_api.delete_job(job_id)
+            self.jobs_api.delete_job(job_id)
 
     @staticmethod
     def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> List[int]:
@@ -192,14 +189,12 @@ class DeployToDatabricks(Step):
             logger.info(f"Canceling active runs {active_run_ids}")
             [runs_api.cancel_run(_) for _ in active_run_ids]
 
-    @staticmethod
-    def _submit_job(client: ApiClient, job_config: dict, is_streaming: bool):
-        jobs_api = JobsApi(client)
-        job_resp = jobs_api.create_job(job_config)
+    def _submit_job(self, job_config: dict, is_streaming: bool):
+        job_resp = self.jobs_api.create_job(job_config)
         logger.info(f"Created Job with ID {job_resp['job_id']}")
 
         if is_streaming:
-            resp = jobs_api.run_now(
+            resp = self.jobs_api.run_now(
                 job_id=job_resp["job_id"],
                 jar_params=None,
                 notebook_params=None,
