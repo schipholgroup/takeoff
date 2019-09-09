@@ -1,4 +1,4 @@
 #!/usr/bin/python3 -u
-from runway.deploy import main
+from takeoff.deploy import main
 
 main()

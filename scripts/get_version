@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-from runway.deploy import get_environment
-from runway.util import load_yaml, get_full_yaml_filename
+from takeoff.deploy import get_environment
+from takeoff.util import load_yaml, get_full_yaml_filename
 
 config = load_yaml(get_full_yaml_filename("config"))
 env = get_environment(config)
