@@ -1,6 +1,6 @@
 import mock
 
-from runway.ApplicationVersion import ApplicationVersion
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.keyvault import KeyVaultClient as victim
 from tests.credentials.base_environment_keys_test import EnvironmentKeyBaseTest
 

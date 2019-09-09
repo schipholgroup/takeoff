@@ -1,4 +1,4 @@
-from runway.ApplicationVersion import ApplicationVersion
+from runway.application_version import ApplicationVersion
 
 
 def deploy_env_logic() -> ApplicationVersion:

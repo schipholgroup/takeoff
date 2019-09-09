@@ -1,18 +1,17 @@
 import os
+from dataclasses import dataclass
+
 import mock
 import pytest
 import voluptuous as vol
-
 from azure.mgmt.relay.models import AccessRights
-from dataclasses import dataclass
 
-from runway.ApplicationVersion import ApplicationVersion
+from runway.application_version import ApplicationVersion
 from runway.azure.configure_eventhub import (
     EventHub,
     EventHubConsumerGroup,
     ConfigureEventhub,
     EventHubProducerPolicy, ConnectingString)
-
 from tests.azure import runway_config
 
 BASE_CONF = {'task': 'configureEventhub',
@@ -40,7 +39,7 @@ def victim():
     m_client.event_hubs.list_authorization_rules.return_value = {MockEventhubClientResponse("rule1"), MockEventhubClientResponse("rule2")}
     m_client.event_hubs.list_keys.return_value = MockEventhubClientResponse('potatoes1', 'potato-connection')
 
-    with mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None)), \
+    with mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
          mock.patch("runway.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=m_client):
 
         conf = {**runway_config(), **BASE_CONF}
@@ -49,7 +48,7 @@ def victim():
 
 
 class TestConfigureEventhub(object):
-    @mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("runway.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=None)
     def test_validate_minimal_schema(self, _, __):
         conf = {**runway_config(), **BASE_CONF}
@@ -57,7 +56,7 @@ class TestConfigureEventhub(object):
 
         ConfigureEventhub(ApplicationVersion("dev", "v", "branch"), conf)
 
-    @mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("runway.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=None)
     def test_validate_minimal_schema_missing_key(self, _, __):
         conf = {**runway_config(), 'task': 'createEventhubConsumerGroups'}

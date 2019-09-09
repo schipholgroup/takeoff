@@ -5,12 +5,12 @@ import voluptuous as vol
 from azure.storage.blob import BlockBlobService
 from twine.commands.upload import upload
 
-from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.artifact_store import ArtifactStore
 from runway.azure.credentials.storage_account import BlobStore
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 from runway.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_bash_command
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ SCHEMA = vol.All(
 )
 
 
-class PublishArtifact(DeploymentStep):
+class PublishArtifact(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 

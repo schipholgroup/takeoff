@@ -11,11 +11,11 @@ from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk import ApiClient
 
 from runway import util
-from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.databricks import Databricks
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 from runway.util import has_prefix_match, get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class JobConfig(object):
     job_id: int
 
 
-class DeployToDatabricks(DeploymentStep):
+class DeployToDatabricks(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 

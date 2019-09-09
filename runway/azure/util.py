@@ -1,4 +1,4 @@
-from runway import ApplicationVersion
+from runway.application_version import ApplicationVersion
 from runway.util import load_runway_plugins
 
 

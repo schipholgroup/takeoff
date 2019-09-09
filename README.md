@@ -28,7 +28,7 @@ These values are then injected in de `Runway` container as environment variables
 To use this package for deployment you must have three files in your project repository.
 - docker-compose.yml
 - .vsts-ci.yml
-- deployment.yml
+- .takeoff/deployment.yml
 
 For more information see the [Runway documentation](https://github.com/Schiphol-Hub/runway-docs)
 
