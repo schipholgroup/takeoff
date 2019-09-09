@@ -43,7 +43,7 @@ def victim():
     m_runs_api_client = mock.MagicMock()
     # m_client.event_hubs.list_keys.return_value = MockEventhubClientResponse('potatoes1', 'potato-connection')
 
-    with mock.patch("runway.Step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
+    with mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
          mock.patch("runway.azure.deploy_to_databricks.Databricks", return_value=MockDatabricksClient()), \
          mock.patch("runway.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client), \
          mock.patch("runway.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client):
@@ -52,7 +52,7 @@ def victim():
 
 
 class TestDeployToDatabricks(object):
-    @mock.patch("runway.Step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_validate_schema(self, _, victim):
         assert victim.config['jobs'][0]['config_file'] == 'databricks.json.j2'
         assert victim.config['jobs'][0]['name'] == ''
