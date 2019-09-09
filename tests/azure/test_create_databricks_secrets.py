@@ -29,6 +29,9 @@ TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
 def victim():
     m_client = mock.MagicMock()
     m_client.consumer_groups.list_by_event_hub.return_value = {}
+    m_client.list_scopes.return_value = {"scopes": [{"name": "scope1"}, {"name": " scope2"}]}
+    m_client.create_scope.return_value = True
+    m_client.put_secret.return_value = True
 
     secrets_conf = {
         'task': 'createDatabricksSecrets',
@@ -45,7 +48,7 @@ def victim():
 
     with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
          mock.patch("takeoff.azure.create_databricks_secrets.Databricks", return_value=MockDatabricksClient()), \
-         mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value={}):
+         mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value=m_client):
         conf = {**takeoff_config(), **BASE_CONF, **{"common": {"databricks_library_path": "/path"}}, **secrets_conf}
         return CreateDatabricksSecrets(ApplicationVersion('ACP', 'bar', 'foo'), conf)
 
@@ -78,30 +81,60 @@ class TestCreateDatabricksSecrets(object):
 
     @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
-    def test_combine_secrets_without_deployment_secrets(self, mock_secrets, victim_without_secrets):
+    def test_combine_secrets_without_deployment_secrets(self, _, victim_without_secrets):
         combined_secrets = victim_without_secrets._combine_secrets("some-app-name")
         assert len(combined_secrets) == 2
 
     @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[])
-    def test_combine_secrets_without_deployment_and_keyvault_secrets(self, mock_secrets, victim_without_secrets):
+    def test_combine_secrets_without_deployment_and_keyvault_secrets(self, _, victim_without_secrets):
         combined_secrets = victim_without_secrets._combine_secrets("some-app-name")
         assert len(combined_secrets) == 0
 
     @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[])
-    def test_combine_secrets_without_keyvault_secrets(self, mock_secrets, victim):
+    def test_combine_secrets_without_keyvault_secrets(self, _, victim):
         combined_secrets = victim._combine_secrets("some-app-name")
         assert len(combined_secrets) == 3
 
     @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
-    def test_combine_secrets_with_deployment_and_keyvault_secrets(self, mock_secrets, victim):
+    def test_combine_secrets_with_deployment_and_keyvault_secrets(self, _, victim):
         combined_secrets = victim._combine_secrets("some-app-name")
         assert len(combined_secrets) == 5
 
     @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('FOO', 'foo'), Secret('BAR', 'bar')])
-    def test_combine_secrets_with_duplicate_deployment_and_keyvault_secrets(self, mock_secrets, victim):
+    def test_combine_secrets_with_duplicate_deployment_and_keyvault_secrets(self, _, victim):
         combined_secrets = victim._combine_secrets("some-app-name")
         assert len(combined_secrets) == 3
+
+
+    def test_create_scope(self, victim):
+        victim._create_scope("my-awesome-scope")
+        victim.secret_api.create_scope.assert_called_once_with("my-awesome-scope", None)
+
+    def test_create_scope_already_exists(self, victim):
+        victim._create_scope("scope1")
+        victim.secret_api.create_scope.assert_not_called()
+
+    def test_add_secrets(self, victim):
+        secrets = [Secret("foo", "oof"), Secret("bar", "rab")]
+
+        victim._add_secrets("my-scope", secrets)
+        calls = [mock.call("my-scope", "foo", "oof", None),
+                 mock.call("my-scope", "bar", "rab", None)]
+        victim.secret_api.put_secret.assert_has_calls(calls)
+
+    @mock.patch.dict(os.environ, TEST_ENV_VARS)
+    def test_create_databricks_secrets(self, victim):
+        with mock.patch("takeoff.azure.create_databricks_secrets.CreateDatabricksSecrets._combine_secrets", return_value=['secret1', 'secret2']) as m_combine_secrets:
+             with mock.patch("takeoff.azure.create_databricks_secrets.CreateDatabricksSecrets._create_scope") as m_create_scope:
+                 with mock.patch("takeoff.azure.create_databricks_secrets.CreateDatabricksSecrets._add_secrets") as m_create_secrets:
+                     victim.create_databricks_secrets()
+
+        m_combine_secrets.assert_called_once_with("my_little_pony")
+        m_create_scope.assert_called_once_with("my_little_pony")
+        m_create_secrets.assert_called_once_with("my_little_pony", ["secret1", "secret2"])
+
+

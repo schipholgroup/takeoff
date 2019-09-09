@@ -66,7 +66,4 @@ class CreateDatabricksSecrets(Step):
         deployment_secrets = DeploymentYamlEnvironmentVariablesMixin(
             self.env, self.config
         ).get_deployment_secrets()
-        print(vault_secrets)
-        print(deployment_secrets)
         return list(set(vault_secrets + deployment_secrets))
-
