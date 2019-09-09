@@ -1,4 +1,4 @@
-FROM sdhcontainerregistryshared.azurecr.io/takeoff-base-azure:SNAPSHOT
+FROM sdhcontainerregistryshared.azurecr.io/runway-base-azure:SNAPSHOT
 
 COPY setup.py /
 COPY README.md /

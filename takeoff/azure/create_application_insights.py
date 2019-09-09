@@ -17,7 +17,9 @@ from takeoff.step import Step
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = TAKEOFF_BASE_SCHEMA.extend({vol.Required("task"): "createApplicationInsights"}, extra=vol.ALLOW_EXTRA)
+SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
+    {vol.Required("task"): "createApplicationInsights"}, extra=vol.ALLOW_EXTRA
+)
 
 
 class CreateApplicationInsights(Step):

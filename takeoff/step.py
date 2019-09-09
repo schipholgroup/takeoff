@@ -3,6 +3,7 @@ import abc
 import voluptuous as vol
 
 from takeoff.application_version import ApplicationVersion
+
 # TODO move away from hardcoded depencendy on azure keyvault in this file
 from takeoff.azure.credentials.keyvault import KeyVaultClient
 
