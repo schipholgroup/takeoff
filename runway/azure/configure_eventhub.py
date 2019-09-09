@@ -111,7 +111,7 @@ class ConfigureEventhub(DeploymentStep):
 
         groups = [
             EventHubConsumerGroup(
-                group["eventhubEntity"],
+                group["eventhubEntity"] + self.env.environment_formatted,
                 group["consumerGroup"],
                 eventhub_namespace,
                 resource_group,
@@ -150,7 +150,7 @@ class ConfigureEventhub(DeploymentStep):
             "resource_group_name": resource_group,
             "namespace_name": eventhub_namespace,
             "event_hub_name": policy.eventhub_entity_name + self.env.environment_formatted,
-            "authorization_rule_name": f"{ApplicationName().get(self.config)}-send-policy",
+            "authorization_rule_name": f"{application_name}-send-policy",
         }
 
         try:
@@ -192,23 +192,6 @@ class ConfigureEventhub(DeploymentStep):
             )
             return True
         return False
-
-    def _get_requested_consumer_groups(
-        self, parsed_groups: List[EventHubConsumerGroup]
-    ) -> List[EventHubConsumerGroup]:
-        eventhub_namespace = get_eventhub_name(self.config, self.env)
-        resource_group = get_resource_group_name(self.config, self.env)
-
-        return [
-            EventHubConsumerGroup(
-                group.eventhub_entity_name + self.env.environment_formatted,
-                group.consumer_group,
-                eventhub_namespace,
-                resource_group,
-                group.create_databricks_secret,
-            )
-            for group in parsed_groups
-        ]
 
     def _authorization_rules_exists(self, group: EventHub, name: str) -> bool:
         logging.info(
@@ -290,8 +273,6 @@ class ConfigureEventhub(DeploymentStep):
         )
 
     def create_eventhub_consumer_groups(self, consumer_groups: List[EventHubConsumerGroup]):
-        consumer_groups_to_create = self._get_requested_consumer_groups(consumer_groups)
-
-        for group in consumer_groups_to_create:
+        for group in consumer_groups:
             if self._eventhub_exists(group) and not self._group_exists(group):
                 self._create_consumer_group(group=group)

@@ -13,17 +13,17 @@ environment_keys:
   branch_name: CI_COMMIT_REF_SLUG
 
 azure_keyvault_keys:
-  active_directory_user:
+  azure_active_directory_user:
     username: "azure-username"
     password: "azure-password"
-  databricks:
+  azure_databricks:
     host: "azure-databricks-host"
     token: "azure-databricks-token"
-  container_registry:
+  azure_container_registry:
     username: "registry-username"
     password: "registry-password"
     registry: "shared-registry"
-  storage_account:
+  azure_storage_account:
     account_name: "azure-shared-blob-username"
     account_key: "azure-shared-blob-password"
   artifact_store:
@@ -48,4 +48,3 @@ ci_environment_keys_prd:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_PRD"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_PRD"
-
