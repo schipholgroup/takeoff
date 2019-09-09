@@ -1,4 +1,4 @@
-from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials as victim
+from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials as victim
 from tests.azure.credentials.base_keyvault_test import KeyVaultBaseTest
 
 
@@ -8,6 +8,6 @@ class TestActiveDirectoryUserCredentials(KeyVaultBaseTest):
 
     def test_credentials(self):
         self.execute(
-            "runway.azure.credentials.active_directory_user.UserPassCredentials",
+            "takeoff.azure.credentials.active_directory_user.UserPassCredentials",
             {'username': "azuser", 'password': "azpass"}
         )

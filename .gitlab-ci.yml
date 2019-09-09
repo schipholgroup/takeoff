@@ -28,9 +28,9 @@ lint_black:
   stage: test
   script:
     - pip install black
-    - black -l 110 --check runway
+    - black -l 110 --check takeoff
 
-runway:
+takeoff:
   image: docker:latest
   stage: deploy
   variables:
@@ -40,8 +40,8 @@ runway:
     - env | grep -v ^PATH > .env
     - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
   script:
-    - docker build -t runway:latest -f Dockerfile .
+    - docker build -t takeoff:latest -f Dockerfile .
 
-    - version=$(docker run --env-file .env -v `echo $PWD`:/src runway:latest get_version)
-    - docker tag runway:latest ${REGISTRY_LOGIN_SERVER}/runway:${version}
-    - docker push ${REGISTRY_LOGIN_SERVER}/runway:${version}
+    - version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
+    - docker tag takeoff:latest ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
+    - docker push ${REGISTRY_LOGIN_SERVER}/takeoff:${version}

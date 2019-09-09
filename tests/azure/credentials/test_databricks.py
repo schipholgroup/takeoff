@@ -1,4 +1,4 @@
-from runway.azure.credentials.databricks import Databricks as victim
+from takeoff.azure.credentials.databricks import Databricks as victim
 from tests.azure.credentials.base_keyvault_test import KeyVaultBaseTest
 
 
@@ -8,6 +8,6 @@ class TestDatabricks(KeyVaultBaseTest):
 
     def test_credentials(self):
         self.execute(
-            "runway.azure.credentials.databricks.ApiClient",
+            "takeoff.azure.credentials.databricks.ApiClient",
             {'token': "dbtoken", 'host': "dbhost"}
         )

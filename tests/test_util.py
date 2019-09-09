@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from runway import util as victim
+from takeoff import util as victim
 
 
 class TestPatternMatching(object):

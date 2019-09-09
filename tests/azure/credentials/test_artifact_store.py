@@ -1,4 +1,4 @@
-from runway.azure.credentials.artifact_store import ArtifactStore as victim
+from takeoff.azure.credentials.artifact_store import ArtifactStore as victim
 from tests.azure.credentials.base_keyvault_test import KeyVaultBaseTest
 
 
@@ -8,6 +8,6 @@ class TestActiveDirectoryUserCredentials(KeyVaultBaseTest):
 
     def test_credentials(self):
         self.execute(
-            "runway.azure.credentials.artifact_store.Settings",
+            "takeoff.azure.credentials.artifact_store.Settings",
             {'username': "artifactuser", 'password': "artifactpass"}
         )

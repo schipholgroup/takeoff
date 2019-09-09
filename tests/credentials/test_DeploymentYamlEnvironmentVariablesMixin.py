@@ -1,8 +1,8 @@
 import yaml
 
-from runway.application_version import ApplicationVersion
-from runway.credentials.DeploymentYamlEnvironmentVariablesMixin import DeploymentYamlEnvironmentVariablesMixin as victim
-from runway.credentials.Secret import Secret
+from takeoff.application_version import ApplicationVersion
+from takeoff.credentials.DeploymentYamlEnvironmentVariablesMixin import DeploymentYamlEnvironmentVariablesMixin as victim
+from takeoff.credentials.Secret import Secret
 
 
 class TestDeploymentYamlEnvironmentVariablesMixin(object):
@@ -44,8 +44,8 @@ class TestDeploymentYamlEnvironmentVariablesMixin(object):
 
     def test_create_secrets_from_yaml_file(self):
         with open("tests/test_deployment.yml", "r") as f:
-            runway_config = yaml.safe_load(f.read())
-            for task_config in runway_config["steps"]:
+            takeoff_config = yaml.safe_load(f.read())
+            for task_config in takeoff_config["steps"]:
                 if task_config["task"] == "createDatabricksSecrets":
                     res = victim(
                         ApplicationVersion("ACP", "foo", "bar"), task_config

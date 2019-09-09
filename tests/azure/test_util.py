@@ -1,9 +1,9 @@
 import os
 import sys
 
-from runway.application_version import ApplicationVersion
-from runway.azure import util as victim
-from runway.deploy import add_runway_plugin_paths
+from takeoff.application_version import ApplicationVersion
+from takeoff.azure import util as victim
+from takeoff.deploy import add_takeoff_plugin_paths
 
 ENV = ApplicationVersion("dev", "local", "master")
 
@@ -15,7 +15,7 @@ def test_get_default_resource_group():
 
 def test_get_custom_resource_group():
     paths = [os.path.dirname(os.path.realpath(__file__))]
-    add_runway_plugin_paths(paths)
+    add_takeoff_plugin_paths(paths)
 
     res = victim.get_resource_group_name({}, ENV)
     assert res == "Dave"
@@ -29,7 +29,7 @@ def test_get_default_keyvault():
 
 def test_get_custom_keyvault():
     paths = [os.path.dirname(os.path.realpath(__file__))]
-    add_runway_plugin_paths(paths)
+    add_takeoff_plugin_paths(paths)
 
     res = victim.get_keyvault_name({}, ENV)
     assert res == "Mustaine"
@@ -43,7 +43,7 @@ def test_get_default_cosmos():
 
 def test_get_custom_cosmos():
     paths = [os.path.dirname(os.path.realpath(__file__))]
-    add_runway_plugin_paths(paths)
+    add_takeoff_plugin_paths(paths)
 
     res = victim.get_cosmos_name({}, ENV)
     assert res == "my"
@@ -57,7 +57,7 @@ def test_get_default_eventhub():
 
 def test_get_custom_eventhub():
     paths = [os.path.dirname(os.path.realpath(__file__))]
-    add_runway_plugin_paths(paths)
+    add_takeoff_plugin_paths(paths)
 
     res = victim.get_eventhub_name({}, ENV)
     assert res == "little"
@@ -71,7 +71,7 @@ def test_get_default_kubernetes():
 
 def test_get_custom_kubernetes():
     paths = [os.path.dirname(os.path.realpath(__file__))]
-    add_runway_plugin_paths(paths)
+    add_takeoff_plugin_paths(paths)
 
     res = victim.get_kubernetes_name({}, ENV)
     assert res == "pony"
