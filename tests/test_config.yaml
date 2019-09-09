@@ -8,28 +8,29 @@ azure:
     artifacts_shared_blob_container_name: libraries
     databricks_library_path: "dbfs:/mnt/libraries"
 
+  keyvault_keys:
+    active_directory_user:
+      username: "azure-username"
+      password: "azure-password"
+    databricks:
+      host: "azure-databricks-host"
+      token: "azure-databricks-token"
+    container_registry:
+      username: "registry-username"
+      password: "registry-password"
+      registry: "shared-registry"
+    storage_account:
+      account_name: "azure-shared-blob-username"
+      account_key: "azure-shared-blob-password"
+    artifact_store:
+      repository_url: "artifactory-upload-url"
+      username: "artifactory-username"
+      password: "artifactory-password"
+
 environment_keys:
   application_name: CI_PROJECT_NAME
   branch_name: CI_COMMIT_REF_SLUG
 
-azure_keyvault_keys:
-  azure_active_directory_user:
-    username: "azure-username"
-    password: "azure-password"
-  azure_databricks:
-    host: "azure-databricks-host"
-    token: "azure-databricks-token"
-  azure_container_registry:
-    username: "registry-username"
-    password: "registry-password"
-    registry: "shared-registry"
-  azure_storage_account:
-    account_name: "azure-shared-blob-username"
-    account_key: "azure-shared-blob-password"
-  artifact_store:
-    repository_url: "artifactory-upload-url"
-    username: "artifactory-username"
-    password: "artifactory-password"
 
 ci_environment_keys_dev:
   service_principal:
