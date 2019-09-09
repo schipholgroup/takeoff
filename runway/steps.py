@@ -9,7 +9,7 @@ from runway.azure.k8s_image_rolling_update import K8sImageRollingUpdate
 from runway.azure.publish_artifact import PublishArtifact
 from runway.build_artifact import BuildArtifact
 
-deployment_steps = {
+steps = {
     "buildArtifact": BuildArtifact,
     "buildDockerImage": DockerImageBuilder,
     "createApplicationInsights": CreateDatabricksApplicationInsights,

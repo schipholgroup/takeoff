@@ -7,7 +7,7 @@ from azure.mgmt.containerservice.container_service_client import ContainerServic
 from azure.mgmt.containerservice.models import CredentialResults
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.Step import Step
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.keyvault import KeyVaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
@@ -42,7 +42,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
 
 
 # assumes kubectl is available
-class K8sImageRollingUpdate(DeploymentStep):
+class K8sImageRollingUpdate(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
         # have to overwrite the default keyvault b/c of Vnet K8s cluster

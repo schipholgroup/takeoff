@@ -7,7 +7,7 @@ from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.Step import Step
 from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.azure.credentials.databricks import Databricks
 from runway.credentials.DeploymentYamlEnvironmentVariablesMixin import DeploymentYamlEnvironmentVariablesMixin
@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 SCHEMA = RUNWAY_BASE_SCHEMA.extend({vol.Required("task"): "createDatabricksSecrets"}, extra=vol.ALLOW_EXTRA)
 
 
-class CreateDatabricksSecrets(DeploymentStep):
+class CreateDatabricksSecrets(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 

@@ -11,7 +11,7 @@ from kubernetes import client, config
 from kubernetes.client import CoreV1Api
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.Step import Step
 from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.container_registry import DockerRegistry
@@ -51,7 +51,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
 )
 
 
-class DeployToK8s(DeploymentStep):
+class DeployToK8s(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
         self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)

@@ -4,7 +4,7 @@ import shutil
 import voluptuous as vol
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.Step import Step
 from runway.schemas import RUNWAY_BASE_SCHEMA
 from runway.util import run_bash_command
 
@@ -16,7 +16,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
 )
 
 
-class BuildArtifact(DeploymentStep):
+class BuildArtifact(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 

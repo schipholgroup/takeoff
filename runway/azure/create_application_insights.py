@@ -5,7 +5,7 @@ from azure.mgmt.applicationinsights import ApplicationInsightsManagementClient
 from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
 from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.Step import Step
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 SCHEMA = RUNWAY_BASE_SCHEMA.extend({vol.Required("task"): "createApplicationInsights"}, extra=vol.ALLOW_EXTRA)
 
 
-class CreateApplicationInsights(DeploymentStep):
+class CreateApplicationInsights(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 

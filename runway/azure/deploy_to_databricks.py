@@ -12,7 +12,7 @@ from databricks_cli.sdk import ApiClient
 
 from runway import util
 from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.Step import Step
 from runway.azure.credentials.databricks import Databricks
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
@@ -50,7 +50,7 @@ class JobConfig(object):
     job_id: int
 
 
-class DeployToDatabricks(DeploymentStep):
+class DeployToDatabricks(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 

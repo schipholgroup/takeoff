@@ -51,14 +51,14 @@ BASE_CONF = {'task': 'deployToK8s'}
 @pytest.fixture(scope="session")
 def victim():
     with mock.patch.dict(os.environ, env_variables) and \
-         mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None)):
+         mock.patch("runway.Step.KeyVaultClient.vault_and_client", return_value=(None, None)):
         conf = {**runway_config(), **BASE_CONF}
         conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
         return DeployToK8s(ApplicationVersion("dev", "v", "branch"), conf)
 
 
 class TestDeployToK8s(object):
-    @mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.Step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_validate_minimal_schema(self, _):
         conf = {**runway_config(), **BASE_CONF}
         conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
@@ -68,7 +68,7 @@ class TestDeployToK8s(object):
         res.config["service_config_path"] = "k8s_config/service.yaml.j2"
         res.config['service'] = []
 
-    @mock.patch("runway.DeploymentStep.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("runway.Step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_validate_schema_invalid_ip(self, _):
         conf = {**runway_config(), **BASE_CONF, "service_ips": {"dev": "Dave"}}
         conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})

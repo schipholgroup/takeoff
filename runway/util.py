@@ -89,10 +89,10 @@ def inverse_dictionary(d: dict):
 def get_full_yaml_filename(filename: str) -> str:
     extensions = (".yaml", ".yml")
     for ext in extensions:
-        concat_filename = f"{filename}{ext}"
+        concat_filename = os.path.join(".takeoff", f"{filename}{ext}")
         if os.path.isfile(concat_filename):
             return concat_filename
-    raise FileNotFoundError(f"Could not find Runway config file: {filename}")
+    raise FileNotFoundError(f"Could not find file: {filename}")
 
 
 def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:

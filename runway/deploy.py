@@ -40,27 +40,27 @@ def add_runway_plugin_paths(dirs: List[str]):
 
 
 def main():
-    deployment_config = load_yaml(get_full_yaml_filename("deployment"))
-    runway_config = load_yaml(get_full_yaml_filename("runway_config"))
-    if "runway_plugins" in runway_config:
-        paths = runway_config["runway_plugins"]
+    deployment = load_yaml(get_full_yaml_filename("deployment"))
+    config = load_yaml(get_full_yaml_filename("config"))
+    if "runway_plugins" in config:
+        paths = config["runway_plugins"]
         logger.info(f"Adding plugins from {paths}")
         add_runway_plugin_paths(paths)
 
-    env = get_environment(runway_config)
+    env = get_environment(config)
 
-    for task_config in deployment_config["steps"]:
+    for task_config in deployment["steps"]:
         task = task_config["task"]
         logger.info("*" * 76)
         logger.info("{:10s} {:13s} {:40s} {:10s}".format("*" * 10, "RUNNING TASK:", task, "*" * 10))
         logger.info("*" * 76)
-        run_task(env, task, {**task_config, **runway_config})
+        run_task(env, task, {**task_config, **config})
 
 
 def run_task(env: ApplicationVersion, task: str, task_config):
-    from runway.deployment_step import deployment_steps
+    from runway.steps import steps
 
-    if task not in deployment_steps:
+    if task not in steps:
         raise ValueError(f"Deployment step {task} is unknown, please check the config")
     else:
-        return deployment_steps[task](env, task_config).run()
+        return steps[task](env, task_config).run()
