@@ -24,46 +24,46 @@ TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
                  'CI_PROJECT_NAME': 'my_little_pony',
                  'CI_COMMIT_REF_SLUG': 'my-little-pony'}
 
-@pytest.fixture(autouse=True)
+
 @mock.patch.dict(os.environ, TEST_ENV_VARS)
-def victim():
+def setup_victim(add_secrets: bool):
+    secrets_conf = {}
+    if add_secrets:
+        secrets_conf = {
+            'task': 'createDatabricksSecrets',
+            'dev': [
+                {'FOO': 'foo_value'},
+                {'BAR': 'bar_value'},
+            ],
+            'acp': [
+                {'FOO': 'fooacc_value'},
+                {'BAR': 'baracc_value'},
+                {'BAZ': 'baz_value'},
+            ]
+        }
+
     m_client = mock.MagicMock()
     m_client.consumer_groups.list_by_event_hub.return_value = {}
     m_client.list_scopes.return_value = {"scopes": [{"name": "scope1"}, {"name": " scope2"}]}
     m_client.create_scope.return_value = True
     m_client.put_secret.return_value = True
 
-    secrets_conf = {
-        'task': 'createDatabricksSecrets',
-        'dev': [
-            {'FOO': 'foo_value'},
-            {'BAR': 'bar_value'},
-        ],
-        'acp': [
-            {'FOO': 'fooacc_value'},
-            {'BAR': 'baracc_value'},
-            {'BAZ': 'baz_value'},
-        ]
-    }
-
     with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
          mock.patch("takeoff.azure.create_databricks_secrets.Databricks", return_value=MockDatabricksClient()), \
          mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value=m_client):
         conf = {**takeoff_config(), **BASE_CONF, **{"common": {"databricks_library_path": "/path"}}, **secrets_conf}
-        return CreateDatabricksSecrets(ApplicationVersion('ACP', 'bar', 'foo'), conf)
+        return CreateDatabricksSecrets(ApplicationVersion('ACP', '0.0.0', 'my-branch'), conf)
 
 
 @pytest.fixture(autouse=True)
-@mock.patch.dict(os.environ, TEST_ENV_VARS)
-def victim_without_secrets():
-    m_client = mock.MagicMock()
-    m_client.consumer_groups.list_by_event_hub.return_value = {}
+def victim():
+    return setup_victim(add_secrets=True)
 
-    with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
-         mock.patch("takeoff.azure.create_databricks_secrets.Databricks", return_value=MockDatabricksClient()), \
-         mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value={}):
-        conf = {**takeoff_config(), **BASE_CONF, **{"common": {"databricks_library_path": "/path"}}}
-        return CreateDatabricksSecrets(ApplicationVersion('ACP', 'bar', 'foo'), conf)
+
+@pytest.fixture(autouse=True)
+def victim_without_secrets():
+    return setup_victim(add_secrets=False)
+
 
 class TestCreateDatabricksSecrets(object):
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
@@ -109,7 +109,6 @@ class TestCreateDatabricksSecrets(object):
         combined_secrets = victim._combine_secrets("some-app-name")
         assert len(combined_secrets) == 3
 
-
     def test_create_scope(self, victim):
         victim._create_scope("my-awesome-scope")
         victim.secret_api.create_scope.assert_called_once_with("my-awesome-scope", None)
@@ -125,16 +124,3 @@ class TestCreateDatabricksSecrets(object):
         calls = [mock.call("my-scope", "foo", "oof", None),
                  mock.call("my-scope", "bar", "rab", None)]
         victim.secret_api.put_secret.assert_has_calls(calls)
-
-    @mock.patch.dict(os.environ, TEST_ENV_VARS)
-    def test_create_databricks_secrets(self, victim):
-        with mock.patch("takeoff.azure.create_databricks_secrets.CreateDatabricksSecrets._combine_secrets", return_value=['secret1', 'secret2']) as m_combine_secrets:
-             with mock.patch("takeoff.azure.create_databricks_secrets.CreateDatabricksSecrets._create_scope") as m_create_scope:
-                 with mock.patch("takeoff.azure.create_databricks_secrets.CreateDatabricksSecrets._add_secrets") as m_create_secrets:
-                     victim.create_databricks_secrets()
-
-        m_combine_secrets.assert_called_once_with("my_little_pony")
-        m_create_scope.assert_called_once_with("my_little_pony")
-        m_create_secrets.assert_called_once_with("my_little_pony", ["secret1", "secret2"])
-
-
