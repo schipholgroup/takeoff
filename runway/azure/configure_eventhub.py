@@ -6,8 +6,7 @@ import voluptuous as vol
 from azure.mgmt.eventhub import EventHubManagementClient
 from azure.mgmt.relay.models import AccessRights
 
-from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.application_version import ApplicationVersion
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.databricks import Databricks
@@ -16,6 +15,7 @@ from runway.azure.util import get_resource_group_name, get_eventhub_name
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ class ConnectingString(object):
         return self.eventhub_entity[:-3]
 
 
-class ConfigureEventhub(DeploymentStep):
+class ConfigureEventhub(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 

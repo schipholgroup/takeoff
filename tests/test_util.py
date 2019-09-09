@@ -1,5 +1,6 @@
-import pytest
 import re
+
+import pytest
 
 from runway import util as victim
 
@@ -39,7 +40,7 @@ class TestPatternMatching(object):
     def test_get_full_yaml_filename_file_exists(self):
         filename = "deployment"
         result = victim.get_full_yaml_filename(filename)
-        expected_result = "deployment.yml"
+        expected_result = ".takeoff/deployment.yml"
         assert result == expected_result
 
     def test_get_full_yaml_filename_file_not_exists(self):

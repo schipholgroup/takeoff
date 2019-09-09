@@ -7,11 +7,11 @@ from typing import List
 
 import voluptuous as vol
 
-from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.container_registry import DockerRegistry
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 from runway.util import run_bash_command
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class DockerFile(object):
     custom_image_name: str
 
 
-class DockerImageBuilder(DeploymentStep):
+class DockerImageBuilder(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 

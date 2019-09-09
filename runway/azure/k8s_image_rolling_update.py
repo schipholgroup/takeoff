@@ -6,12 +6,12 @@ import voluptuous as vol
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
 from azure.mgmt.containerservice.models import CredentialResults
 
-from runway.ApplicationVersion import ApplicationVersion
-from runway.DeploymentStep import DeploymentStep
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.keyvault import KeyVaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 from runway.util import run_bash_command
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ SCHEMA = RUNWAY_BASE_SCHEMA.extend(
 
 
 # assumes kubectl is available
-class K8sImageRollingUpdate(DeploymentStep):
+class K8sImageRollingUpdate(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
         # have to overwrite the default keyvault b/c of Vnet K8s cluster

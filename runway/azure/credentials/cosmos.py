@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import voluptuous as vol
 from azure.mgmt.cosmosdb import CosmosDB
 
-from runway.ApplicationVersion import ApplicationVersion
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.keyvault import KeyVaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
