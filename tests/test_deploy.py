@@ -5,15 +5,13 @@ from unittest import mock
 import pytest
 import voluptuous as vol
 
-from runway.ApplicationVersion import ApplicationVersion
-from runway.Step import Step
+from runway.application_version import ApplicationVersion
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
-from runway.azure.create_eventhub_consumer_groups import (
-    CreateEventhubConsumerGroups,
-)
+from runway.azure.configure_eventhub import ConfigureEventhub
 from runway.azure.deploy_to_databricks import DeployToDatabricks
 from runway.deploy import main
 from runway.deploy import run_task, add_runway_plugin_paths, find_env_function
+from runway.step import Step
 from tests.azure import runway_config
 
 environment_variables = {
@@ -41,12 +39,12 @@ def test_no_run_task():
 @mock.patch("runway.deploy.get_full_yaml_filename", side_effect=filename)
 @mock.patch("runway.deploy.get_environment")
 @mock.patch("runway.deploy.load_yaml")
-@mock.patch.object(CreateEventhubConsumerGroups, 'run', return_value=None)
+@mock.patch.object(ConfigureEventhub, 'run', return_value=None)
 def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == '.takeoff/deployment.yml':
-            return {'steps': [{'task': 'createEventhubConsumerGroups',
-                               'groups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
+            return {'steps': [{'task': 'configureEventhub',
+                               'createConsumerGroups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
                                           {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
                                }]}
         elif s == '.takeoff/config.yml':
@@ -57,12 +55,12 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
 
     mock_get_version.return_value = env
 
-    with mock.patch.object(CreateEventhubConsumerGroups, "__init__", return_value=None) as mock_task:
+    with mock.patch.object(ConfigureEventhub, "__init__", return_value=None) as mock_task:
         main()
         mock_task.assert_called_once_with(
             env, {
-                'task': 'createEventhubConsumerGroups',
-                'groups': [
+                'task': 'configureEventhub',
+                'createConsumerGroups': [
                     {'eventhubEntity': 'sdhdevciss',
                      'consumerGroup': 'consumerGroupName1'},
                     {'eventhubEntity': 'sdhdevciss',
@@ -143,7 +141,7 @@ class MockedClass(Step):
 
 
 @mock.patch.dict('runway.steps.steps', {'mocked': MockedClass})
-@mock.patch("runway.Step.KeyVaultClient.vault_and_client", return_value=(None, None))
+@mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
 def test_run_task(_):
     from runway.deploy import run_task
     res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})

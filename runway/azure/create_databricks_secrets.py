@@ -6,14 +6,14 @@ import voluptuous as vol
 from databricks_cli.sdk import ApiClient
 from databricks_cli.secrets.api import SecretApi
 
-from runway.ApplicationVersion import ApplicationVersion
-from runway.Step import Step
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.azure.credentials.databricks import Databricks
 from runway.credentials.DeploymentYamlEnvironmentVariablesMixin import DeploymentYamlEnvironmentVariablesMixin
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

@@ -10,11 +10,11 @@ from databricks_cli.jobs.api import JobsApi
 from databricks_cli.runs.api import RunsApi
 
 from runway import util
-from runway.ApplicationVersion import ApplicationVersion
-from runway.Step import Step
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.databricks import Databricks
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 from runway.util import has_prefix_match, get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)

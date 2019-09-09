@@ -1,6 +1,6 @@
 from azure.keyvault import KeyVaultClient as AzureKeyVaultClient
 
-from runway.ApplicationVersion import ApplicationVersion
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.service_principal import ServicePrincipalCredentials
 from runway.azure.util import get_keyvault_name
 

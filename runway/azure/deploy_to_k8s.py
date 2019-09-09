@@ -10,8 +10,7 @@ from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes import client, config
 from kubernetes.client import CoreV1Api
 
-from runway.ApplicationVersion import ApplicationVersion
-from runway.Step import Step
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.container_registry import DockerRegistry
@@ -21,6 +20,7 @@ from runway.azure.util import get_resource_group_name, get_kubernetes_name
 from runway.credentials.Secret import Secret
 from runway.credentials.application_name import ApplicationName
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 from runway.util import render_file_with_jinja, b64_encode
 
 logger = logging.getLogger(__name__)

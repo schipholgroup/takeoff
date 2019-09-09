@@ -2,7 +2,8 @@ import abc
 
 import voluptuous as vol
 
-from runway import ApplicationVersion
+from runway.application_version import ApplicationVersion
+
 # TODO move away from hardcoded depencendy on azure keyvault in this file
 from runway.azure.credentials.keyvault import KeyVaultClient
 

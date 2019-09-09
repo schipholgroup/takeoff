@@ -1,7 +1,7 @@
 import os
 import sys
 
-from runway.ApplicationVersion import ApplicationVersion
+from runway.application_version import ApplicationVersion
 from runway.azure import util as victim
 from runway.deploy import add_runway_plugin_paths
 

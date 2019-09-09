@@ -6,12 +6,12 @@ import voluptuous as vol
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
 from azure.mgmt.containerservice.models import CredentialResults
 
-from runway.ApplicationVersion import ApplicationVersion
-from runway.Step import Step
+from runway.application_version import ApplicationVersion
 from runway.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from runway.azure.credentials.keyvault import KeyVaultClient
 from runway.azure.credentials.subscription_id import SubscriptionId
 from runway.schemas import RUNWAY_BASE_SCHEMA
+from runway.step import Step
 from runway.util import run_bash_command
 
 logger = logging.getLogger(__name__)

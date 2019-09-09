@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from runway.ApplicationVersion import ApplicationVersion
+from runway.application_version import ApplicationVersion
 from runway.credentials.branch_name import BranchName
 from runway.util import get_tag, get_short_hash, get_full_yaml_filename, load_yaml, load_runway_plugins
 

@@ -1,6 +1,6 @@
 from typing import List
 
-from runway.ApplicationVersion import ApplicationVersion
+from runway.application_version import ApplicationVersion
 from runway.credentials.Secret import Secret
 
 
