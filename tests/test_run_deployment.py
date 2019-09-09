@@ -8,9 +8,7 @@ import voluptuous as vol
 from runway.ApplicationVersion import ApplicationVersion
 from runway.DeploymentStep import DeploymentStep
 from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
-from runway.azure.create_eventhub_consumer_groups import (
-    CreateEventhubConsumerGroups,
-)
+from runway.azure.configure_eventhub import ConfigureEventhub
 from runway.azure.deploy_to_databricks import DeployToDatabricks
 from runway.run_deployment import main
 from runway.run_deployment import run_task, add_runway_plugin_paths, find_env_function
@@ -41,12 +39,12 @@ def test_no_run_task():
 @mock.patch("runway.run_deployment.get_full_yaml_filename", side_effect=filename)
 @mock.patch("runway.run_deployment.get_environment")
 @mock.patch("runway.run_deployment.load_yaml")
-@mock.patch.object(CreateEventhubConsumerGroups, 'run', return_value=None)
+@mock.patch.object(ConfigureEventhub, 'run', return_value=None)
 def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == 'deployment.yml':
-            return {'steps': [{'task': 'createEventhubConsumerGroups',
-                               'groups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
+            return {'steps': [{'task': 'configureEventhub',
+                               'createConsumerGroups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
                                           {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
                                }]}
         elif s == 'runway_config.yml':
@@ -57,12 +55,12 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
 
     mock_get_version.return_value = env
 
-    with mock.patch.object(CreateEventhubConsumerGroups, "__init__", return_value=None) as mock_task:
+    with mock.patch.object(ConfigureEventhub, "__init__", return_value=None) as mock_task:
         main()
         mock_task.assert_called_once_with(
             env, {
-                'task': 'createEventhubConsumerGroups',
-                'groups': [
+                'task': 'configureEventhub',
+                'createConsumerGroups': [
                     {'eventhubEntity': 'sdhdevciss',
                      'consumerGroup': 'consumerGroupName1'},
                     {'eventhubEntity': 'sdhdevciss',
