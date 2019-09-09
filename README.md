@@ -4,8 +4,8 @@
 <h2 align="center">Schiphol Takeoff</h2>
 
 <p align="center">
-<a href="https://gitlab.com/Schiphol-Hub/takeoff/commits/master"><img alt="pipeline status" src="https://gitlab.com/Schiphol-Hub/takeoff/badges/master/pipeline.svg"/></a>
-<a href="https://gitlab.com/Schiphol-Hub/takeoff/commits/master"><img alt="coverage report" src="https://gitlab.com/Schiphol-Hub/takeoff/badges/master/coverage.svg" /></a>
+<a href="https://gitlab.com/Schiphol-DSEL/takeoff/commits/master"><img alt="pipeline status" src="https://gitlab.com/Schiphol-DSEL/takeoff/badges/master/pipeline.svg"/></a>
+<a href="https://gitlab.com/Schiphol-DSEL/takeoff/commits/master"><img alt="coverage report" src="https://gitlab.com/Schiphol-DSEL/takeoff/badges/master/coverage.svg" /></a>
 <a><img alt="" src="https://img.shields.io/badge/python-3.7-blue.svg"></a>
 <a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 </p>
