@@ -48,7 +48,9 @@ class DockerImageBuilder(Step):
     def populate_docker_config(self):
         creds = f"{self.docker_credentials.username}:{self.docker_credentials.password}".encode()
 
-        docker_json = {"auths": {self.docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}}
+        docker_json = {
+            "auths": {self.docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}
+        }
 
         home = os.environ["HOME"]
         docker_dir = f"{home}/.docker"
