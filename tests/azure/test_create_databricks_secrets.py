@@ -2,18 +2,18 @@ import unittest
 
 import mock
 
-from runway.application_version import ApplicationVersion
-from runway.azure.create_databricks_secrets import CreateDatabricksSecrets as victim
-from runway.credentials.Secret import Secret
-from tests.azure import runway_config
+from takeoff.application_version import ApplicationVersion
+from takeoff.azure.create_databricks_secrets import CreateDatabricksSecrets as victim
+from takeoff.credentials.Secret import Secret
+from tests.azure import takeoff_config
 
 BASE_CONF = {'task': 'createDatabricksSecrets'}
 
 
 class TestCreateDatabricksSecrets(unittest.TestCase):
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_validate_minimal_schema(self, _):
-        conf = {**runway_config(), **BASE_CONF}
+        conf = {**takeoff_config(), **BASE_CONF}
 
         victim(ApplicationVersion("dev", "v", "branch"), conf)
 
@@ -23,29 +23,29 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
         assert victim._scope_exists(scopes, "foo")
         assert not victim._scope_exists(scopes, "foobar")
 
-    @mock.patch('runway.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_without_deployment_secrets(self, mock_secrets, mock_client):
-        config = {**runway_config(),
+        config = {**takeoff_config(),
                   **BASE_CONF}
         create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), config)
         combined_secrets = create_secrets._combine_secrets("some-app-name")
         assert len(combined_secrets) == 2
 
-    @mock.patch('runway.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[])
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_without_deployment_and_keyvault_secrets(self, mock_secrets, mock_client):
-        config = {**runway_config(),
+        config = {**takeoff_config(),
                   **BASE_CONF}
         create_secrets = victim(ApplicationVersion("DEV", "foo", "bar"), config)
         combined_secrets = create_secrets._combine_secrets("some-app-name")
         assert len(combined_secrets) == 0
 
-    @mock.patch('runway.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[])
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_without_keyvault_secrets(self, mock_secrets, mock_client):
         conf = {
             'task': 'createDatabricksSecrets',
@@ -60,7 +60,7 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
             ]
         }
 
-        config = {**runway_config(),
+        config = {**takeoff_config(),
                   **BASE_CONF,
                   **conf}
 
@@ -68,9 +68,9 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
         combined_secrets = create_secrets._combine_secrets("some-app-name")
         assert len(combined_secrets) == 3
 
-    @mock.patch('runway.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_with_deployment_and_keyvault_secrets(self, mock_secrets, mock_client):
         conf = {
             'task': 'createDatabricksSecrets',
@@ -84,7 +84,7 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
                 {'BAR': 'baracc_value'},
             ]
         }
-        config = {**runway_config(),
+        config = {**takeoff_config(),
                   **BASE_CONF,
                   **conf}
 
@@ -92,9 +92,9 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
         combined_secrets = create_secrets._combine_secrets("some-app-name")
         assert len(combined_secrets) == 5
 
-    @mock.patch('runway.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('FOO', 'foo'), Secret('BAR', 'bar')])
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_combine_secrets_with_duplicate_deployment_and_keyvault_secrets(self, mock_secrets, mock_client):
         conf = {
             'task': 'createDatabricksSecrets',
@@ -109,7 +109,7 @@ class TestCreateDatabricksSecrets(unittest.TestCase):
             ]
         }
 
-        config = {**runway_config(),
+        config = {**takeoff_config(),
                   **BASE_CONF,
                   **conf}
 

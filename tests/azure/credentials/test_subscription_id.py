@@ -1,4 +1,4 @@
-from runway.azure.credentials.subscription_id import SubscriptionId as victim
+from takeoff.azure.credentials.subscription_id import SubscriptionId as victim
 from tests.azure.credentials.base_keyvault_test import KeyVaultBaseTest, CONFIG
 
 

@@ -1,4 +1,4 @@
-from runway.azure.credentials.container_registry import DockerRegistry as victim
+from takeoff.azure.credentials.container_registry import DockerRegistry as victim
 from tests.azure.credentials.base_keyvault_test import KeyVaultBaseTest
 
 
@@ -8,6 +8,6 @@ class TestDockerRegistry(KeyVaultBaseTest):
 
     def test_credentials(self):
         self.execute(
-            "runway.azure.credentials.container_registry.DockerCredentials",
+            "takeoff.azure.credentials.container_registry.DockerCredentials",
             {'username': "registryuser", 'password': "registrypass"}
         )

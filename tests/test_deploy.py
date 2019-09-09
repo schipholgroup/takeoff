@@ -5,14 +5,14 @@ from unittest import mock
 import pytest
 import voluptuous as vol
 
-from runway.application_version import ApplicationVersion
-from runway.azure.create_databricks_secrets import CreateDatabricksSecrets
-from runway.azure.configure_eventhub import ConfigureEventhub
-from runway.azure.deploy_to_databricks import DeployToDatabricks
-from runway.deploy import main
-from runway.deploy import run_task, add_runway_plugin_paths, find_env_function
-from runway.step import Step
-from tests.azure import runway_config
+from takeoff.application_version import ApplicationVersion
+from takeoff.azure.configure_eventhub import ConfigureEventhub
+from takeoff.azure.create_databricks_secrets import CreateDatabricksSecrets
+from takeoff.azure.deploy_to_databricks import DeployToDatabricks
+from takeoff.deploy import main
+from takeoff.deploy import run_task, add_takeoff_plugin_paths, find_env_function
+from takeoff.step import Step
+from tests.azure import takeoff_config
 
 environment_variables = {
     "WEBAPP_NAME": "my-app",
@@ -36,9 +36,9 @@ def test_no_run_task():
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("runway.deploy.get_full_yaml_filename", side_effect=filename)
-@mock.patch("runway.deploy.get_environment")
-@mock.patch("runway.deploy.load_yaml")
+@mock.patch("takeoff.deploy.get_full_yaml_filename", side_effect=filename)
+@mock.patch("takeoff.deploy.get_environment")
+@mock.patch("takeoff.deploy.load_yaml")
 @mock.patch.object(ConfigureEventhub, 'run', return_value=None)
 def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __):
     def load(s):
@@ -70,9 +70,9 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("runway.deploy.get_full_yaml_filename", side_effect=filename)
-@mock.patch("runway.deploy.get_environment")
-@mock.patch("runway.deploy.load_yaml")
+@mock.patch("takeoff.deploy.get_full_yaml_filename", side_effect=filename)
+@mock.patch("takeoff.deploy.get_environment")
+@mock.patch("takeoff.deploy.load_yaml")
 @mock.patch.object(CreateDatabricksSecrets, 'run', return_value=None)
 def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
     def load(s):
@@ -91,9 +91,9 @@ def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("runway.deploy.get_full_yaml_filename", side_effect=filename)
-@mock.patch("runway.deploy.get_environment")
-@mock.patch("runway.deploy.load_yaml")
+@mock.patch("takeoff.deploy.get_full_yaml_filename", side_effect=filename)
+@mock.patch("takeoff.deploy.get_environment")
+@mock.patch("takeoff.deploy.load_yaml")
 @mock.patch.object(DeployToDatabricks, 'run', return_value=None)
 def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version, __):
     def load(s):
@@ -140,40 +140,40 @@ class MockedClass(Step):
         return vol.Schema({}, extra=vol.ALLOW_EXTRA)
 
 
-@mock.patch.dict('runway.steps.steps', {'mocked': MockedClass})
-@mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+@mock.patch.dict('takeoff.steps.steps', {'mocked': MockedClass})
+@mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
 def test_run_task(_):
-    from runway.deploy import run_task
+    from takeoff.deploy import run_task
     res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})
 
     assert res == 'yeah, science!'
 
 
 @mock.patch.dict(os.environ, environment_variables)
-@mock.patch("runway.deploy.get_full_yaml_filename", side_effect=filename)
-@mock.patch("runway.deploy.load_yaml")
+@mock.patch("takeoff.deploy.get_full_yaml_filename", side_effect=filename)
+@mock.patch("takeoff.deploy.load_yaml")
 @mock.patch.object(DeployToDatabricks, 'run', return_value=None)
-def test_read_runway_plugins(_, mock_load_yaml, __):
+def test_read_takeoff_plugins(_, mock_load_yaml, __):
     paths = [os.path.dirname(os.path.realpath(__file__))]
 
     def load(s):
         if s == '.takeoff/deployment.yml':
             return {"steps": []}
         elif s == '.takeoff/config.yml':
-            return {**runway_config(),
-                    "runway_plugins": paths}
+            return {**takeoff_config(),
+                    "plugins": paths}
 
     mock_load_yaml.side_effect = load
 
-    with mock.patch("runway.deploy.get_environment") as mock_env:
-        with mock.patch("runway.deploy.add_runway_plugin_paths") as m:
+    with mock.patch("takeoff.deploy.get_environment") as mock_env:
+        with mock.patch("takeoff.deploy.add_takeoff_plugin_paths") as m:
             main()
     m.assert_called_once_with(paths)
 
 
 def test_add_custom_path():
     paths = [os.path.dirname(os.path.realpath(__file__))]
-    add_runway_plugin_paths(paths)
+    add_takeoff_plugin_paths(paths)
 
     env = find_env_function()
 

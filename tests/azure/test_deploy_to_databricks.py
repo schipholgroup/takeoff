@@ -1,13 +1,13 @@
 import os
+from dataclasses import dataclass
 
 import pytest
 import voluptuous as vol
-from dataclasses import dataclass
 from mock import mock
 
-from runway.application_version import ApplicationVersion
-from runway.azure.deploy_to_databricks import JobConfig, SCHEMA, DeployToDatabricks
-from tests.azure import runway_config
+from takeoff.application_version import ApplicationVersion
+from takeoff.azure.deploy_to_databricks import JobConfig, SCHEMA, DeployToDatabricks
+from tests.azure import takeoff_config
 
 jobs = [
     JobConfig("foo-SNAPSHOT", 1),
@@ -49,16 +49,16 @@ def victim():
 
     m_runs_api_client.list_runs.return_value = {"runs": [{"run_id": "run1"}, {"run_id": "run2"}]}
 
-    with mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
-         mock.patch("runway.azure.deploy_to_databricks.Databricks", return_value=MockDatabricksClient()), \
-         mock.patch("runway.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client), \
-         mock.patch("runway.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client):
-        conf = {**runway_config(), **BASE_CONF, **{"common": {"databricks_library_path": "/path"}}}
+    with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
+         mock.patch("takeoff.azure.deploy_to_databricks.Databricks", return_value=MockDatabricksClient()), \
+         mock.patch("takeoff.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client), \
+         mock.patch("takeoff.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client):
+        conf = {**takeoff_config(), **BASE_CONF, **{"common": {"databricks_library_path": "/path"}}}
         return DeployToDatabricks(ApplicationVersion('ACP', 'bar', 'foo'), conf)
 
 
 class TestDeployToDatabricks(object):
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_validate_schema(self, _, victim):
         assert victim.config['jobs'][0]['config_file'] == 'databricks.json.j2'
         assert victim.config['jobs'][0]['name'] == ''
@@ -83,7 +83,7 @@ class TestDeployToDatabricks(object):
     def test_find_application_job_id_if_postfix(self, victim):
         assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
 
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "app-name", "CI_COMMIT_REF_SLUG": "foo"})
     def test_construct_name(self, _, victim):
         assert victim._construct_name("") == "app-name"
@@ -123,9 +123,9 @@ class TestDeployToDatabricks(object):
                    "some_int": 5,
                    "spark_python_task": {"python_file": "some.py", "parameters": ["--foo", "bar"]}} == job_config
 
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_invalid_config_empty_jobs(self, _):
-        config = {**runway_config(),
+        config = {**takeoff_config(),
                   **BASE_CONF,
                   "jobs": []}
         with pytest.raises(vol.MultipleInvalid):
@@ -136,27 +136,27 @@ class TestDeployToDatabricks(object):
         assert victim._construct_arguments([{"foo": "bar"}, {"baz": "foobar"}]) == ["--foo", "bar", "--baz", "foobar"]
 
     def test_schema_validity(self, victim):
-        conf = {**runway_config(),
+        conf = {**takeoff_config(),
                 **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name"}]}
                 }
         res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{}]
         assert res["lang"] == "python"
 
-        conf = {**runway_config(),
+        conf = {**takeoff_config(),
                 **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}]}]}
                 }
         res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{"key": "val"}]
 
-        conf = {**runway_config(),
+        conf = {**takeoff_config(),
                 **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}, {"key2": "val2"}]}]}
                 }
         res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{"key": "val"}, {"key2": "val2"}]
 
-    @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_yaml_to_databricks_json(self, _, __, victim):
         conf = {
             "main_name": "foo.class",
@@ -290,8 +290,8 @@ class TestDeployToDatabricks(object):
             }
         }
 
-    @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_without_env(self, _, __, victim):
         conf = {
             "main_name": "some.py",
@@ -334,8 +334,8 @@ class TestDeployToDatabricks(object):
             }
         }
 
-    @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_with_env_schedule(self, _, __, victim):
         conf = {
             "main_name": "some.py",
@@ -380,8 +380,8 @@ class TestDeployToDatabricks(object):
             }
         }
 
-    @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_as_parameter_in_job_config_with_env_schedule_for_other_env(self, _, __, victim):
         conf = {
             "main_name": "some.py",
@@ -422,8 +422,8 @@ class TestDeployToDatabricks(object):
             }
         }
 
-    @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_no_schedule_as_parameter_in_job_config_without_env_schedule(self, _, __, victim):
         conf = {
             "main_name": "some.py",
@@ -458,8 +458,8 @@ class TestDeployToDatabricks(object):
             }
         }
 
-    @mock.patch("runway.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.azure.deploy_to_databricks.ApplicationName.get", return_value="version")
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_correct_schedule_from_template_in_job_config(self, _, __, victim):
         conf = {
             "main_name": "some.py",
@@ -500,7 +500,7 @@ class TestDeployToDatabricks(object):
         }
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_deploy_to_databricks(self, _, victim):
         job_config = {
             "new_cluster": {
@@ -525,9 +525,9 @@ class TestDeployToDatabricks(object):
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
-        with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks.create_config", return_value=job_config) as config_mock:
-            with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks.remove_job") as remove_mock:
-                with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._submit_job") as submit_mock:
+        with mock.patch("takeoff.azure.deploy_to_databricks.DeployToDatabricks.create_config", return_value=job_config) as config_mock:
+            with mock.patch("takeoff.azure.deploy_to_databricks.DeployToDatabricks.remove_job") as remove_mock:
+                with mock.patch("takeoff.azure.deploy_to_databricks.DeployToDatabricks._submit_job") as submit_mock:
                     victim.deploy_to_databricks()
 
         # TODO: make called_with
@@ -536,9 +536,9 @@ class TestDeployToDatabricks(object):
 
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
-    @mock.patch("runway.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_remove_job_batch(self, _, victim):
-        with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=['id1', 'id2']):
+        with mock.patch("takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=['id1', 'id2']):
             victim.remove_job('my-job', 'my-branch', False)
 
         calls = [mock.call("id1"),
@@ -547,8 +547,8 @@ class TestDeployToDatabricks(object):
         victim.jobs_api.delete_job.assert_has_calls(calls)
 
     def test_remove_job_streaming(self, victim):
-        with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=['id1', 'id2']):
-            with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._kill_it_with_fire") as kill_mock:
+        with mock.patch("takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=['id1', 'id2']):
+            with mock.patch("takeoff.azure.deploy_to_databricks.DeployToDatabricks._kill_it_with_fire") as kill_mock:
                 victim.remove_job('my-job', 'my-branch', True)
 
         calls = [mock.call("id1"), mock.call("id2")]
@@ -557,7 +557,7 @@ class TestDeployToDatabricks(object):
         kill_mock.assert_has_calls(calls)
 
     def test_remove_non_existing_job(self, victim):
-        with mock.patch("runway.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=[]):
+        with mock.patch("takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id", return_value=[]):
             victim.remove_job('my-job', 'my-branch', False)
 
         victim.jobs_api.delete_job.assert_not_called()

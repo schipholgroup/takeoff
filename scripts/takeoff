@@ -1,0 +1,4 @@
+#!/usr/bin/python3 -u
+from takeoff.deploy import main
+
+main()
