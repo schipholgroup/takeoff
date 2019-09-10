@@ -14,26 +14,15 @@ from takeoff.credentials.DeploymentYamlEnvironmentVariablesMixin import (
 from takeoff.credentials.Secret import Secret
 from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
-from takeoff.step import Step
+from takeoff.step import Step, SubStep
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-SCHEMA = TAKEOFF_BASE_SCHEMA.extend({vol.Required("task"): "createDatabricksSecrets"}, extra=vol.ALLOW_EXTRA)
 
-
-class CreateDatabricksSecrets(Step):
-    def __init__(self, env: ApplicationVersion, config: dict):
-        super().__init__(env, config)
-
-        self.databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
-        self.secret_api = SecretApi(self.databricks_client)
-
-    def schema(self) -> vol.Schema:
-        return SCHEMA
-
-    def run(self):
-        self.create_databricks_secrets()
+class CreateDatabricksSecretsMixin(object):
+    def __init__(self):
+        raise BaseException("Should not instantiate this class")
 
     def _scope_exists(self, scopes: dict, scope_name: str):
         return scope_name in set(_["name"] for _ in scopes["scopes"])
@@ -47,6 +36,34 @@ class CreateDatabricksSecrets(Step):
         for secret in secrets:
             logger.info(f"Set secret {scope_name}: {secret.key}")
             self.secret_api.put_secret(scope_name, secret.key, secret.val, None)
+
+
+SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
+    {vol.Required("task"): "createDatabricksSecretsFromVault"}, extra=vol.ALLOW_EXTRA
+)
+
+
+class CreateDatabricksSecretsFromVault(Step, CreateDatabricksSecretsMixin):
+    """Will connect to the supplied vault and uses prefixed names to created databricks secrets.
+
+    For example given list of secrets in the vault:
+
+    - `this-app-name-secret-1`
+    - `this-app-name-secret-2`
+    - `a-different-app-name-secret-3`
+
+    it will register `secret-1` and `secret-2` and their values under the databricks secret scope
+    `this-app-name` and ignore all other secrets, such as `secret-3` as it does not match
+    the `this-app-name` prefix.
+    """
+
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
+        self.databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
+        self.secret_api = SecretApi(self.databricks_client)
+
+    def run(self):
+        self.create_databricks_secrets()
 
     def create_databricks_secrets(self):
         application_name = ApplicationName().get(self.config)
@@ -67,3 +84,22 @@ class CreateDatabricksSecrets(Step):
             self.env, self.config
         ).get_deployment_secrets()
         return list(set(vault_secrets + deployment_secrets))
+
+    def schema(self) -> vol.Schema:
+        return SCHEMA
+
+
+class CreateDatabricksSecretFromValue(SubStep, CreateDatabricksSecretsMixin):
+    """Not meant as a step but as a subconfiguration of an existing step such as `ConfigureEventhub`.
+
+    This class will allow for the creation of databricks secrets related to a `Step`. For example the creation
+    of eventhub connection strings as databricks secret.
+
+    It will not do schema validation as it is assumed the schema has been validated by the `Step` itself.
+    """
+
+    def __init__(self, env: ApplicationVersion, config: dict):
+        super().__init__(env, config)
+
+        self.databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
+        self.secret_api = SecretApi(self.databricks_client)

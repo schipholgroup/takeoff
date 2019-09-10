@@ -1,11 +1,11 @@
-import mock
 import os
-import pytest
-
 from dataclasses import dataclass
 
+import mock
+import pytest
+
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.create_databricks_secrets import CreateDatabricksSecrets
+from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretsFromVault, CreateDatabricksSecretFromValue, CreateDatabricksSecretsMixin
 from takeoff.credentials.Secret import Secret
 from tests.azure import takeoff_config
 
@@ -16,7 +16,7 @@ class MockDatabricksClient:
         return None
 
 
-BASE_CONF = {'task': 'createDatabricksSecrets'}
+BASE_CONF = {'task': 'createDatabricksSecretsFromVault'}
 
 TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
                  'AZURE_KEYVAULT_SP_USERNAME_DEV': 'Doctor',
@@ -30,7 +30,7 @@ def setup_victim(add_secrets: bool):
     secrets_conf = {}
     if add_secrets:
         secrets_conf = {
-            'task': 'createDatabricksSecrets',
+            'task': 'createDatabricksSecretsFromVault',
             'dev': [
                 {'FOO': 'foo_value'},
                 {'BAR': 'bar_value'},
@@ -52,7 +52,7 @@ def setup_victim(add_secrets: bool):
          mock.patch("takeoff.azure.create_databricks_secrets.Databricks", return_value=MockDatabricksClient()), \
          mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value=m_client):
         conf = {**takeoff_config(), **BASE_CONF, **{"common": {"databricks_library_path": "/path"}}, **secrets_conf}
-        return CreateDatabricksSecrets(ApplicationVersion('ACP', '0.0.0', 'my-branch'), conf)
+        return CreateDatabricksSecretsFromVault(ApplicationVersion('ACP', '0.0.0', 'my-branch'), conf)
 
 
 @pytest.fixture(autouse=True)
@@ -65,13 +65,13 @@ def victim_without_secrets():
     return setup_victim(add_secrets=False)
 
 
-class TestCreateDatabricksSecrets(object):
+class TestCreateDatabricksSecretsFromVault(object):
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.azure.create_databricks_secrets.Databricks", return_value=MockDatabricksClient())
     @mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value={})
     def test_validate_minimal_schema(self, _, __, ___):
         conf = {**takeoff_config(), **BASE_CONF}
-        CreateDatabricksSecrets(ApplicationVersion('ACP', 'bar', 'foo'), conf)
+        CreateDatabricksSecretsFromVault(ApplicationVersion('ACP', 'bar', 'foo'), conf)
 
     def test_scope_exists(self, victim):
         scopes = {"scopes": [{"name": "foo"}, {"name": "bar"}]}
@@ -124,3 +124,20 @@ class TestCreateDatabricksSecrets(object):
         calls = [mock.call("my-scope", "foo", "oof", None),
                  mock.call("my-scope", "bar", "rab", None)]
         victim.secret_api.put_secret.assert_has_calls(calls)
+
+
+class TestCreateDatabricksSecretFromVault(object):
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.azure.create_databricks_secrets.Databricks", return_value=MockDatabricksClient())
+    @mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value={})
+    def test_validate_minimal_schema(self, m_vault, m_db, m_secret):
+        CreateDatabricksSecretFromValue(ApplicationVersion('ACP', 'bar', 'foo'), {})
+        m_vault.assert_called_once()
+        m_db.assert_called_once()
+        m_secret.assert_called_once()
+
+
+class TestCreateDatabricksSecretsMixin(object):
+    def test_constructor(self):
+        with pytest.raises(BaseException):
+            CreateDatabricksSecretsMixin()

@@ -5,9 +5,8 @@ from azure.mgmt.applicationinsights import ApplicationInsightsManagementClient
 from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.create_databricks_secrets import CreateDatabricksSecrets
+from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromValue
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
-from takeoff.azure.credentials.databricks import Databricks
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name
 from takeoff.credentials.Secret import Secret
@@ -80,7 +79,6 @@ class CreateDatabricksApplicationInsights(CreateApplicationInsights):
 
         instrumentation_secret = Secret("instrumentation-key", insight.instrumentation_key)
 
-        databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
-
-        CreateDatabricksSecrets._create_scope(databricks_client, application_name)
-        CreateDatabricksSecrets._add_secrets(databricks_client, application_name, [instrumentation_secret])
+        db = CreateDatabricksSecretFromValue(self.env, self.config)
+        db._create_scope(application_name)
+        db._add_secrets(application_name, [instrumentation_secret])

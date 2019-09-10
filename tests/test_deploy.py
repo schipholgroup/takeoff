@@ -7,7 +7,7 @@ import voluptuous as vol
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.configure_eventhub import ConfigureEventhub
-from takeoff.azure.create_databricks_secrets import CreateDatabricksSecrets
+from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretsFromVault
 from takeoff.azure.deploy_to_databricks import DeployToDatabricks
 from takeoff.deploy import main
 from takeoff.deploy import run_task, add_takeoff_plugin_paths, find_env_function
@@ -73,11 +73,11 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
 @mock.patch("takeoff.deploy.get_full_yaml_filename", side_effect=filename)
 @mock.patch("takeoff.deploy.get_environment")
 @mock.patch("takeoff.deploy.load_yaml")
-@mock.patch.object(CreateDatabricksSecrets, 'run', return_value=None)
+@mock.patch.object(CreateDatabricksSecretsFromVault, 'run', return_value=None)
 def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == '.takeoff/deployment.yml':
-            return {'steps': [{'task': 'createDatabricksSecrets'}]}
+            return {'steps': [{'task': 'createDatabricksSecretsFromVault'}]}
         elif s == '.takeoff/config.yml':
             return {}
 
@@ -85,9 +85,9 @@ def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
     mock_load_yaml.side_effect = load
     mock_get_version.return_value = env
 
-    with mock.patch.object(CreateDatabricksSecrets, "__init__", return_value=None) as mock_task:
+    with mock.patch.object(CreateDatabricksSecretsFromVault, "__init__", return_value=None) as mock_task:
         main()
-        mock_task.assert_called_once_with(env, {'task': 'createDatabricksSecrets'})
+        mock_task.assert_called_once_with(env, {'task': 'createDatabricksSecretsFromVault'})
 
 
 @mock.patch.dict(os.environ, environment_variables)

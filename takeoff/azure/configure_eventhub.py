@@ -7,9 +7,8 @@ from azure.mgmt.eventhub import EventHubManagementClient
 from azure.mgmt.relay.models import AccessRights
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.create_databricks_secrets import CreateDatabricksSecrets
+from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromValue
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
-from takeoff.azure.credentials.databricks import Databricks
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_eventhub_name
 from takeoff.credentials.Secret import Secret
@@ -213,9 +212,9 @@ class ConfigureEventhub(Step):
         return False
 
     def create_databricks_secrets(self, secrets: List[Secret], application_name):
-        databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
-        CreateDatabricksSecrets._create_scope(databricks_client, application_name)
-        CreateDatabricksSecrets._add_secrets(databricks_client, application_name, secrets)
+        databricks_secrets = CreateDatabricksSecretFromValue(self.env, self.config)
+        databricks_secrets._create_scope(application_name)
+        databricks_secrets._add_secrets(application_name, secrets)
 
     def _create_consumer_group(self, group: EventHubConsumerGroup):
         self.eventhub_client.consumer_groups.create_or_update(
