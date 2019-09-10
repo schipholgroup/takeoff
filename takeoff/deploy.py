@@ -8,7 +8,7 @@ from takeoff.util import get_tag, get_short_hash, get_full_yaml_filename, load_y
 logger = logging.getLogger(__name__)
 
 
-def deploy_env_logic(config) -> ApplicationVersion:
+def deploy_env_logic(config: dict) -> ApplicationVersion:
     branch = BranchName().get(config)
     tag = get_tag()
     git_hash = get_short_hash()
@@ -28,7 +28,7 @@ def find_env_function():
     return deploy_env_logic
 
 
-def get_environment(config) -> ApplicationVersion:
+def get_environment(config: dict) -> ApplicationVersion:
     env_fun = find_env_function()
     return env_fun(config)
 
@@ -57,7 +57,7 @@ def main():
         run_task(env, task, {**task_config, **config})
 
 
-def run_task(env: ApplicationVersion, task: str, task_config):
+def run_task(env: ApplicationVersion, task: str, task_config: dict):
     from takeoff.steps import steps
 
     if task not in steps:

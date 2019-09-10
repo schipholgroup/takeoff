@@ -69,7 +69,7 @@ class PublishArtifact(Step):
         return jars[0]
 
     @staticmethod
-    def _get_wheel():
+    def _get_wheel() -> str:
         wheels = glob.glob("dist/*.whl")
         if len(wheels) != 1:
             raise FileNotFoundError(f"wheels found: {wheels}; There can (and must) be only one!")
@@ -96,7 +96,7 @@ class PublishArtifact(Step):
             else:
                 logging.info("Invalid target for artifact")
 
-    def publish_to_blob(self, file, file_ext):
+    def publish_to_blob(self, file: str, file_ext: str):
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
         build_definition_name = ApplicationName().get(self.config)
