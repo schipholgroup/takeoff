@@ -18,7 +18,7 @@ class Step(object):
     def run(self):
         raise NotImplementedError
 
-    def validate(self, config) -> dict:
+    def validate(self, config: dict) -> dict:
         return self.schema()(config)
 
     @abc.abstractmethod

@@ -2,14 +2,14 @@ from takeoff.application_version import ApplicationVersion
 from takeoff.util import load_takeoff_plugins
 
 
-def _get_naming_function(function_name, default: callable) -> callable:
+def _get_naming_function(function_name: str, default: callable) -> callable:
     for plugin in load_takeoff_plugins().values():
         if hasattr(plugin, function_name):
             return getattr(plugin, function_name)
     return default
 
 
-def default_naming(key):
+def default_naming(key: str):
     def _format(config: dict, env: ApplicationVersion):
         return config["azure"][key].format(env=env.environment_formatted)
 

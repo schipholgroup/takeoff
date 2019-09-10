@@ -76,7 +76,7 @@ class CreateDatabricksSecretsFromVault(Step, CreateDatabricksSecretsMixin):
         logging.info(f'------  {len(secrets)} secrets created in "{self.env.environment}"')
         pprint(self.secret_api.list_secrets(application_name))
 
-    def _combine_secrets(self, application_name):
+    def _combine_secrets(self, application_name: str):
         vault_secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
             application_name
         )
