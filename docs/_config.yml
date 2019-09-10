@@ -1,0 +1,53 @@
+name: Schiphol Takeoff
+
+project:
+  version: 9.0.1
+  github: https://github.com/Schiphol-Hub/takeoff
+
+markdown: kramdown
+
+collections:
+  deployment-steps:
+    output: true
+
+links:
+  header:
+  - title: GitHub
+    url: https://github.com/Schiphol-Hub/takeoff
+  footer:
+  - title: GitHub
+    url: https://github.com/Schiphol-Hub/takeoff
+  - title: Issues
+    url: https://github.com/Schiphol-Hub/takeoff/issues
+
+ui:
+  header:
+    color1: "#080331"
+    color2: "#673051"
+    trianglify: true
+
+social:
+  github:
+    user: Schiphol-Hub
+    repo: takeoff
+  twitter:
+    enabled: false
+    via:
+    hash:
+    account:
+  facebook:
+    enabled: false
+    profileUrl:
+
+# Build settings
+exclude:
+- Gemfile
+- Gemfile.lock
+- azure-pipelines.yml
+- deployment.yml
+- deploy.sh
+- docker-compose-local.yml
+- docker-compose.yml
+- Dockerfile
+- takeoff_config.yaml
+- README.md
