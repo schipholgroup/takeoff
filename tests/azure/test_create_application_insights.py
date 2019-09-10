@@ -3,6 +3,7 @@ import os
 import pytest
 
 from dataclasses import dataclass
+from voluptuous import MultipleInvalid
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_application_insights import CreateApplicationInsights
@@ -42,6 +43,17 @@ class TestCreateApplicationInsights(object):
         conf = {**takeoff_config(), **BASE_CONF}
 
         CreateApplicationInsights(ApplicationVersion("dev", "v", "branch"), conf)
+
+    # @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_invalid_schema(self):
+        INVALID_CONF = {
+             'task': 'createApplicationInsights',
+             'applicationType': 'invalid',
+             'kind': 'invalid'
+        }
+        conf = {**takeoff_config(), **INVALID_CONF}
+        with pytest.raises(MultipleInvalid):
+            CreateApplicationInsights(ApplicationVersion("dev", "v", "branch"), conf)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch("takeoff.azure.create_application_insights.CreateApplicationInsights._create_client")
