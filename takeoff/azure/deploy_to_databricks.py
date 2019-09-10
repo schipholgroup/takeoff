@@ -133,7 +133,7 @@ class DeployToDatabricks(Step):
 
         return schedule
 
-    def _construct_name(self, name) -> str:
+    def _construct_name(self, name: str) -> str:
         postfix = f"-{name}" if name else ""
         return f"{ApplicationName().get(self.config)}{postfix}"
 

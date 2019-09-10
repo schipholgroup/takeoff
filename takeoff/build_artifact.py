@@ -37,7 +37,7 @@ class BuildArtifact(Step):
             f.write(f"__version__='{self.env.version}'")
 
     @staticmethod
-    def _remove_old_artifacts(path):
+    def _remove_old_artifacts(path: str):
         """Ensure any old artifacts are gone"""
         shutil.rmtree(path, ignore_errors=True)
 

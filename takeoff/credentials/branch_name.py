@@ -5,7 +5,7 @@ from takeoff.util import current_filename
 
 
 class BranchName(EnvironmentCredentialsMixin):
-    def get(self, config) -> str:
+    def get(self, config: dict) -> str:
         credential_kwargs = super()._transform_environment_key_to_credential_kwargs(
             config["environment_keys"]
         )

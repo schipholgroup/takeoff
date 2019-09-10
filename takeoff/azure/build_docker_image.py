@@ -95,7 +95,7 @@ class DockerImageBuilder(Step):
             raise ChildProcessError("Could not build the image for some reason!")
 
     @staticmethod
-    def push_image(tag):
+    def push_image(tag: str):
         cmd = ["docker", "push", tag]
 
         logger.info(f"Uploading docker image {tag}")

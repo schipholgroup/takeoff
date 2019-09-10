@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from pprint import pprint
+from typing import List
 
 import kubernetes
 import voluptuous as vol
@@ -137,9 +138,9 @@ class DeployToKubernetes(BaseKubernetes):
         self.deploy_to_kubernetes(deployment_config=kubernetes_deployment, service_config=kubernetes_service)
 
     @staticmethod
-    def is_needle_in_haystack(needle, haystack):
-        # Helper method to abstract away checking for existence of a kubernetes entity
-        # this assumes the kubernetes structure of entities (i.e. items->metadata->name
+    def is_needle_in_haystack(needle: str, haystack: dict):
+        # Helper method to abstract away checking for existence of a k8s entity
+        # this assumes the k8s structure of entities (i.e. items->metadata->name
         for dep in haystack["items"]:
             if dep["metadata"]["name"] == needle:
                 return True
@@ -203,7 +204,7 @@ class DeployToKubernetes(BaseKubernetes):
         )
 
     def _create_or_patch_secrets(
-        self, secrets, kubernetes_namespace, name: str = None, secret_type: str = "Opaque"
+        self, secrets: List[Secret], kubernetes_namespace: str, name: str = None, secret_type: str = "Opaque"
     ):
         application_name = ApplicationName().get(self.config)
         secret_name = f"{application_name}-secret" if not name else name

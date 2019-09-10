@@ -4,7 +4,7 @@ import os
 import pkgutil
 import subprocess
 from dataclasses import dataclass
-from typing import Pattern, Callable
+from typing import Callable, List, Pattern, Union
 
 from git import Repo
 from jinja2 import Template
@@ -71,13 +71,6 @@ def load_yaml(path: str) -> dict:
     return load(config_file)
 
 
-def log_docker(logs_iter):
-    from pprint import pprint
-
-    for line in logs_iter:
-        pprint(line)
-
-
 def current_filename(__fn):
     return os.path.basename(__fn).split(".")[0]
 
@@ -117,7 +110,7 @@ def get_jar_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"
 
 
-def run_bash_command(command):
+def run_bash_command(command: Union[List[str], str]):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
     while True:
         output = process.stdout.readline()
