@@ -1,3 +1,35 @@
+"""Builds and pushes one or more docker images.
+
+Credentials for a docker registry (username, password, registry) must be
+available in your cloud vault.
+
+Example:
+
+    Assume an application name "myapp" and version "1.2.0".
+    Assume a registry with name "acr.azurecr.io"
+
+
+    Minimum configuration example. This builds and pushed a single docker image
+    to "acs.azurecr.io/myapp:1.2.0"
+    ::
+
+        steps:
+          - task: buildDockerImage
+
+
+    Full configuration example. This builds and pushed two docker images
+    to "acr.azurecr.io/myimage-one:1.2.0" (from "Dockerfile_one")
+    and "arc.azurecr.io/myapp:1.2.0" (from Dockerfile_two) respectively
+    ::
+
+        steps:
+          - task: buildDockerImage
+            dockerfile:
+              - file: Dockerfile_one
+                postfix: "-one"
+                custom_image_name: myimage
+              - file: Dockerfile_two
+"""
 import base64
 import json
 import logging
@@ -23,9 +55,20 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             "dockerfiles", default=[{"file": "Dockerfile", "postfix": None, "custom_image_name": None}]
         ): [
             {
-                vol.Optional("file", default="Dockerfile"): str,
-                vol.Optional("postfix", default=None): vol.Any(None, str),
-                vol.Optional("custom_image_name", default=None): vol.Any(None, str),
+                vol.Optional("file", default="Dockerfile", description="Alternative docker file name"): str,
+                vol.Optional(
+                    "postfix",
+                    default=None,
+                    description="Postfix for the image name, will be added `before` the tag",
+                ): vol.Any(None, str),
+                vol.Optional(
+                    "custom_image_name",
+                    default=None,
+                    description=(
+                        "A custom name for the image to be used."
+                        "If not supplied will use `application_name`"
+                    ),
+                ): vol.Any(None, str),
             }
         ],
     },
