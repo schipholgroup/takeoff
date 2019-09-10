@@ -68,13 +68,13 @@ class TestConfigureEventhub(object):
     def test_get_unique_eventhubs(self, victim):
         groups = [
             EventHubConsumerGroup(
-                "hub1dev", "your-app-name-group1", "sdheventhubdev", "sdhdev", False
+                EventHub("sdhdev", "sdheventhubdev", "hub1dev"), "your-app-name-group1", False
             ),
             EventHubConsumerGroup(
-                "hub1dev", "your-app-name-group2", "sdheventhubdev", "sdhdev", False
+                EventHub("sdhdev", "sdheventhubdev", "hub1dev"), "your-app-name-group2", False
             ),
             EventHubConsumerGroup(
-                "hub2dev", "your-app-name-group1", "sdheventhubdev", "sdhdev", False
+                EventHub("sdhdev", "sdheventhubdev", "hub2dev"), "your-app-name-group1", False
             ),
         ]
 
@@ -82,29 +82,29 @@ class TestConfigureEventhub(object):
 
         assert len(uniques) == 2
         assert all(
-            _ in map(lambda x: x.eventhub_entity, uniques)
+            _ in map(lambda x: x.name, uniques)
             for _ in ("hub1dev", "hub2dev")
         )
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_eventhub_exists(self, victim):
-        hub = EventHubConsumerGroup('hub1', 'some_group', 'some_namespace', 'some_resource_group', False)
+        hub = EventHubConsumerGroup(EventHub('some_resource_group', 'some_namespace', 'hub1'), 'some_group', False)
         assert victim._eventhub_exists(hub)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_eventhub_not_exists(self, victim):
-        group = EventHubConsumerGroup('idontexist', 'some_group', 'some_namespace', 'some_resource_group', False)
+        group = EventHubConsumerGroup(EventHub('some_resource_group', 'some_namespace', 'idontexist'), 'some_group', False)
         with pytest.raises(ValueError):
             victim._eventhub_exists(group)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_group_exists(self, victim):
-        group = EventHubConsumerGroup('some_hub', 'group1', 'some_namespace', 'some_resource_group', False)
+        group = EventHubConsumerGroup(EventHub('some_resource_group', 'some_namespace', 'some_hub'), 'group1', False)
         assert victim._group_exists(group)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_group_not_exists(self, victim):
-        group = EventHubConsumerGroup('some_hub', 'idontexist', 'some_namespace', 'some_resource_group', False)
+        group = EventHubConsumerGroup(EventHub('some_resource_group', 'some_namespace', 'some_hub'), 'idontexist', False)
         assert not victim._group_exists(group)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
@@ -204,22 +204,22 @@ class TestConfigureEventhub(object):
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._create_consumer_group")
     def test_create_eventhub_consumer_groups(self, consumer_group_fun, victim):
         groups = [
-            EventHubConsumerGroup('entity1', 'group1', 'my-namespace', 'my-group', False),
-            EventHubConsumerGroup('entity2', 'group2', 'my-namespace', 'my-group', True)
+            EventHubConsumerGroup(EventHub('my-group', 'my-namespace', 'entity1'), 'group1', False),
+            EventHubConsumerGroup(EventHub('my-group', 'my-namespace', 'entity2'), 'group2', True),
         ]
 
         with mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._eventhub_exists", return_value=True):
             with mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._group_exists", return_value=False):
                 victim.create_eventhub_consumer_groups(groups)
 
-        calls = [mock.call(group=EventHubConsumerGroup('entity1', 'group1', 'my-namespace', 'my-group', False)),
-                 mock.call(group=EventHubConsumerGroup('entity2', 'group2', 'my-namespace', 'my-group', True))]
+        calls = [mock.call(group=EventHubConsumerGroup(EventHub('my-group', 'my-namespace', 'entity1'), 'group1', False)),
+                 mock.call(group=EventHubConsumerGroup(EventHub('my-group', 'my-namespace', 'entity2'), 'group2', True))]
 
         consumer_group_fun.assert_has_calls(calls)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_create_eventhub_consumer_group(self, victim):
-        group = EventHubConsumerGroup('my-entity', 'my-group', 'my-namespace', 'my-rg', False)
+        group = EventHubConsumerGroup(EventHub('my-rg', 'my-namespace', 'my-entity'), 'my-group', False)
         with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventhub.create_databricks_secrets') as databricks_call:
             victim._create_consumer_group(group)
 
@@ -232,7 +232,7 @@ class TestConfigureEventhub(object):
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_create_eventhub_consumer_group(self, victim):
-        group = EventHubConsumerGroup('my-entity', 'my-group', 'my-namespace', 'my-rg', True)
+        group = EventHubConsumerGroup(EventHub('my-rg', 'my-namespace', 'my-entity'), 'my-group', True)
         with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventhub.create_databricks_secrets') as databricks_call:
             victim._create_consumer_group(group)
 

@@ -59,16 +59,14 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
 @dataclass(frozen=True)
 class EventHub(object):
     resource_group: str
-    eventhub_namespace: str
-    eventhub_entity: str
+    namespace: str
+    name: str
 
 
 @dataclass(frozen=True)
 class EventHubConsumerGroup(object):
-    eventhub_entity_name: str
+    eventhub: EventHub
     consumer_group: str
-    eventhub_namespace: str
-    resource_group: str
     create_databricks_secret: bool
 
 
@@ -110,10 +108,12 @@ class ConfigureEventhub(Step):
 
         groups = [
             EventHubConsumerGroup(
-                group["eventhubEntity"] + self.env.environment_formatted,
+                EventHub(
+                    resource_group,
+                    eventhub_namespace,
+                    group["eventhubEntity"] + self.env.environment_formatted,
+                ),
                 group["consumerGroup"],
-                eventhub_namespace,
-                resource_group,
                 group["createDatabricksSecret"],
             )
             for group in self.config["createConsumerGroups"]
@@ -169,45 +169,44 @@ class ConfigureEventhub(Step):
 
     def _eventhub_exists(self, group: EventHubConsumerGroup) -> bool:
         hubs = list(
-            self.eventhub_client.event_hubs.list_by_namespace(group.resource_group, group.eventhub_namespace)
+            self.eventhub_client.event_hubs.list_by_namespace(
+                group.eventhub.resource_group, group.eventhub.namespace
+            )
         )
-        if group.eventhub_entity_name in set(_.name for _ in hubs):
+        if group.eventhub.name in set(_.name for _ in hubs):
             return True
         raise ValueError(
-            f"Eventhub with name {group.eventhub_entity_name} does not exist. " f"Please create it first"
+            f"Eventhub with name {group.eventhub.name} does not exist. " f"Please create it first"
         )
 
     def _group_exists(self, group: EventHubConsumerGroup) -> bool:
         consumer_groups = list(
             self.eventhub_client.consumer_groups.list_by_event_hub(
-                group.resource_group, group.eventhub_namespace, group.eventhub_entity_name
+                group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name
             )
         )
 
         if group.consumer_group in set(_.name for _ in consumer_groups):
             logging.warning(
-                f"Consumer group with name {group.consumer_group} in hub {group.eventhub_entity_name}"
+                f"Consumer group with name {group.consumer_group} in hub {group.eventhub.name}"
                 " already exists, not creating."
             )
             return True
         return False
 
-    def _authorization_rules_exists(self, group: EventHub, name: str) -> bool:
+    def _authorization_rules_exists(self, hub: EventHub, name: str) -> bool:
         logging.info(
-            f"Retrieving rules, Resource Group {group.resource_group}, "
-            f"Eventhub Namespace {group.eventhub_namespace}, "
-            f"Eventhub Entity: {group.eventhub_entity}"
+            f"Retrieving rules, Resource Group {hub.resource_group}, "
+            f"Eventhub Namespace {hub.namespace}, "
+            f"Eventhub Entity: {hub.name}"
         )
         existing_policies = list(
             self.eventhub_client.event_hubs.list_authorization_rules(
-                group.resource_group, group.eventhub_namespace, group.eventhub_entity
+                hub.resource_group, hub.namespace, hub.name
             )
         )
         if name in set(_.name for _ in existing_policies):
-            print(
-                f"Authorization rule with name {name} in hub {group.eventhub_entity}"
-                " already exists, not creating."
-            )
+            print(f"Authorization rule with name {name} in hub {hub.name}" " already exists, not creating.")
             return True
         return False
 
@@ -218,7 +217,7 @@ class ConfigureEventhub(Step):
 
     def _create_consumer_group(self, group: EventHubConsumerGroup):
         self.eventhub_client.consumer_groups.create_or_update(
-            group.resource_group, group.eventhub_namespace, group.eventhub_entity_name, group.consumer_group
+            group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name, group.consumer_group
         )
         if group.create_databricks_secret:
             application_name = ApplicationName().get(self.config)
@@ -234,32 +233,25 @@ class ConfigureEventhub(Step):
     def _create_connection_strings(self, eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
-        for group in eventhub_entities:
-            if not self._authorization_rules_exists(group, policy_name):
+        for hub in eventhub_entities:
+            if not self._authorization_rules_exists(hub, policy_name):
                 self.eventhub_client.event_hubs.create_or_update_authorization_rule(
-                    group.resource_group,
-                    group.eventhub_namespace,
-                    group.eventhub_entity,
-                    policy_name,
-                    [AccessRights.listen],
+                    hub.resource_group, hub.namespace, hub.name, policy_name, [AccessRights.listen]
                 )
 
         connection_strings = [
             self.eventhub_client.event_hubs.list_keys(
-                group.resource_group, group.eventhub_namespace, group.eventhub_entity, policy_name
+                hub.resource_group, hub.namespace, hub.name, policy_name
             ).primary_connection_string
-            for group in eventhub_entities
+            for hub in eventhub_entities
         ]
 
-        return [
-            ConnectingString(hub.eventhub_entity, conn)
-            for hub, conn in zip(eventhub_entities, connection_strings)
-        ]
+        return [ConnectingString(hub.name, conn) for hub, conn in zip(eventhub_entities, connection_strings)]
 
     @staticmethod
     def _get_unique_eventhubs(consumer_groups_to_create: List[EventHubConsumerGroup]) -> Set[EventHub]:
         return set(
-            EventHub(_.resource_group, _.eventhub_namespace, _.eventhub_entity_name)
+            EventHub(_.eventhub.resource_group, _.eventhub.namespace, _.eventhub.name)
             for _ in consumer_groups_to_create
         )
 
