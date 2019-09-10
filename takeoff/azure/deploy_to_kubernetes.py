@@ -120,7 +120,11 @@ class DeployToKubernetes(BaseKubernetes):
         )
         kubernetes_service = render_file_with_jinja(
             self.config["service_config_path"],
-            {"service_ip": service_ip, "namespace": self.kubernetes_namespace, "application_name": application_name},
+            {
+                "service_ip": service_ip,
+                "namespace": self.kubernetes_namespace,
+                "application_name": application_name,
+            },
             yaml.load,
         )
         logging.info("Deploying ----------------------------------------")
@@ -141,7 +145,9 @@ class DeployToKubernetes(BaseKubernetes):
                 return True
         return False
 
-    def _kubernetes_resource_exists(self, resource_name: str, namespace: str, kubernetes_resource_listing_function):
+    def _kubernetes_resource_exists(
+        self, resource_name: str, namespace: str, kubernetes_resource_listing_function
+    ):
         existing_services = kubernetes_resource_listing_function(namespace=namespace).to_dict()
         return self.is_needle_in_haystack(resource_name, existing_services)
 
@@ -152,23 +158,29 @@ class DeployToKubernetes(BaseKubernetes):
     def _create_namespace_if_not_exists(self, kubernetes_namespace: str):
         # very simple way to ensure the namespace exists
         if not self._kubernetes_namespace_exists(kubernetes_namespace):
-            logger.info(f"No kubernetes namespace for this application. Creating namespace: {kubernetes_namespace}")
+            logger.info(
+                f"No kubernetes namespace for this application. Creating namespace: {kubernetes_namespace}"
+            )
             namespace_to_create = kubernetes.client.V1Namespace(metadata={"name": kubernetes_namespace})
             self.core_v1_api.create_namespace(body=namespace_to_create)
 
     def _create_or_patch_resource(
-            self, client, resource_type: str, name: str, namespace: str, resource_config: dict
+        self, client, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         list_function = getattr(client, f"list_namespaced_{resource_type}")
         patch_function = getattr(client, f"patch_namespaced_{resource_type}")
         create_function = getattr(client, f"create_namespaced_{resource_type}")
         if self._kubernetes_resource_exists(name, namespace, list_function):
             # we need to patch the existing resource
-            logger.info(f"Found existing kubernetes resource, patching resource {name} in namespace {namespace}")
+            logger.info(
+                f"Found existing kubernetes resource, patching resource {name} in namespace {namespace}"
+            )
             patch_function(name=name, namespace=namespace, body=resource_config)
         else:
             # the resource doesn't exist, we need to create it
-            logger.info(f"No existing kubernetes resource found, creating resource: {name} in namespace {namespace}")
+            logger.info(
+                f"No existing kubernetes resource found, creating resource: {name} in namespace {namespace}"
+            )
             create_function(namespace=namespace, body=resource_config)
 
     def _create_or_patch_service(self, service_config: dict, kubernetes_namespace: str):
@@ -190,7 +202,9 @@ class DeployToKubernetes(BaseKubernetes):
             resource_config=deployment,
         )
 
-    def _create_or_patch_secrets(self, secrets, kubernetes_namespace, name: str = None, secret_type: str = "Opaque"):
+    def _create_or_patch_secrets(
+        self, secrets, kubernetes_namespace, name: str = None, secret_type: str = "Opaque"
+    ):
         application_name = ApplicationName().get(self.config)
         secret_name = f"{application_name}-secret" if not name else name
 
@@ -229,7 +243,9 @@ class DeployToKubernetes(BaseKubernetes):
             )
         ]
         secret_type = "kubernetes.io/dockerconfigjson"
-        self._create_or_patch_secrets(secrets, self.kubernetes_namespace, name="acr-auth", secret_type=secret_type)
+        self._create_or_patch_secrets(
+            secrets, self.kubernetes_namespace, name="acr-auth", secret_type=secret_type
+        )
 
     def _create_keyvault_secrets(self):
         secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
@@ -268,5 +284,3 @@ class DeployToKubernetes(BaseKubernetes):
     @property
     def cluster_name(self):
         return get_kubernetes_name(self.config, self.env)
-
-

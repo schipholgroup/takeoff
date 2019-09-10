@@ -48,19 +48,20 @@ class KubernetesImageRollingUpdate(BaseKubernetes):
         kubernetes.config.load_kube_config()
         logger.info("Kubeconfig loaded")
 
-        self._apply_rolling_update(self.config["namespace"], self.config["deployment_name"])
+        self._apply_rolling_update()
 
-    def _apply_rolling_update(self, namespace, deployment):
+    def _apply_rolling_update(self):
         """
         https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment
         """
         new_image = f"{self.config['image']}:{self.env.artifact_tag}"
         logger.info(f"Deploying image {new_image}")
 
+        deployment = self.config["deployment_name"]
         cmd = [
             "kubectl",
             "--namespace",
-            namespace,
+            self.config["namespace"],
             "--record",
             f"deployment.apps/{deployment}",
             "set",

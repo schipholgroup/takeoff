@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from typing import List
 from unittest import mock
 
 import pytest
@@ -8,7 +9,7 @@ from kubernetes.client import CoreV1Api
 from kubernetes.client import V1SecretList
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes
+from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
 from takeoff.credentials.Secret import Secret
 from tests.azure import takeoff_config
 
@@ -26,12 +27,12 @@ class KubernetesResponse:
     def to_dict(self):
         return {
             "items": [
-                 {
-                     "metadata": {
-                         "name": "something"
-                     }
-                 }
-             ]
+                {
+                    "metadata": {
+                        "name": "something"
+                    }
+                }
+            ]
         }
 
 
@@ -270,14 +271,13 @@ class TestDeployToKubernetes(object):
         patch_mock.assert_called_once_with(namespace='some_namespace', body=expected_body, name='my_little_pony-secret')
         create_mock.assert_not_called()
 
-
     @mock.patch.dict(os.environ, env_variables)
     @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_resource_exists", return_value=False)
     def test_create_docker_registry_secret(self, _, victim):
-
         expected_body = {
             'api_version': None,
-            'data': {'.dockerconfigjson': 'eyJhdXRocyI6IHsibXktcmVnaXN0cnkiOiB7InVzZXJuYW1lIjogIm15LXVzZXJuYW1lIiwgInBhc3N3b3JkIjogIm15LXBhc3N3b3JkIiwgImF1dGgiOiAiYlhrdGRYTmxjbTVoYldVNmJYa3RjR0Z6YzNkdmNtUT0ifX19'},
+            'data': {
+                '.dockerconfigjson': 'eyJhdXRocyI6IHsibXktcmVnaXN0cnkiOiB7InVzZXJuYW1lIjogIm15LXVzZXJuYW1lIiwgInBhc3N3b3JkIjogIm15LXBhc3N3b3JkIiwgImF1dGgiOiAiYlhrdGRYTmxjbTVoYldVNmJYa3RjR0Z6YzNkdmNtUT0ifX19'},
             'kind': None,
             'metadata': {
                 'annotations': None,
@@ -308,3 +308,25 @@ class TestDeployToKubernetes(object):
         create_mock.assert_called_once_with(body=expected_body, namespace='my_little_pony')
         patch_mock.assert_not_called()
 
+
+@dataclass(frozen=True)
+class MockValue:
+    value: bytes
+
+
+@dataclass(frozen=True)
+class MockCredentialResults:
+    kubeconfigs: List[MockValue]
+
+
+class TestBaseKubernetes():
+    @mock.patch.dict(os.environ, {"HOME": "myhome"})
+    def test_write_kube_config(self, victim: BaseKubernetes):
+        mopen = mock.mock_open()
+        with mock.patch("os.mkdir") as m_mkdir:
+            with mock.patch("builtins.open", mopen):
+                victim._write_kube_config(MockCredentialResults([MockValue("foo".encode(encoding="UTF-8"))]))
+
+        m_mkdir.assert_called_once_with("myhome/.kube")
+        mopen.assert_called_once_with("myhome/.kube/config", "w")
+        mopen().write.assert_called_once_with("foo")
