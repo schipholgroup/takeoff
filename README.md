@@ -3,12 +3,15 @@
 </p>
 <h2 align="center">Schiphol Takeoff</h2>
 
+<img align="center">
 <p align="center">
-<a href="https://circleci.com/gh/Schiphol-Hub/takeoff/tree/master"><img alt="pipeline status" src="https://circleci.com/gh/Schiphol-Hub/takeoff/tree/master.svg?style=svg"/></a>
+<a href="https://circleci.com/gh/Schiphol-Hub/takeoff/tree/master"><img alt="pipeline status" src="https://img.shields.io/circleci/build/gh/Schiphol-Hub/takeoff/master"/></a>
 <a href="https://codecov.io/gh/Schiphol-Hub/takeoff"><img alt="coverage status" src="https://codecov.io/gh/Schiphol-Hub/takeoff/branch/master/graph/badge.svg"/></a>
 <a><img alt="" src="https://img.shields.io/badge/python-3.7-blue.svg"></a>
 <a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://hub.docker.com/r/schipholhub/takeoff"><img alt="docker pulls" src="https://img.shields.io/docker/pulls/schipholhub/takeoff.svg"></a>
 </p>
+
 
 > Takeoff: your runway to the cloud(s)!
 
