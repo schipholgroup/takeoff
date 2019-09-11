@@ -13,24 +13,24 @@ https://github.com/Schiphol-Hub/takeoff-base-azure
 """
 setup_dependencies = [
     "azure==4.0.0",
-    "databricks-cli==0.8.4",
-    "docker==3.5.0",
-    "flake8==3.5.0",
-    "gitpython==2.1.10",
-    "jinja2==2.10",
-    "kubernetes==7.0.0",
-    "mock==2.0.0",
+    "databricks-cli==0.9.0",
+    "docker==4.0.2",
+    "flake8==3.7.8",
+    "gitpython==3.0.2",
+    "jinja2==2.10.1",
+    "kubernetes==10.0.1",
     "py4j==0.10.7",
-    "pyyaml==3.13",
+    "pyyaml==5.1.2",
     "requests>=2.20.0",
-    "twine==1.12.1",
-    "voluptuous==0.11.5"
+    "twine==1.14.0",
+    "voluptuous==0.11.7"
 ]
 
 test_dependencies = [
+    "mock==2.0.0",
     "pytest==3.8.2",
     "pytest-cov==2.6.0",
-    "black"
+    "black==19.3b0"
 ]
 
 if {"pytest", "test"}.intersection(sys.argv):

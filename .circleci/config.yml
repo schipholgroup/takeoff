@@ -35,7 +35,7 @@ jobs:
 
   takeoff:
     machine:
-      image: ubuntu-1604:201903-01    # pins image to specific version
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
       - run: env | grep -v ^PATH > .env
