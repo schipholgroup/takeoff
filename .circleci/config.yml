@@ -31,7 +31,7 @@ jobs:
       - checkout
       - run: pip install -e .[test]
       - run: python setup.py test
-      - codecov
+      - codecov/upload
 
 workflows:
   version: 2
@@ -45,13 +45,6 @@ workflows:
 
 #services:
 #  - docker:dind
-#
-#lint_black:
-#  image: python:3.7
-#  stage: test
-#  script:
-#    - pip install black
-#    - black -l 110 --check takeoff
 #
 #takeoff:
 #  image: docker:latest
