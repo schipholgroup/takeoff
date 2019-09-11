@@ -1,8 +1,8 @@
-import mock
 import os
-import pytest
-
 from dataclasses import dataclass
+
+import mock
+import pytest
 from voluptuous import MultipleInvalid
 
 from takeoff.application_version import ApplicationVersion
@@ -10,8 +10,8 @@ from takeoff.azure.create_application_insights import CreateApplicationInsights
 from takeoff.credentials.Secret import Secret
 from tests.azure import takeoff_config
 
-BASE_CONF = {'task': 'createApplicationInsights',
-             'applicationType': 'other',
+BASE_CONF = {'task': 'create_application_insights',
+             'application_type': 'other',
              'kind': 'other'
              }
 
@@ -47,8 +47,8 @@ class TestCreateApplicationInsights(object):
     # @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_validate_invalid_schema(self):
         INVALID_CONF = {
-             'task': 'createApplicationInsights',
-             'applicationType': 'invalid',
+             'task': 'create_application_insights',
+             'application_type': 'invalid',
              'kind': 'invalid'
         }
         conf = {**takeoff_config(), **INVALID_CONF}
@@ -80,7 +80,7 @@ class TestCreateApplicationInsights(object):
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.azure.create_application_insights.CreateApplicationInsights._find_existing_instance", return_value=None)
     def test_application_insights_with_databricks_secret(self, _, __):
-        conf = {**takeoff_config(), **BASE_CONF, 'createDatabricksSecret': True}
+        conf = {**takeoff_config(), **BASE_CONF, 'create_databricks_secret': True}
         target = CreateApplicationInsights(ApplicationVersion("dev", "0.0.0", "my-branch"), conf)
 
         m_client = mock.MagicMock()

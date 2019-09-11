@@ -11,7 +11,7 @@ from takeoff.build_artifact import BuildArtifact
 steps = {
     "build_artifact": BuildArtifact,
     "build_docker_image": DockerImageBuilder,
-    "createApplicationInsights": CreateApplicationInsights,
+    "create_application_insights": CreateApplicationInsights,
     "createDatabricksSecretsFromVault": CreateDatabricksSecretsFromVault,
     "configureEventhub": ConfigureEventhub,
     "deployToDatabricks": DeployToDatabricks,
