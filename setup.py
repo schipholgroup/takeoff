@@ -11,19 +11,26 @@ dependencies every CI run.
 Feel free to add missing ones to the dependencies here. As soon as these are stable move them to
 https://github.com/Schiphol-Hub/takeoff-base-azure
 """
-setup_dependencies = []
-test_dependencies = [
+setup_dependencies = [
+    "azure==4.0.0",
     "databricks-cli==0.8.4",
-    "jinja2==2.10",
+    "docker==3.5.0",
+    "flake8==3.5.0",
     "gitpython==2.1.10",
-    "mock==2.0.0",
+    "jinja2==2.10",
     "kubernetes==7.0.0",
+    "mock==2.0.0",
+    "py4j==0.10.7",
+    "pyyaml==3.13",
+    "requests>=2.20.0",
+    "twine==1.12.1",
+    "voluptuous==0.11.5"
+]
+
+test_dependencies = [
     "pytest==3.8.2",
     "pytest-cov==2.6.0",
-    "py4j==0.10.7",
-    "voluptuous==0.11.5",
-    "twine",
-    "black",
+    "black"
 ]
 
 if {"pytest", "test"}.intersection(sys.argv):

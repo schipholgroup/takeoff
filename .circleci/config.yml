@@ -12,8 +12,9 @@ jobs:
       - image: python:3.7
     steps:
       - checkout
+      - run: pip install -e .[test]
       - run: python setup.py test
-
+      - run: bash <(curl -s https://codecov.io/bash)
 
 workflows:
   version: 2
