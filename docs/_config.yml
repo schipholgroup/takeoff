@@ -1,8 +1,8 @@
 name: Schiphol Takeoff
 
 project:
-  version: 9.0.1
-  github: https://github.com/Schiphol-Hub/takeoff
+  version: 9.0.1 # TODO: this needs fixing
+  github: https://github.com/schipholgroup/takeoff
 
 markdown: kramdown
 
@@ -13,12 +13,12 @@ collections:
 links:
   header:
   - title: GitHub
-    url: https://github.com/Schiphol-Hub/takeoff
+    url: https://github.com/schipholgroup/takeoff
   footer:
   - title: GitHub
-    url: https://github.com/Schiphol-Hub/takeoff
+    url: https://github.com/schipholgroup/takeoff
   - title: Issues
-    url: https://github.com/Schiphol-Hub/takeoff/issues
+    url: https://github.com/schipholgroup/takeoff/issues
 
 ui:
   header:
@@ -28,7 +28,7 @@ ui:
 
 social:
   github:
-    user: Schiphol-Hub
+    user: schipholgroup
     repo: takeoff
   twitter:
     enabled: false
