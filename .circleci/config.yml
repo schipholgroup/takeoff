@@ -33,6 +33,13 @@ jobs:
       - run: python setup.py test
       - codecov/upload
 
+  takeoff_build:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run: docker build -t takeoff:latest -f Dockerfile .
+
   takeoff:
     machine:
       image: ubuntu-1604:201903-01
@@ -54,6 +61,10 @@ workflows:
       - lint_yaml
       - lint_black
       - test
+      - takeoff_build:
+          filters:
+            branches:
+              ignore: master
       - takeoff:
           requires:
             - lint
