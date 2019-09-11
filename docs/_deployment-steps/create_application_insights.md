@@ -24,7 +24,7 @@ Add the following task to `deployment.yaml`
 | `create_databricks_secret` [optional] | Postfix for the image name, will be added before the tag | One of `true`, `false`
 
 ## Takeoff config
-Credentials for an AAD user (username, password) must be available in your cloud vault. If `create_databricks_secret := true` credentials for Databricks (host, token) must also be available in your cloud vault.
+Credentials for an Azure Active Directory (AAD) user (username, password) must be available in your cloud vault. If `create_databricks_secret := true` credentials for Databricks (host, token) must also be available in your cloud vault.
 
 Make sure `.takeoff/config.yaml` contains the following keys:
 

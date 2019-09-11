@@ -34,7 +34,7 @@ class CreateApplicationInsights(Step):
     Credentials for an AAD user (username, password) must be available
     in your cloud vault.
 
-    Optionally propagate the instrumentation key to Databricks.
+    Optionally propagate the instrumentation key to Databricks as secret.
     """
 
     def __init__(self, env: ApplicationVersion, config: dict):
