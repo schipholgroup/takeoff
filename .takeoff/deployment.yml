@@ -1,2 +1,2 @@
 steps:
-  - task: buildDockerImage
+  - task: build_docker_image

@@ -18,14 +18,20 @@ logger = logging.getLogger(__name__)
 
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): "buildDockerImage",
+        vol.Required("task"): "build_docker_image",
         vol.Optional(
             "dockerfiles", default=[{"file": "Dockerfile", "postfix": None, "custom_image_name": None}]
         ): [
             {
-                vol.Optional("file", default="Dockerfile"): str,
-                vol.Optional("postfix", default=None): vol.Any(None, str),
-                vol.Optional("custom_image_name", default=None): vol.Any(None, str),
+                vol.Optional("file", default="Dockerfile", description="Alternative docker file name"): str,
+                vol.Optional(
+                    "postfix",
+                    default=None,
+                    description="Postfix for the image name, will be added `before` the tag",
+                ): vol.Any(None, str),
+                vol.Optional(
+                    "custom_image_name", default=None, description="A custom name for the image to be used."
+                ): vol.Any(None, str),
             }
         ],
     },
@@ -41,11 +47,21 @@ class DockerFile(object):
 
 
 class DockerImageBuilder(Step):
+    """Builds and pushes one or more docker images.
+
+    Depends on:
+
+    - Credentials for a docker registry (username, password, registry) must be
+      available in your cloud vault.
+    - The docker-cli must be available
+    """
+
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
         self.docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
 
     def populate_docker_config(self):
+        """Creates ~/.docker/config.json and writes the credentials for the registry to the file"""
         creds = f"{self.docker_credentials.username}:{self.docker_credentials.password}".encode()
 
         docker_json = {
@@ -74,7 +90,15 @@ class DockerImageBuilder(Step):
 
     @staticmethod
     def build_image(docker_file: str, tag: str):
-        # Set these environment variables at build time only, they should not be available at runtime
+        """Build the docker image
+
+        This uses bash to run commands directly.
+
+        Args:
+            docker_file: The name of the dockerfile to build
+            tag: The docker tag to apply to the image name
+        """
+
         cmd = [
             "docker",
             "build",
@@ -96,6 +120,13 @@ class DockerImageBuilder(Step):
 
     @staticmethod
     def push_image(tag: str):
+        """Push the docker image
+
+        This uses bash to run commands directly.
+
+        Args:
+            tag: The docker tag to upload
+        """
         cmd = ["docker", "push", tag]
 
         logger.info(f"Uploading docker image {tag}")

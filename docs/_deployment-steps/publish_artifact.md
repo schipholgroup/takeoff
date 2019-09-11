@@ -2,70 +2,93 @@
 layout: page
 title: Publish artifacts
 date: 2019-03-15
-summary: Publish python, sbt or maven artifacts
+updated: 2019-09-10
+summary: Publish Python or Scala artifacts
 permalink: deployment-step/publish-artifact
 category: Artifacts
 ---
 
 # Publish Artifacts
 
-This step allows you to publish artifacts for different languages to different targets. For example:
-- You can publish python wheels to blob store, or to pypi.
-- You can publish JVM jars to blob store (maven support coming soon)
+This step allows you to publish artifacts for different languages to different targets:
+- You can publish Python wheels to cloud storage, or to PyPi.
+- You can publish Scala jars to cloud storage, or to Ivy
 
-<p class='note'>
-  This step is only available in Takeoff >=10.0.0.
-</p>
 <p class='note warning'>
-  Currently this is tailored to using the artifacts in Databricks, which does impose some assumptions. Read below what the impact is.
+  There's an implicit dependency on [building artifacts](build-artifact) when publishing to PyPi and cloud storage
 </p>
+
 <p class='note warning'>
-  For sbt/maven artifacts, Takeoff currently only supports publishing these to jar. Support for maven repositories will be implemented in future.
+  Regarding Scala, only SBT is supported as build tool
 </p>
+
 ## Deployment
-Add the following task to ``deployment.yaml``:
-
-```yaml
-- task: publishArtifact
-  lang: python
-  python_file_path: "main/main.py"
-  target:
-  - blob
-  - pypi
-```
+Add the following task to ``deployment.yaml``
 
 {:.table}
 | field | description | values
 | ----- | ----------- |
-| `lang` | The language identifier of your project | One of `python`, `maven`, `sbt`
-| `target` | List of targets to push the artifact to. For Python this is one of: `blob`, `pypi`. For maven/sbt artifacts, this is one of: `blob`.
-| `python_file_path` [OPTIONAL] | The path relative to the root of your project to the python script that serves as entrypoint for a databricks job |
+| `task` | `"publish_artifact"`
+| `language` | The language identifier of your project | One of `python`, `scala`
+| `target` | List of targets to push the artifact to. For Python these can be: `cloud_storage`, `pypi`. For Scala artifacts these can be: `cloud_storage`, `ivy`
+| `python_file_path` [optional] | The path relative to the root of your project to the python script that serves as entrypoint for a databricks job 
 
-For all languages, the assumption is that the artifact has already been built, for example by the `buildArtifact` step that Takeoff offers.
+For all languages, the assumption is that the artifact has already been built, for example by the `build_artifact` step that Takeoff offers.
 
 You can specify a main file (for Databricks jobs) by using the `python_file_path` key.
 The path should be relative from the root of your project.
 
 ## Takeoff config
-### Publish to Blob Store
-Make sure `takeoff_config.yaml` contains the following `azure_keyvault_keys`:
 
-  ```yaml
-  azure_storage_account:
-    account_name: "azure-shared-blob-username"
-    account_key: "azure-shared-blob-password"
-  ```
-  
-and these `takeoff_common` keys:
-  ```yaml
-  artifacts_shared_blob_container_name: libraries
-  ```
+### Publish to Azure Storage Account V1
+Credentials for the Azure Storage Account V1 must be available in your cloud vault when pushing to Azure `cloud_storage`.
+Make sure `.takeoff/config.yaml` contains the following keys:
 
-### Publish to Pypi
+```yaml
+azure:
+    keyvault_keys:
+        storage_account:
+          account_name: "azure-shared-blob-username"
+          account_key: "azure-shared-blob-password"
+    common:
+        artifacts_shared_storage_account_container_name: libraries
+```
+
+<p class='note warning'>
+  For Scala, Takeoff assumes an assembly jar has been built.
+</p>
+
+
+### Publish to PyPi
+Credentials for PyPi (username, password) must be available in your cloud vault when pushing to any PyPi artifact store. 
 Make sure `takeoff_config.yaml` contains the following `azure_keyvault_keys`:
-  ```yaml
-  azure_devops_artifact_store:
-    repository_url: "artifact-store-upload-url"
-    username: "artifact-store-username"
-    password: "artifact-store-password"
-  ```
+```yaml
+azure:
+  keyvault_keys:
+      repository_url: "artifact-store-upload-url"
+      username: "artifact-store-username"
+      password: "artifact-store-password"
+```
+
+### Publish to Ivy
+Credentials for your Ivy repository must be available as enviroment variables and your SBT project must be configured to read these and handle the `sbt publish` command.
+
+## Examples
+
+Minimum configuration example for Python. This pushes a Python wheel to PyPi.
+```
+steps:
+- task: publish_artifact
+  language: python
+  target:
+    - pypi
+```
+
+Extended configuration example for Scala. This pushes a jar to both cloud storage and your `ivy` repository
+```yaml
+- task: publish_artifact
+  language: scala
+  target:
+    - cloud_storage
+    - ivy
+```

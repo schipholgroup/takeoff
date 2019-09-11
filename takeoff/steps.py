@@ -9,13 +9,13 @@ from takeoff.azure.publish_artifact import PublishArtifact
 from takeoff.build_artifact import BuildArtifact
 
 steps = {
-    "buildArtifact": BuildArtifact,
-    "buildDockerImage": DockerImageBuilder,
+    "build_artifact": BuildArtifact,
+    "build_docker_image": DockerImageBuilder,
     "createApplicationInsights": CreateApplicationInsights,
     "createDatabricksSecretsFromVault": CreateDatabricksSecretsFromVault,
     "configureEventhub": ConfigureEventhub,
     "deployToDatabricks": DeployToDatabricks,
     "deployToKubernetes": DeployToKubernetes,
     "kubernetesImageRollingUpdate": KubernetesImageRollingUpdate,
-    "publishArtifact": PublishArtifact,
+    "publish_artifact": PublishArtifact,
 }

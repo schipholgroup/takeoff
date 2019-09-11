@@ -11,22 +11,24 @@ from takeoff.util import run_bash_command
 logger = logging.getLogger(__name__)
 
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
-    {vol.Required("task"): "buildArtifact", vol.Required("lang"): vol.All(str, vol.In(["python", "sbt"]))},
+    {
+        vol.Required("task"): "build_artifact",
+        vol.Required("build_tool"): vol.All(str, vol.In(["python", "sbt"])),
+    },
     extra=vol.ALLOW_EXTRA,
 )
 
 
 class BuildArtifact(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
+        """Build an artifact"""
         super().__init__(env, config)
 
     def run(self):
-        if self.config["lang"] == "python":
+        if self.config["build_tool"] == "python":
             self.build_python_wheel()
-        elif self.config["lang"] == "sbt":
+        elif self.config["build_tool"] == "sbt":
             self.build_sbt_assembly_jar()
-        else:
-            logging.info("Currently only python artifact building is supported")
 
     def schema(self) -> vol.Schema:
         return SCHEMA
@@ -38,10 +40,21 @@ class BuildArtifact(Step):
 
     @staticmethod
     def _remove_old_artifacts(path: str):
-        """Ensure any old artifacts are gone"""
+        """Ensure any old artifacts are gone
+
+        Args:
+            path: absolute or relative path to folder containing artifacts
+        """
         shutil.rmtree(path, ignore_errors=True)
 
     def build_python_wheel(self):
+        """Builds Python wheel
+
+        This uses bash to run commands directly.
+
+        Raises:
+           ChildProcessError is the bash command was not successful
+        """
         self._write_version()
         self._remove_old_artifacts("dist/")
 
@@ -52,7 +65,13 @@ class BuildArtifact(Step):
             raise ChildProcessError("Could not build the package for some reason!")
 
     def build_sbt_assembly_jar(self):
-        # ensure any old artifacts are gone
+        """Builds an SBT assembly jar
+
+        This uses bash to run commands directly.
+
+        Raises:
+           ChildProcessError is the bash command was not successful
+        """
         self._remove_old_artifacts("target/")
 
         cmd = ["sbt", "clean", "assembly"]
