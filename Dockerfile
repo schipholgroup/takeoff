@@ -1,7 +1,7 @@
 FROM schipholhub/takeoff-base:SNAPSHOT
 
-COPY setup.py /
-COPY README.md /
+COPY setup.py /setup.py
+COPY README.md /README.md
 COPY scripts /scripts
 COPY takeoff /takeoff
 
