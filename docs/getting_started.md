@@ -44,9 +44,9 @@ like Takeoff to execute for you.
 ```yaml
 
 azure:
-  resource_group: "my-rg"
+  resource_group_naming: "my-rg"
   location: "west europe"
-  vault_name: "https://my-vault{dtap}.vault.azure.net/"
+  keyvault_naming: "https://my-vault{env}.vault.azure.net/"
   common:
     shared_registry: acr.azurecr.io
 
@@ -83,7 +83,7 @@ See [Takeoff config](takeoff-config) for a more detailed guide.
 
 
 ## Time for Takeoff!
-Once you have added the aforementioned files, you're almost ready to take off. The only thing missing is for you to add
+Once you have added the aforementioned files, you're almost ready for takeoff. The only thing missing is for you to add
 the Takeoff step to your CI configuration. Naturally every CI provider is slightly different, so your mileage may vary. The one
 key feature your CI provider does need to offer is Docker support. Moreover, if you wish to build Docker images with Takeoff,
 your CI provider also needs to support docker-in-docker. As an example, this is what the configuration looks like for a project
