@@ -24,6 +24,14 @@ jobs:
       - run: pip install black
       - run: black -l 110 --check takeoff
 
+  typecheck:
+    docker:
+      - image: python:3.7
+    steps:
+      - checkout
+      - run: pip install mypy
+      - run: python -m mypy --ignore-missing-imports -p takeoff
+
   test:
     docker:
       - image: schipholhub/takeoff-base:SNAPSHOT
@@ -60,6 +68,7 @@ workflows:
       - lint
       - lint_yaml
       - lint_black
+      - typecheck
       - test
       - takeoff_build:
           filters:
@@ -70,6 +79,7 @@ workflows:
             - lint
             - lint_yaml
             - lint_black
+            - typecheck
             - test
           filters:
             branches:
