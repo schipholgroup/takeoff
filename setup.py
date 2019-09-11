@@ -9,13 +9,13 @@ with open("README.md", "r") as f:
 All setup dependencies are installed in the base docker image, removing the need to reinstall the same
 dependencies every CI run.
 Feel free to add missing ones to the dependencies here. As soon as these are stable move them to
-https://github.com/Schiphol-Hub/takeoff-base-azure
+https://github.com/Schiphol-Hub/takeoff-base
 """
 setup_dependencies = [
     "azure==4.0.0",
     "databricks-cli==0.9.0",
     "docker==4.0.2",
-    "flake8==3.7.8",
+    "flake8==3.7.2",
     "gitpython==3.0.2",
     "jinja2==2.10.1",
     "kubernetes==10.0.1",
