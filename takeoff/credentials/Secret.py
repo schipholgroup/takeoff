@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 
@@ -15,22 +13,22 @@ class Secret:
     def __hash__(self):
         return hash(self.key)
 
-    def __eq__(self, other: Secret):
+    def __eq__(self, other: 'Secret'):
         return self.key == other.key
 
-    def __ne__(self, other: Secret):
+    def __ne__(self, other: 'Secret'):
         return not self.__eq__(other)
 
-    def __lt__(self, other: Secret):
+    def __lt__(self, other: 'Secret'):
         return NotImplemented
 
-    def __le__(self, other: Secret):
+    def __le__(self, other: 'Secret'):
         return self.__eq__(other)
 
-    def __gt__(self, other: Secret):
+    def __gt__(self, other: 'Secret'):
         return NotImplemented
 
-    def __ge__(self, other: Secret):
+    def __ge__(self, other: 'Secret'):
         return self.__eq__(other)
 
     def __repr__(self):

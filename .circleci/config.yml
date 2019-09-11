@@ -12,7 +12,7 @@ jobs:
       - image: python:3.7
     steps:
       - checkout
-      - python setup.py test
+      - run: python setup.py test
 
 
 workflows:
