@@ -28,3 +28,10 @@ review your contribution. A few things to keep in mind when opening a PR:
 - Please use good, descriptive git commit messages, and ensure that commit squashing has been done where appropriate. We want
 to keep our git commit history somewhat clean, and adhering to this point will ensure that. [This post](https://chris.beams.io/posts/git-commit/) gives a good description
 of what a good commit message should look like.
+
+## Local development
+Requirements:
+- Recommended is to use a separate environment (either with [miniconda](https://docs.conda.io/en/latest/miniconda.html), [pyenv](https://github.com/pyenv/pyenv) or equivalent).
+- Python 3.7 or later and run `pip install .` to install python dependencies.
+- Run `black -l 110 takeoff` and `flake8 takeoff` to make sure you're code is compliant with our code style before comitting your code.
+- Run `pytest` to make sure the tests succeed and coverage is above minimum.
