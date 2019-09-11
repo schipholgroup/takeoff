@@ -43,7 +43,9 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: docker build -t takeoff:latest -f Dockerfile .
-      - run: version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
+      - run: ls -lah
+      - run: echo $PWD
+      - run: docker run --env-file .env -v `echo $PWD`:/src takeoff:latest bash -c "echo $PWD && ls -lah && get_version"
       - run: docker tag takeoff:latest schipholhub/takeoff:${version}
       - run: docker push schipholhub/takeoff:${version}
 
