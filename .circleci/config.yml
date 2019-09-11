@@ -1,0 +1,62 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: python:3.7
+    steps:
+      - checkout
+      - run: python setup.py lint
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test
+
+
+#stages:
+#  - test
+#  - deploy
+#
+#services:
+#  - docker:dind
+#
+#lint_python:
+#  image: python:3.7
+#  stage: test
+#  script:
+#    - python setup.py lint
+#
+#test:
+#  image: sdhcontainerregistryshared.azurecr.io/runway-base-azure:SNAPSHOT
+#  stage: test
+#  script:
+#    - python setup.py test
+#
+#lint_yaml:
+#  image: giantswarm/yamllint:latest
+#  stage: test
+#  script:
+#    - yamllint -d relaxed .
+#
+#lint_black:
+#  image: python:3.7
+#  stage: test
+#  script:
+#    - pip install black
+#    - black -l 110 --check takeoff
+#
+#takeoff:
+#  image: docker:latest
+#  stage: deploy
+#  variables:
+#    DOCKER_HOST: tcp://localhost:2375
+#  before_script:
+#    - unset CI_COMMIT_DESCRIPTION CI_COMMIT_MESSAGE # hack to avoid multiline env variables that docker does not like
+#    - env | grep -v ^PATH > .env
+#    - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
+#  script:
+#    - docker build -t takeoff:latest -f Dockerfile .
+#
+#    - version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
+#    - docker tag takeoff:latest ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
+#    - docker push ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
