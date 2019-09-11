@@ -38,24 +38,29 @@ jobs:
       - image: docker:latest
     steps:
       - checkout
+      - run: env | grep -v ^PATH > .env
+      - run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: docker build -t takeoff:latest -f Dockerfile .
       - run: version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
-      - run: docker tag takeoff:latest ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
-      - run: docker push ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
+      - run: docker tag takeoff:latest schipholhub/takeoff:${version}
+      - run: docker push schipholhub/takeoff:${version}
 
 workflows:
   version: 2.1
-  test:
+  test_and_deploy:
     jobs:
       - lint
       - lint_yaml
       - lint_black
       - test
-  deploy:
-    jobs:
-      - takeoff
+      - takeoff:
+          requires:
+            - lint
+#            - lint_yaml
+#            - lint_black
+#            - test
 
 
 #services:
