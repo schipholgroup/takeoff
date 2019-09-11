@@ -11,7 +11,6 @@
 </p>
 
 
-# Takeoff
 > Takeoff: your runway to the cloud!
 
 This is Takeoff's documentation page, which provides a high-level overview of what Takeoff is, what is can do, and how you can
@@ -22,7 +21,7 @@ Takeoff allows developers to focus on actual development work, without having to
 services to get things up and running across multiple environments. Takeoff itself is a Python package, that comes bundles in a Docker image.
 In this way, Takeoff is CI agnostic, assuming your CI provider allows running Docker containers. 
 
-####Note
+#### Note
 Takeoff is __not__ aimed at deploying and/or configuring infrastructure. For tasks like this, consider using tools like Ansible, Puppet, or Terraform.
 
 ## Principles

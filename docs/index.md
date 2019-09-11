@@ -15,7 +15,7 @@ Takeoff allows developers to focus on actual development work, without having to
 services to get things up and running across multiple environments. Takeoff itself is a Python package, that comes bundles in a Docker image.
 In this way, Takeoff is CI agnostic, assuming your CI provider allows running Docker containers. 
 
-####Note
+#### Note
 Takeoff is __not__ aimed at deploying and/or configuring infrastructure. For tasks like this, consider using tools like Ansible, Puppet, or Terraform.
 
 # Principles
@@ -32,4 +32,4 @@ work nicely together to deliver an awesome product.
 To get started quickly, have look [here](getting-started) to read more on how to setup Takeoff in your project.
 
 # Contributing
-To get started with contributing to Takeoff read the [developers guide](contributing-takeoff).
+To get started with contributing to Takeoff read the [developers guide](https://github.com/schipholgroup/takeoff/blob/master/CONTRIBUTING.md).
