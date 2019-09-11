@@ -37,14 +37,7 @@ we could ever hope to be. Takeoff is specifically aimed at your CI process when 
 work nicely together to deliver an awesome product.
 
 ## Getting started
-To get started quickly, have look [here](getting-started) to read more on how to setup Takeoff in your project.
+To get started quickly, have look [here](https://schiphol-hub.github.io/takeoff/getting-started) to read more on how to setup Takeoff in your project.
 
 ## Contributing
-To get started with contributing to Takeoff read the [developers guide](contributing-takeoff).
-
-## Local development
-Make sure you have installed and updated docker and run linting and tests with: 
-```bash
-docker run -v /local_git_path/takeoff:/takeoff_mount sdhcontainerregistryshared.azurecr.io/takeoff-base-azure  bash -c "cd takeoff_mount ; python setup.py test"
-docker run -v /local_git_path/takeoff:/takeoff_mount sdhcontainerregistryshared.azurecr.io/takeoff-base-azure  bash -c "cd takeoff_mount ; python setup.py flake8"
-```
+To get started with contributing to Takeoff read the [developers guide](https://github.com/Schiphol-Hub/takeoff/blob/master/CONTRIBUTING.md).
