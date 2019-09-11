@@ -10,8 +10,8 @@ azure:
       registry: "registry-server"
 
 environment_keys:
-  application_name: CI_PROJECT_NAME
-  branch_name: CI_COMMIT_REF_SLUG
+  application_name: CIRCLE_PROJECT_REPONAME
+  branch_name: CIRCLE_BRANCH
 
 ci_environment_keys_dev:
   azure_service_principal:

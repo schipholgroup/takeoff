@@ -1,14 +1,18 @@
 import base64
 import importlib
+import logging
 import os
 import pkgutil
 import subprocess
+
 from dataclasses import dataclass
 from typing import Callable, List, Pattern
-
 from git import Repo
 from jinja2 import Template
 from yaml import load
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -85,7 +89,9 @@ def get_full_yaml_filename(filename: str) -> str:
         concat_filename = os.path.join(".takeoff", f"{filename}{ext}")
         if os.path.isfile(concat_filename):
             return concat_filename
-    raise FileNotFoundError(f"Could not find file: {filename}")
+        else:
+            logger.info(f"Could not find file: {concat_filename}")
+    raise FileNotFoundError(f"Could not find any valid file for base_filename: {filename}")
 
 
 def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:

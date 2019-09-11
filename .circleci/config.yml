@@ -1,0 +1,63 @@
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.5
+jobs:
+  lint:
+    docker:
+      - image: python:3.7
+    steps:
+      - checkout
+      - run: python setup.py lint
+
+  lint_yaml:
+    docker:
+      - image: giantswarm/yamllint:latest
+    steps:
+      - checkout
+      - run: yamllint -d relaxed .
+
+  lint_black:
+    docker:
+      - image: python:3.7
+    steps:
+      - checkout
+      - run: pip install black
+      - run: black -l 110 --check takeoff
+
+  test:
+    docker:
+      - image: python:3.7
+    steps:
+      - checkout
+      - run: pip install -e .[test]
+      - run: python setup.py test
+      - codecov/upload
+
+  takeoff:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run: env | grep -v ^PATH > .env
+      - run: docker build -t takeoff:latest -f Dockerfile .
+      - run:
+          command: |
+            echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+            version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
+            docker tag takeoff:latest schipholhub/takeoff:${version}
+            docker push schipholhub/takeoff:${version}
+
+workflows:
+  version: 2.1
+  test_and_deploy:
+    jobs:
+      - lint
+      - lint_yaml
+      - lint_black
+      - test
+      - takeoff:
+          requires:
+            - lint
+            - lint_yaml
+            - lint_black
+            - test

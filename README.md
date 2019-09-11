@@ -3,15 +3,17 @@
 </p>
 <h2 align="center">Schiphol Takeoff</h2>
 
+<img align="center">
 <p align="center">
-<a href="https://gitlab.com/Schiphol-DSEL/takeoff/commits/master"><img alt="pipeline status" src="https://gitlab.com/Schiphol-DSEL/takeoff/badges/master/pipeline.svg"/></a>
-<a href="https://gitlab.com/Schiphol-DSEL/takeoff/commits/master"><img alt="coverage report" src="https://gitlab.com/Schiphol-DSEL/takeoff/badges/master/coverage.svg" /></a>
+<a href="https://circleci.com/gh/Schiphol-Hub/takeoff/tree/master"><img alt="pipeline status" src="https://img.shields.io/circleci/build/gh/Schiphol-Hub/takeoff/master"/></a>
+<a href="https://codecov.io/gh/Schiphol-Hub/takeoff"><img alt="coverage status" src="https://codecov.io/gh/Schiphol-Hub/takeoff/branch/master/graph/badge.svg"/></a>
 <a><img alt="" src="https://img.shields.io/badge/python-3.7-blue.svg"></a>
 <a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://hub.docker.com/r/schipholhub/takeoff"><img alt="docker pulls" src="https://img.shields.io/docker/pulls/schipholhub/takeoff.svg"></a>
 </p>
 
 
-> Takeoff: your runway to the cloud!
+> Takeoff: your runway to the cloud(s)!
 
 This is Takeoff's documentation page, which provides a high-level overview of what Takeoff is, what is can do, and how you can
 use it in your environment. 
