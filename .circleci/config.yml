@@ -58,26 +58,6 @@ workflows:
       - takeoff:
           requires:
             - lint
-#            - lint_yaml
-#            - lint_black
-#            - test
-
-
-#services:
-#  - docker:dind
-#
-#takeoff:
-#  image: docker:latest
-#  stage: deploy
-#  variables:
-#    DOCKER_HOST: tcp://localhost:2375
-#  before_script:
-#    - unset CI_COMMIT_DESCRIPTION CI_COMMIT_MESSAGE # hack to avoid multiline env variables that docker does not like
-#    - env | grep -v ^PATH > .env
-#    - docker login --username ${REGISTRY_USERNAME} --password ${REGISTRY_PASSWORD} ${REGISTRY_LOGIN_SERVER}
-#  script:
-#    - docker build -t takeoff:latest -f Dockerfile .
-#
-#    - version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
-#    - docker tag takeoff:latest ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
-#    - docker push ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
+            - lint_yaml
+            - lint_black
+            - test
