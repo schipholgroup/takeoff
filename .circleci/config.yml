@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.5
 jobs:
   lint:
     docker:
@@ -7,6 +9,21 @@ jobs:
       - checkout
       - run: python setup.py lint
 
+  lint_yaml:
+    docker:
+      - image: giantswarm/yamllint:latest
+    steps:
+      - checkout
+      - run: giantswarm/yamllint:latest
+
+  lint_black:
+    docker:
+      - image: python:3.7
+    steps:
+      - checkout
+      - run: pip install black
+      - run: black -l 110 --check takeoff
+
   test:
     docker:
       - image: python:3.7
@@ -14,40 +31,20 @@ jobs:
       - checkout
       - run: pip install -e .[test]
       - run: python setup.py test
-      - run: bash <(curl -s https://codecov.io/bash)
+      - codecov
 
 workflows:
   version: 2
   test:
     jobs:
       - lint
+      - lint_yaml
+      - lint_black
       - test
 
 
-#stages:
-#  - test
-#  - deploy
-#
 #services:
 #  - docker:dind
-#
-#lint_python:
-#  image: python:3.7
-#  stage: test
-#  script:
-#    - python setup.py lint
-#
-#test:
-#  image: sdhcontainerregistryshared.azurecr.io/runway-base-azure:SNAPSHOT
-#  stage: test
-#  script:
-#    - python setup.py test
-#
-#lint_yaml:
-#  image: giantswarm/yamllint:latest
-#  stage: test
-#  script:
-#    - yamllint -d relaxed .
 #
 #lint_black:
 #  image: python:3.7
