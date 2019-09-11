@@ -7,7 +7,7 @@ from takeoff.application_version import ApplicationVersion
 from takeoff.build_artifact import BuildArtifact as victim
 from tests.azure import takeoff_config
 
-BASE_CONF = {"task": "buildArtifact", "lang": "python"}
+BASE_CONF = {"task": "build_artifact", "build_tool": "python"}
 FAKE_ENV = ApplicationVersion('env', 'v', 'branch')
 
 
@@ -28,7 +28,7 @@ class TestBuildArtifact(unittest.TestCase):
 
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_build_sbt(self, _):
-        conf = {**takeoff_config(), **BASE_CONF, "lang": "sbt"}
+        conf = {**takeoff_config(), **BASE_CONF, "build_tool": "sbt"}
 
         with mock.patch.object(victim, "build_sbt_assembly_jar") as m:
             victim(FAKE_ENV, conf).run()

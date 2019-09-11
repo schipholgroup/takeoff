@@ -9,7 +9,7 @@ from takeoff.azure.build_docker_image import DockerImageBuilder, DockerFile
 from takeoff.azure.credentials.container_registry import DockerCredentials
 from tests.azure import takeoff_config
 
-BASE_CONF = {"task": "buildDockerImage"}
+BASE_CONF = {"task": "build_docker_image"}
 
 CREDS = DockerCredentials("My", "Little", "pony")
 ENV_VARIABLES = {"HOME": "my_home",
@@ -57,7 +57,7 @@ class TestDockerImageBuilder:
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.azure.build_docker_image.DockerRegistry.credentials", return_value=CREDS)
     def test_validate_minimal_schema(self, _, __):
-        conf = {**takeoff_config(), **{'task': 'buildDockerImage'}}
+        conf = {**takeoff_config(), **{'task': 'build_docker_image'}}
 
         res = DockerImageBuilder(ApplicationVersion("dev", "v", "branch"), conf)
         assert res.config['dockerfiles'] == [{"file": "Dockerfile", "postfix": None, "custom_image_name": None}]
@@ -66,7 +66,7 @@ class TestDockerImageBuilder:
     @mock.patch("takeoff.azure.build_docker_image.DockerRegistry.credentials", return_value=CREDS)
     def test_validate_full_schema(self, _, __):
         conf = {**takeoff_config(),
-                **{'task': 'buildDockerImage',
+                **{'task': 'build_docker_image',
                    "dockerfiles": [{
                        "file": "Dockerfile_custom",
                        "postfix": "Dave",

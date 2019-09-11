@@ -1,9 +1,7 @@
 azure:
-  resource_group: "sdh{dtap}"
+  resource_group_naming: "sdh{env}"
   location: "west europe"
-  vault_name: "https://sdhkeyvault{dtap}.vault.azure.net/"
-  common:
-    shared_registry: sdhcontainerregistryshared.azurecr.io
+  keyvault_naming: "https://sdhkeyvault{env}.vault.azure.net/"
 
   keyvault_keys:
     container_registry:
@@ -32,4 +30,3 @@ ci_environment_keys_prd:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_PRD"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_PRD"
-

@@ -110,8 +110,17 @@ def get_jar_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"
 
 
-def run_bash_command(command: List[str]):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
+def run_bash_command(command: List[str]) -> int:
+    """Runs a bash command using `subprocess.Popen`
+
+    In addition to running any bash command, the output of process is streamed directly to the stdout.
+
+    Returns:
+        The result of the bash command. 0 for success, >=1 for failure.
+    """
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True, executable="/bin/bash"
+    )
     while True:
         output = process.stdout.readline()
         if output == "" and process.poll() is not None:

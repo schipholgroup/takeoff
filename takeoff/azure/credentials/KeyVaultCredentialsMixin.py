@@ -21,6 +21,8 @@ class KeyVaultSecrets:
 
 
 class KeyVaultCredentialsMixin(object):
+    """Collection of Azure KeyVault helper functions"""
+
     def __init__(self, vault_name: str, vault_client: KeyVaultClient):
         self.vault_client = vault_client
         self.vault_name = vault_name
