@@ -33,14 +33,29 @@ jobs:
       - run: python setup.py test
       - codecov/upload
 
+  takeoff:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: docker build -t takeoff:latest -f Dockerfile .
+      - run: version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
+      - run: docker tag takeoff:latest ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
+      - run: docker push ${REGISTRY_LOGIN_SERVER}/takeoff:${version}
+
 workflows:
-  version: 2
+  version: 2.1
   test:
     jobs:
       - lint
       - lint_yaml
       - lint_black
       - test
+  deploy:
+    jobs:
+      - takeoff
 
 
 #services:

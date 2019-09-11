@@ -1,4 +1,5 @@
-FROM sdhcontainerregistryshared.azurecr.io/runway-base-azure:SNAPSHOT
+#FROM sdhcontainerregistryshared.azurecr.io/runway-base-azure:SNAPSHOT
+FROM python:3.7
 
 COPY setup.py /
 COPY README.md /
