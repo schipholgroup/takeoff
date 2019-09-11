@@ -33,5 +33,3 @@ To get started quickly, have look [here](getting-started) to read more on how to
 
 # Contributing
 To get started with contributing to Takeoff read the [developers guide](contributing-takeoff).
-
-To get started with contributing to documentation for Takeoff read the [documentation guide](contributing-takeoff-docs).
