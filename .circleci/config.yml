@@ -34,20 +34,18 @@ jobs:
       - codecov/upload
 
   takeoff:
-    docker:
-      - image: docker:latest
+    machine:
+      image: ubuntu-1604:201903-01    # pins image to specific version
     steps:
       - checkout
       - run: env | grep -v ^PATH > .env
-      - run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: docker build -t takeoff:latest -f Dockerfile .
-      - run: ls -lah
-      - run: echo $PWD
-      - run: docker run --env-file .env -v `echo $PWD`:/src takeoff:latest bash -c "echo $PWD && ls -lah && get_version"
-      - run: docker tag takeoff:latest schipholhub/takeoff:${version}
-      - run: docker push schipholhub/takeoff:${version}
+      - run:
+          command: |
+            echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+            version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
+            docker tag takeoff:latest schipholhub/takeoff:${version}
+            docker push schipholhub/takeoff:${version}
 
 workflows:
   version: 2.1
