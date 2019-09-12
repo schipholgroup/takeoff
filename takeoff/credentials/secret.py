@@ -14,7 +14,7 @@ class Secret:
         return hash(self.key)
 
     def __eq__(self, other):
-        if getattr(other, "key"):
+        if isinstance(other, Secret):
             return self.key == other.key
         else:
             return False

@@ -18,14 +18,14 @@ Add the following task to `deployment.yaml`:
 ```yaml
 - task: createEventhubProducerPolicies
   policies:
-  - eventhubEntity: my-eventhub-entity
+  - eventhub_entity: my-eventhub-entity
 ```
 
 {:.table}
 | field | description
 | ----- | -----------
 | `policies` | A list of key-value pairs containing the eventhub entities for which to create a producer policies
-| `policies[].eventhubEntity` | The name of the existing EventHub 
+| `policies[].eventhub_entity` | The name of the existing EventHub 
 
 ## Takeoff config
 Make sure `takeoff_config.yaml` contains the following `azure_keyvault_keys`:

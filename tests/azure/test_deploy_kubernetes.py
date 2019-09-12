@@ -46,7 +46,7 @@ class RegistryCredentials:
         return self
 
 
-BASE_CONF = {'task': 'deployToKubernetes'}
+BASE_CONF = {'task': 'deploy_to_kubernetes'}
 
 
 @pytest.fixture(scope="session")

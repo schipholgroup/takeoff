@@ -15,7 +15,7 @@ env_variables = {'AZURE_TENANTID': 'David',
 @pytest.fixture(autouse=True)
 @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
 def victim(_):
-    conf = {**takeoff_config(), **{'task': 'kubernetesImageRollingUpdate',
+    conf = {**takeoff_config(), **{'task': 'kubernetes_image_rolling_update',
                                    'deployment_name': "the-king",
                                    'image': 'docker-image'}}
 
@@ -28,7 +28,7 @@ class TestKubernetesImageRollingUpdate(object):
     def test_validate_schema(self, victim):
         assert victim.config['namespace'] == 'default'
 
-    @mock.patch("takeoff.azure.kubernetes_image_rolling_update.run_bash_command", return_value=0)
+    @mock.patch("takeoff.azure.kubernetes_image_rolling_update.run_shell_command", return_value=0)
     def test_apply_rolling_update_success(self, m_bash, victim: KubernetesImageRollingUpdate):
         victim._apply_rolling_update()
         cmd = [
@@ -44,7 +44,7 @@ class TestKubernetesImageRollingUpdate(object):
         ]
         m_bash.assert_called_once_with(cmd)
 
-    @mock.patch("takeoff.azure.kubernetes_image_rolling_update.run_bash_command", return_value=1)
+    @mock.patch("takeoff.azure.kubernetes_image_rolling_update.run_shell_command", return_value=1)
     def test_apply_rolling_update_failure(self, m_bash, victim: KubernetesImageRollingUpdate):
         with pytest.raises(ChildProcessError):
             victim._apply_rolling_update()

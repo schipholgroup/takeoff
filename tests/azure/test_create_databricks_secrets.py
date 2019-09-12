@@ -16,7 +16,7 @@ class MockDatabricksClient:
         return None
 
 
-BASE_CONF = {'task': 'createDatabricksSecretsFromVault'}
+BASE_CONF = {'task': 'create_databricks_secrets_from_vault'}
 
 TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
                  'AZURE_KEYVAULT_SP_USERNAME_DEV': 'Doctor',
@@ -30,7 +30,7 @@ def setup_victim(add_secrets: bool):
     secrets_conf = {}
     if add_secrets:
         secrets_conf = {
-            'task': 'createDatabricksSecretsFromVault',
+            'task': 'create_databricks_secrets_from_vault',
             'dev': [
                 {'FOO': 'foo_value'},
                 {'BAR': 'bar_value'},

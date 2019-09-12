@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): "deployToDatabricks",
+        vol.Required("task"): "deploy_to_databricks",
         vol.Required("jobs"): vol.All(
             [
                 {

@@ -44,7 +44,7 @@ class CreateDatabricksSecretsMixin(object):
 
 
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
-    {vol.Required("task"): "createDatabricksSecretsFromVault"}, extra=vol.ALLOW_EXTRA
+    {vol.Required("task"): "create_databricks_secrets_from_vault"}, extra=vol.ALLOW_EXTRA
 )
 
 

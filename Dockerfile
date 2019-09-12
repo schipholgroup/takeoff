@@ -1,9 +1,11 @@
-FROM schipholhub/takeoff-base:SNAPSHOT
+FROM schipholhub/takeoff-base:1.0.2
 
-COPY setup.py /setup.py
-COPY README.md /README.md
-COPY scripts /scripts
-COPY takeoff /takeoff
+COPY setup.py /root
+COPY README.md /root
+COPY scripts /root/scripts
+COPY takeoff /root/takeoff
+
+WORKDIR /root
 
 RUN python setup.py install
 
