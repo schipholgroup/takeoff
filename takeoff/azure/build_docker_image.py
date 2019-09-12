@@ -99,6 +99,12 @@ class DockerImageBuilder(Step):
             tag: The docker tag to apply to the image name
         """
 
+        debug_cmd = ["ls", "-lah"]
+        run_bash_command(debug_cmd)
+
+        debug2_cmd = ["pwd"]
+        run_bash_command(debug2_cmd)
+
         cmd = [
             "docker",
             "build",

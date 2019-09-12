@@ -123,9 +123,7 @@ def run_bash_command(command: List[str]) -> int:
     Returns:
         The result of the bash command. 0 for success, >=1 for failure.
     """
-    process = subprocess.Popen(
-        command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True, executable="/bin/bash"
-    )
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
     while True:
         output = process.stdout.readline()
         if output == "" and process.poll() is not None:
