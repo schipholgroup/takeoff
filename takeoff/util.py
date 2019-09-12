@@ -4,13 +4,12 @@ import logging
 import os
 import pkgutil
 import subprocess
-
 from dataclasses import dataclass
-from typing import Callable, List, Pattern
+from typing import Callable, List, Pattern, Union
+
 from git import Repo
 from jinja2 import Template
 from yaml import load
-
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ def render_file_with_jinja(path: str, params: dict, parse_function: Callable) ->
     return parse_function(rendered)
 
 
-def get_tag() -> str:
+def get_tag() -> Union[None, str]:
     repo = Repo(search_parent_directories=True)
     return next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 

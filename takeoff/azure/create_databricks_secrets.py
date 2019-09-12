@@ -1,3 +1,4 @@
+import abc
 import logging
 from pprint import pprint
 from typing import List
@@ -27,15 +28,19 @@ class CreateDatabricksSecretsMixin(object):
     def _scope_exists(self, scopes: dict, scope_name: str):
         return scope_name in set(_["name"] for _ in scopes["scopes"])
 
+    @abc.abstractmethod
+    def get_secret_api(self):
+        pass
+
     def _create_scope(self, scope_name: str):
-        scopes = self.secret_api.list_scopes()
+        scopes = self.get_secret_api().list_scopes()
         if not self._scope_exists(scopes, scope_name):
-            self.secret_api.create_scope(scope_name, None)
+            self.get_secret_api().create_scope(scope_name, None)
 
     def _add_secrets(self, scope_name: str, secrets: List[Secret]):
         for secret in secrets:
             logger.info(f"Set secret {scope_name}: {secret.key}")
-            self.secret_api.put_secret(scope_name, secret.key, secret.val, None)
+            self.get_secret_api().put_secret(scope_name, secret.key, secret.val, None)
 
 
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
@@ -56,6 +61,9 @@ class CreateDatabricksSecretsFromVault(Step, CreateDatabricksSecretsMixin):
     `this-app-name` and ignore all other secrets, such as `secret-3` as it does not match
     the `this-app-name` prefix.
     """
+
+    def get_secret_api(self):
+        return self.secret_api
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
@@ -103,3 +111,6 @@ class CreateDatabricksSecretFromValue(SubStep, CreateDatabricksSecretsMixin):
 
         self.databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
         self.secret_api = SecretApi(self.databricks_client)
+
+    def get_secret_api(self):
+        return self.secret_api

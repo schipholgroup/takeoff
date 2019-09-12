@@ -1,8 +1,10 @@
+from typing import Callable
+
 from takeoff.application_version import ApplicationVersion
 from takeoff.util import load_takeoff_plugins
 
 
-def _get_naming_function(function_name: str, default: callable) -> callable:
+def _get_naming_function(function_name: str, default: Callable) -> Callable:
     for plugin in load_takeoff_plugins().values():
         if hasattr(plugin, function_name):
             return getattr(plugin, function_name)
