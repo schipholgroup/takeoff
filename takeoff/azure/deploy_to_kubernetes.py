@@ -46,6 +46,7 @@ class BaseKubernetes(Step):
 
     def _authenticate_with_kubernetes(self):
         resource_group = get_resource_group_name(self.config, self.env)
+        cluster_name = get_kubernetes_name(self.config, self.env)
 
         # get azure container service client
         credentials = ActiveDirectoryUserCredentials(
@@ -59,7 +60,7 @@ class BaseKubernetes(Step):
 
         # authenticate with kubernetes
         credential_results = client.managed_clusters.list_cluster_user_credentials(
-            resource_group_name=resource_group, resource_name=self.cluster_name
+            resource_group_name=resource_group, resource_name=cluster_name
         )
 
         self._write_kube_config(credential_results)
