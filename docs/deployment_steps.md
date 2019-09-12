@@ -11,7 +11,7 @@ permalink: deployment-steps
 <ul>
     {% for step in group.items %}
         <li>
-            <a href="takeoff{{ step.url }}">{{ step.title }}</a> <br>
+            <a href="{{ step.url }}">{{ step.title }}</a> <br>
             <i> {{ step.summary }} </i>
         </li>
     {% endfor %}
