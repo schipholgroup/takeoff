@@ -29,8 +29,9 @@ class MockEventhubClientResponse():
     name: str
     primary_connection_string: str = None
 
-@pytest.fixture(scope="session")
+
 @mock.patch.dict(os.environ, TEST_ENV_VARS)
+@pytest.fixture(scope="session")
 def victim():
     m_client = mock.MagicMock()
     m_client.consumer_groups.list_by_event_hub.return_value = {MockEventhubClientResponse("group1"), MockEventhubClientResponse("group2")}
@@ -39,15 +40,16 @@ def victim():
     m_client.event_hubs.list_authorization_rules.return_value = {MockEventhubClientResponse("rule1"), MockEventhubClientResponse("rule2")}
     m_client.event_hubs.list_keys.return_value = MockEventhubClientResponse('potatoes1', 'potato-connection')
 
-    with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
-         mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=m_client):
-
+    with mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony"), \
+         mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=m_client), \
+         mock.patch("takeoff.azure.configure_eventhub.KeyVaultClient.vault_and_client", return_value=(None, None)):
         conf = {**takeoff_config(), **BASE_CONF}
         conf['azure'].update({"eventhub_naming": "eventhub{env}"})
         return ConfigureEventhub(ApplicationVersion('DEV', 'local', 'foo'), conf)
 
 
 class TestConfigureEventhub(object):
+    @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=None)
     def test_validate_minimal_schema(self, _, __):
@@ -184,7 +186,6 @@ class TestConfigureEventhub(object):
 
         assert result == expected_result
 
-    @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._create_producer_policy")
     def test_create_eventhub_producer_policies(self, producer_policy_fun, victim):
         policies = [
@@ -198,7 +199,6 @@ class TestConfigureEventhub(object):
                  mock.call(policies[1], 'rgdev', 'eventhubdev', 'my_little_pony')]
 
         producer_policy_fun.assert_has_calls(calls)
-
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._create_consumer_group")

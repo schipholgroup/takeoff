@@ -133,12 +133,12 @@ class DockerImageBuilder(Step):
         for df in dockerfiles:
             tag = self.env.artifact_tag
 
-            # only append a postfix if there is one provided
             repository = f"{self.docker_credentials.registry}/{self.application_name}"
 
             if df.custom_image_name:
                 repository = df.custom_image_name
 
+            # only append a postfix if there is one provided
             if df.postfix:
                 repository += df.postfix
 
