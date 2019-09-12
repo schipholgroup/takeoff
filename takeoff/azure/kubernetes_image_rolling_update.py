@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 ROLLING_UPDATE_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): "kubernetesImageRollingUpdate",
+        vol.Required("task"): "kubernetes_image_rolling_update",
         vol.Required("deployment_name"): str,
         vol.Required("image"): str,
         vol.Optional("namespace", default="default"): str,

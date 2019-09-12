@@ -15,7 +15,7 @@ env_variables = {'AZURE_TENANTID': 'David',
 @pytest.fixture(autouse=True)
 @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
 def victim(_):
-    conf = {**takeoff_config(), **{'task': 'kubernetesImageRollingUpdate',
+    conf = {**takeoff_config(), **{'task': 'kubernetes_image_rolling_update',
                                    'deployment_name': "the-king",
                                    'image': 'docker-image'}}
 

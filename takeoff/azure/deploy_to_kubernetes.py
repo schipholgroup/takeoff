@@ -68,7 +68,7 @@ class BaseKubernetes(Step):
 IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): "deployToKubernetes",
+        vol.Required("task"): "deploy_to_kubernetes",
         vol.Optional("deployment_config_path", default="kubernetes_config/deployment.yaml.j2"): str,
         vol.Optional("service_config_path", default="kubernetes_config/service.yaml.j2"): str,
         vol.Optional("service_ips"): {

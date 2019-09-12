@@ -17,7 +17,7 @@ Most often is used in combination with [Deploy artifacts to Azure Blob](upload-t
 Add the following task to ``deployment.yaml``:
 
 ```yaml
-- task: deployToDatabricks
+- task: deploy_to_databricks
   jobs:
   - main_name: "main.py"
     config_file: databricks.json.j2

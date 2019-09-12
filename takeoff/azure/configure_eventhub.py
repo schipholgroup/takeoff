@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): "configureEventhub",
+        vol.Required("task"): "configure_eventhub",
         vol.Optional("createConsumerGroups"): vol.All(
             vol.Length(min=1),
             [

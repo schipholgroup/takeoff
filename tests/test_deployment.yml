@@ -23,5 +23,5 @@ steps:
     - BAR: "prd_foo"
 - task: uploadToBlob
   lang: sbt
-- task: deployToDatabricks
+- task: deploy_to_databricks
   config:  >
