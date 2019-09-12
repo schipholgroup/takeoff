@@ -123,7 +123,6 @@ def run_shell_command(command: List[str]) -> int:
     Returns:
         The result of the bash command. 0 for success, >=1 for failure.
     """
-    logger.info(f"running {command}")
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
     while True:
         output = process.stdout.readline()

@@ -21,23 +21,23 @@ logger = logging.getLogger(__name__)
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "configure_eventhub",
-        vol.Optional("createConsumerGroups"): vol.All(
+        vol.Optional("create_consumer_groups"): vol.All(
             vol.Length(min=1),
             [
                 {
-                    vol.Required("eventhubEntity"): str,
-                    vol.Required("consumerGroup"): str,
-                    vol.Optional("createDatabricksSecret", default=False): bool,
+                    vol.Required("eventhub_entity"): str,
+                    vol.Required("consumer_group"): str,
+                    vol.Optional("create_databricks_secret", default=False): bool,
                 }
             ],
         ),
-        vol.Optional("createProducerPolicies"): vol.All(
+        vol.Optional("create_producer_policies"): vol.All(
             vol.Length(min=1),
             [
                 {
-                    vol.Required("eventhubEntity"): str,
-                    vol.Required("producerPolicy"): str,
-                    vol.Optional("createDatabricksSecret", default=False): bool,
+                    vol.Required("eventhub_entity"): str,
+                    vol.Required("producer_policy"): str,
+                    vol.Optional("create_databricks_secret", default=False): bool,
                 }
             ],
         ),
@@ -111,19 +111,19 @@ class ConfigureEventhub(Step):
                 EventHub(
                     resource_group,
                     eventhub_namespace,
-                    group["eventhubEntity"] + self.env.environment_formatted,
+                    group["eventhub_entity"] + self.env.environment_formatted,
                 ),
-                group["consumerGroup"],
-                group["createDatabricksSecret"],
+                group["consumer_group"],
+                group["create_databricks_secret"],
             )
-            for group in self.config["createConsumerGroups"]
+            for group in self.config["create_consumer_groups"]
         ]
         self.create_eventhub_consumer_groups(groups)
 
     def _setup_producer_policies(self):
         policies = [
-            EventHubProducerPolicy(policy["eventhubEntity"], policy["createDatabricksSecret"])
-            for policy in self.config["createProducerPolicies"]
+            EventHubProducerPolicy(policy["eventhub_entity"], policy["create_databricks_secret"])
+            for policy in self.config["create_producer_policies"]
         ]
         self.create_eventhub_producer_policies(policies)
 

@@ -15,7 +15,7 @@ from takeoff.azure.configure_eventhub import (
 from tests.azure import takeoff_config
 
 BASE_CONF = {'task': 'configure_eventhub',
-             'createConsumerGroups': [{'eventhubEntity': 'Dave', 'consumerGroup': 'Mustaine'}]}
+             'create_consumer_groups': [{'eventhub_entity': 'Dave', 'consumer_group': 'Mustaine'}]}
 
 TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
                  'AZURE_KEYVAULT_SP_USERNAME_DEV': 'Doctor',

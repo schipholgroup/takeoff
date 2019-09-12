@@ -44,8 +44,8 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
     def load(s):
         if s == '.takeoff/deployment.yml':
             return {'steps': [{'task': 'configure_eventhub',
-                               'createConsumerGroups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
-                                          {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
+                               'create_consumer_groups': [{'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName1'},
+                                          {'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName2'}]
                                }]}
         elif s == '.takeoff/config.yml':
             return {}
@@ -60,11 +60,11 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
         mock_task.assert_called_once_with(
             env, {
                 'task': 'configure_eventhub',
-                'createConsumerGroups': [
-                    {'eventhubEntity': 'sdhdevciss',
-                     'consumerGroup': 'consumerGroupName1'},
-                    {'eventhubEntity': 'sdhdevciss',
-                     'consumerGroup': 'consumerGroupName2'}]
+                'create_consumer_groups': [
+                    {'eventhub_entity': 'sdhdevciss',
+                     'consumer_group': 'consumer_groupName1'},
+                    {'eventhub_entity': 'sdhdevciss',
+                     'consumer_group': 'consumer_groupName2'}]
             }
         )
 

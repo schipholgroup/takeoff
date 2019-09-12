@@ -24,7 +24,7 @@ Add the following task to ``deployment.yaml``:
     lang: python
     name: foo
     arguments:
-    - eventhubs.consumerGroup: "my-consumer-group"
+    - eventhubs.consumer_group: "my-consumer-group"
 ```
 
 This should be after the [upload_to_blob](upload-to-blob) task if used together
