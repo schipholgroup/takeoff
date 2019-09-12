@@ -36,7 +36,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             [
                 {
                     vol.Required("eventhub_entity"): str,
-                    vol.Required("producer_policy"): str,
+                    vol.Optional("producer_policy"): str,
                     vol.Optional("create_databricks_secret", default=False): bool,
                 }
             ],
