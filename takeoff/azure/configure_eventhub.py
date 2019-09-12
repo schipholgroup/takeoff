@@ -99,8 +99,10 @@ class ConfigureEventhub(Step):
         return SCHEMA
 
     def run(self):
-        self._setup_consumer_groups()
-        self._setup_producer_policies()
+        if "create_consumer_groups" in self.config:
+            self._setup_consumer_groups()
+        if "create_producer_policies" in self.config:
+            self._setup_producer_policies()
 
     def _setup_consumer_groups(self):
         eventhub_namespace = get_eventhub_name(self.config, self.env)

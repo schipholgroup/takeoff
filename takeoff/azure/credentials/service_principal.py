@@ -1,12 +1,7 @@
-import logging
-
 from msrestazure.azure_active_directory import ServicePrincipalCredentials as SpCredentials
 
 from takeoff.credentials.EnvironmentCredentialsMixin import EnvironmentCredentialsMixin
 from takeoff.util import current_filename
-
-
-logger = logging.getLogger(__name__)
 
 
 class ServicePrincipalCredentials(EnvironmentCredentialsMixin):
