@@ -6,7 +6,7 @@ import voluptuous as vol
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.deploy_to_kubernetes import BaseKubernetes
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
-from takeoff.util import run_bash_command
+from takeoff.util import run_shell_command
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class KubernetesImageRollingUpdate(BaseKubernetes):
             f"deployment.v1.apps/{deployment}",
             f"{deployment}={new_image}",
         ]
-        return_code = run_bash_command(cmd)
+        return_code = run_shell_command(cmd)
 
         if return_code != 0:
             raise ChildProcessError("Could not update the image for some reason!")

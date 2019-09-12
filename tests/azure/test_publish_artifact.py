@@ -164,7 +164,7 @@ class TestPublishArtifact(unittest.TestCase):
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_publish_to_ivy(self, _):
         conf = {**takeoff_config(), **BASE_CONF, "language": "scala", "target": ["ivy"]}
-        with mock.patch("takeoff.azure.publish_artifact.run_bash_command", return_value=0) as m:
+        with mock.patch("takeoff.azure.publish_artifact.run_shell_command", return_value=0) as m:
             victim(FAKE_ENV, conf).publish_to_ivy()
         m.assert_called_once_with(["sbt", 'set version := "v-SNAPSHOT"', "publish"])
 
@@ -173,6 +173,6 @@ class TestPublishArtifact(unittest.TestCase):
     def test_publish_to_ivy_with_tag(self, _, __):
         conf = {**takeoff_config(), **BASE_CONF, "language": "scala", "target": ["ivy"]}
         env = ApplicationVersion('prd', '1.0.0', 'branch')
-        with mock.patch("takeoff.azure.publish_artifact.run_bash_command", return_value=0) as m:
+        with mock.patch("takeoff.azure.publish_artifact.run_shell_command", return_value=0) as m:
             victim(env, conf).publish_to_ivy()
         m.assert_called_once_with(["sbt", 'set version := "1.0.0"', "publish"])
