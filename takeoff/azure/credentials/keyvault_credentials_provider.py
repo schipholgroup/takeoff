@@ -1,11 +1,12 @@
 import re
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union, Tuple
 
 from azure.keyvault import KeyVaultClient
 from azure.keyvault.models import SecretBundle
 
-from takeoff.credentials.Secret import Secret
+from takeoff.credentials.credential_provider import BaseProvider
+from takeoff.credentials.secret import Secret
 from takeoff.util import get_matching_group, has_prefix_match, inverse_dictionary
 
 
@@ -22,6 +23,10 @@ class KeyVaultSecrets:
 
 class KeyVaultCredentialsMixin(object):
     """Collection of Azure KeyVault helper functions"""
+
+    def __init__(self, vault_name, vault_client):
+        self.vault_name = vault_name
+        self.vault_client = vault_client
 
     def _transform_key_to_credential_kwargs(self, keys: Dict[str, str]):
         """
@@ -132,3 +137,14 @@ class KeyVaultCredentialsMixin(object):
         ]
 
         return app_secrets
+
+
+class AzureKeyVaultProvider(BaseProvider, KeyVaultCredentialsMixin):
+    def __init__(self, config, env):
+        super().__init__(config, env)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
+
+    def get_credentials(self, lookup: Union[str, Dict[str, str], Tuple[str, str]]):
+        if not isinstance(lookup, str):
+            raise ValueError("Please provide a string")
+        return self._transform_key_to_credential_kwargs(self.config["azure"]["keyvault_keys"][lookup])

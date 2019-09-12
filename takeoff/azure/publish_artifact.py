@@ -7,8 +7,8 @@ from twine.commands.upload import upload
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.artifact_store import ArtifactStore
+from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.storage_account import BlobStore
-from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 from takeoff.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_bash_command
@@ -77,6 +77,7 @@ class PublishArtifact(Step):
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
 
     def run(self):
         if self.config["language"] == "python":
@@ -154,7 +155,7 @@ class PublishArtifact(Step):
         """
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
-        build_definition_name = ApplicationName().get(self.config)
+        build_definition_name = self.application_name
         if file_extension == ".py":
             filename = get_main_py_name(build_definition_name, self.env.artifact_tag, file_extension)
         elif file_extension == ".whl":

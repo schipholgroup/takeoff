@@ -1,17 +1,7 @@
-azure:
-  resource_group_naming: "sdh{env}"
-  location: "west europe"
-  keyvault_naming: "https://sdhkeyvault{env}.vault.azure.net/"
-
-  keyvault_keys:
-    container_registry:
-      username: "registry-username"
-      password: "registry-password"
-      registry: "registry-server"
-
 plugins:
   - takeoff_plugins
 
 environment_keys:
   application_name: CIRCLE_PROJECT_REPONAME
   branch_name: CIRCLE_BRANCH
+

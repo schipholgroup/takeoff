@@ -6,6 +6,7 @@ import voluptuous as vol
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.keyvault import KeyVaultClient
+from takeoff.credentials.application_name import ApplicationName
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class Step(object):
     def __init__(self, env: ApplicationVersion, config: dict):
         self.env = env
         self.config = self.validate(config)
+        self.application_name = ApplicationName(self.config, self.env).get()
 
     @abc.abstractmethod
     def run(self):

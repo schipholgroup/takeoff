@@ -1,6 +1,6 @@
 from azure.storage.blob import BlockBlobService
 
-from takeoff.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
 from takeoff.util import current_filename
 
 

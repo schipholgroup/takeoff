@@ -9,10 +9,10 @@ from azure.mgmt.relay.models import AccessRights
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromValue
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
+from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_eventhub_name
-from takeoff.credentials.Secret import Secret
-from takeoff.credentials.application_name import ApplicationName
+from takeoff.credentials.secret import Secret
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 
@@ -92,7 +92,7 @@ class ConnectingString(object):
 class ConfigureEventhub(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
-
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
         self.eventhub_client = self._get_eventhub_client()
 
     def schema(self) -> vol.Schema:
@@ -130,13 +130,12 @@ class ConfigureEventhub(Step):
     def create_eventhub_producer_policies(self, producer_policies: List[EventHubProducerPolicy]):
         eventhub_namespace = get_eventhub_name(self.config, self.env)
         resource_group = get_resource_group_name(self.config, self.env)
-        application_name = ApplicationName().get(self.config)
 
         logger.info(f"Using Azure resource group: {resource_group}")
         logger.info(f"Using Azure Eventhub namespace: {eventhub_namespace}")
 
         for policy in producer_policies:
-            self._create_producer_policy(policy, resource_group, eventhub_namespace, application_name)
+            self._create_producer_policy(policy, resource_group, eventhub_namespace, self.application_name)
 
     def _create_producer_policy(
         self,
@@ -220,7 +219,7 @@ class ConfigureEventhub(Step):
             group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name, group.consumer_group
         )
         if group.create_databricks_secret:
-            application_name = ApplicationName().get(self.config)
+            application_name = self.application_name
             entities = self._get_unique_eventhubs([group])
             connection_strings = self._create_connection_strings(eventhub_entities=entities)
             secrets = [
@@ -231,7 +230,7 @@ class ConfigureEventhub(Step):
             self.create_databricks_secrets(secrets, application_name)
 
     def _create_connection_strings(self, eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
-        policy_name = f"{ApplicationName().get(self.config)}-policy"
+        policy_name = f"{self.application_name}-policy"
 
         for hub in eventhub_entities:
             if not self._authorization_rules_exists(hub, policy_name):

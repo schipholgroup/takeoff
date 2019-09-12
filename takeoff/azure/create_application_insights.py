@@ -8,10 +8,10 @@ from azure.mgmt.applicationinsights.models import ApplicationInsightsComponent
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromValue
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
+from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name
-from takeoff.credentials.Secret import Secret
-from takeoff.credentials.application_name import ApplicationName
+from takeoff.credentials.secret import Secret
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 
@@ -39,6 +39,7 @@ class CreateApplicationInsights(Step):
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
 
     def schema(self) -> vol.Schema:
         return SCHEMA
@@ -47,10 +48,9 @@ class CreateApplicationInsights(Step):
         self.create_application_insights()
 
     def create_application_insights(self):
-        application_name = ApplicationName().get(self.config)
         client = self._create_client()
 
-        insight = self._find_existing_instance(client, application_name)
+        insight = self._find_existing_instance(client, self.application_name)
         if not insight:
             logger.info("Creating new Application Insights...")
             # Create a new Application Insights
@@ -60,12 +60,12 @@ class CreateApplicationInsights(Step):
                 application_type=self.config["application_type"],
             )
             insight = client.components.create_or_update(
-                get_resource_group_name(self.config, self.env), application_name, comp
+                get_resource_group_name(self.config, self.env), self.application_name, comp
             )
 
         if self.config["create_databricks_secret"]:
             instrumentation_secret = Secret("instrumentation-key", insight.instrumentation_key)
-            self.create_databricks_secret(application_name, instrumentation_secret)
+            self.create_databricks_secret(self.application_name, instrumentation_secret)
 
     def create_databricks_secret(self, application_name: str, instrumentation_secret: Secret):
         """Create Databricks secret for Application Insights connectivity
