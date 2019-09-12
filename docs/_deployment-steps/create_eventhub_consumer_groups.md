@@ -17,16 +17,16 @@ Add the following task to `deployment.yaml`:
 ```yaml
 - task: createEventhubConsumerGroups
   groups:
-  - eventhubEntity: some-eventhub
-    consumerGroup: some-consumer-group
+  - eventhub_entity: some-eventhub
+    consumer_group: some-consumer-group
 ```
 
 {:.table}
 | field | description 
 | ----- | ----------- 
 | `groups` | Contains the specification for each consumer group 
-| `groups[].eventhubEntity` | The name of the existing EventHub 
-| `groups[].consumerGroup` | The name of the consumer group to be created
+| `groups[].eventhub_entity` | The name of the existing EventHub 
+| `groups[].consumer_group` | The name of the consumer group to be created
 
 ## Takeoff config
 Make sure `takeoff_config.yaml` contains the following `azure_keyvault_keys`:

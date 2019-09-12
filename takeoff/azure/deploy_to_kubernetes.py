@@ -46,6 +46,7 @@ class BaseKubernetes(Step):
 
     def _authenticate_with_kubernetes(self):
         resource_group = get_resource_group_name(self.config, self.env)
+        cluster_name = get_kubernetes_name(self.config, self.env)
 
         # get azure container service client
         credentials = ActiveDirectoryUserCredentials(
@@ -59,7 +60,7 @@ class BaseKubernetes(Step):
 
         # authenticate with kubernetes
         credential_results = client.managed_clusters.list_cluster_user_credentials(
-            resource_group_name=resource_group, resource_name=self.cluster_name
+            resource_group_name=resource_group, resource_name=cluster_name
         )
 
         self._write_kube_config(credential_results)
@@ -68,7 +69,7 @@ class BaseKubernetes(Step):
 IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
-        vol.Required("task"): "deployToKubernetes",
+        vol.Required("task"): "deploy_to_kubernetes",
         vol.Optional("deployment_config_path", default="kubernetes_config/deployment.yaml.j2"): str,
         vol.Optional("service_config_path", default="kubernetes_config/service.yaml.j2"): str,
         vol.Optional("service_ips"): {

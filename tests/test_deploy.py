@@ -43,9 +43,9 @@ def test_no_run_task():
 def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == '.takeoff/deployment.yml':
-            return {'steps': [{'task': 'configureEventhub',
-                               'createConsumerGroups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
-                                          {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
+            return {'steps': [{'task': 'configure_eventhub',
+                               'create_consumer_groups': [{'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName1'},
+                                          {'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName2'}]
                                }]}
         elif s == '.takeoff/config.yml':
             return {}
@@ -59,12 +59,12 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
         main()
         mock_task.assert_called_once_with(
             env, {
-                'task': 'configureEventhub',
-                'createConsumerGroups': [
-                    {'eventhubEntity': 'sdhdevciss',
-                     'consumerGroup': 'consumerGroupName1'},
-                    {'eventhubEntity': 'sdhdevciss',
-                     'consumerGroup': 'consumerGroupName2'}]
+                'task': 'configure_eventhub',
+                'create_consumer_groups': [
+                    {'eventhub_entity': 'sdhdevciss',
+                     'consumer_group': 'consumer_groupName1'},
+                    {'eventhub_entity': 'sdhdevciss',
+                     'consumer_group': 'consumer_groupName2'}]
             }
         )
 
@@ -77,7 +77,7 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
 def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == '.takeoff/deployment.yml':
-            return {'steps': [{'task': 'createDatabricksSecretsFromVault'}]}
+            return {'steps': [{'task': 'create_databricks_secrets_from_vault'}]}
         elif s == '.takeoff/config.yml':
             return {}
 
@@ -87,7 +87,7 @@ def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
 
     with mock.patch.object(CreateDatabricksSecretsFromVault, "__init__", return_value=None) as mock_task:
         main()
-        mock_task.assert_called_once_with(env, {'task': 'createDatabricksSecretsFromVault'})
+        mock_task.assert_called_once_with(env, {'task': 'create_databricks_secrets_from_vault'})
 
 
 @mock.patch.dict(os.environ, environment_variables)
@@ -98,7 +98,7 @@ def test_create_databricks_secret(_, mock_load_yaml, mock_get_version, __):
 def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == '.takeoff/deployment.yml':
-            return {'steps': [{'task': 'deployToDatabricks', 'config_file_fn': 'databricks_job_config.json.j2'}]}
+            return {'steps': [{'task': 'deploy_to_databricks', 'config_file_fn': 'databricks_job_config.json.j2'}]}
         elif s == '.takeoff/config.yml':
             return {}
 
@@ -113,7 +113,7 @@ def test_deploy_to_databricks(_, mock_load_yaml, mock_get_version, __):
         mock_task.assert_called_once_with(
             env,
             {
-                'task': 'deployToDatabricks',
+                'task': 'deploy_to_databricks',
                 'config_file_fn': 'databricks_job_config.json.j2'
             },
         )

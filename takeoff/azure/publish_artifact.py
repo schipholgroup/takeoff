@@ -11,7 +11,7 @@ from takeoff.azure.credentials.storage_account import BlobStore
 from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_bash_command
+from takeoff.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_shell_command
 
 logger = logging.getLogger(__name__)
 
@@ -214,7 +214,7 @@ class PublishArtifact(Step):
         version = self.env.artifact_tag
         postfix = "-SNAPSHOT" if not get_tag() else ""
         cmd = ["sbt", f'set version := "{version}{postfix}"', "publish"]
-        return_code = run_bash_command(cmd)
+        return_code = run_shell_command(cmd)
 
         if return_code != 0:
             raise ChildProcessError("Could not publish the package for some reason!")

@@ -7,10 +7,10 @@ steps:
   appServiceSkuTier: Basic
 - task: createEventhubConsumerGroups
   groups:
-    - eventhubEntity: sdhdevciss
-      consumerGroup: consumerGroupName1
-    - eventhubEntity: sdhdevciss
-      consumerGroup: consumerGroupName2
+    - eventhub_entity: sdhdevciss
+      consumer_group: consumer_groupName1
+    - eventhub_entity: sdhdevciss
+      consumer_group: consumer_groupName2
 - task: createDatabricksSecrets
   dev:
     - FOO: "bar"
@@ -23,5 +23,5 @@ steps:
     - BAR: "prd_foo"
 - task: uploadToBlob
   lang: sbt
-- task: deployToDatabricks
+- task: deploy_to_databricks
   config:  >

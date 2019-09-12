@@ -39,7 +39,7 @@ class TestBuildArtifact(unittest.TestCase):
     @mock.patch.object(victim, "_remove_old_artifacts")
     def test_build_python_wheel(self, _, w, r):
         conf = {**takeoff_config(), **BASE_CONF}
-        with mock.patch("takeoff.build_artifact.run_bash_command", return_value=0) as m:
+        with mock.patch("takeoff.build_artifact.run_shell_command", return_value=0) as m:
             victim(FAKE_ENV, conf).build_python_wheel()
         m.assert_called_once_with(["python", "setup.py", "bdist_wheel"])
 
@@ -49,7 +49,7 @@ class TestBuildArtifact(unittest.TestCase):
     def test_build_python_wheel_fail(self, _, w, r):
         conf = {**takeoff_config(), **BASE_CONF}
         with pytest.raises(ChildProcessError):
-            with mock.patch("takeoff.build_artifact.run_bash_command", return_value=1) as m:
+            with mock.patch("takeoff.build_artifact.run_shell_command", return_value=1) as m:
                 victim(FAKE_ENV, conf).build_python_wheel()
             m.assert_called_once_with(["python", "setup.py", "bdist_wheel"])
 
@@ -58,7 +58,7 @@ class TestBuildArtifact(unittest.TestCase):
     @mock.patch.object(victim, "_remove_old_artifacts")
     def test_build_python_wheel(self, _, w, r):
         conf = {**takeoff_config(), **BASE_CONF}
-        with mock.patch("takeoff.build_artifact.run_bash_command", return_value=0) as m:
+        with mock.patch("takeoff.build_artifact.run_shell_command", return_value=0) as m:
             victim(FAKE_ENV, conf).build_sbt_assembly_jar()
         m.assert_called_once_with(["sbt", "clean", "assembly"])
 
@@ -68,7 +68,7 @@ class TestBuildArtifact(unittest.TestCase):
     def test_build_python_wheel_fail(self, _, w, r):
         conf = {**takeoff_config(), **BASE_CONF}
         with pytest.raises(ChildProcessError):
-            with mock.patch("takeoff.build_artifact.run_bash_command", return_value=1) as m:
+            with mock.patch("takeoff.build_artifact.run_shell_command", return_value=1) as m:
                 victim(FAKE_ENV, conf).build_sbt_assembly_jar()
             m.assert_called_once_with(["sbt", "clean", "assembly"])
 

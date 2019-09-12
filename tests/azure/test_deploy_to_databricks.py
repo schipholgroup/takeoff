@@ -23,7 +23,7 @@ streaming_job_config = "tests/azure/test_job_config.json.j2"
 batch_job_config = "tests/azure/test_job_config_scheduled.json.j2"
 dynamic_schedule_job_config = "tests/azure/test_job_config_schedule_dynamically.json.j2"
 
-BASE_CONF = {'task': 'deployToDatabricks', 'jobs': [{"main_name": "Dave"}]}
+BASE_CONF = {'task': 'deploy_to_databricks', 'jobs': [{"main_name": "Dave"}]}
 TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
                  'AZURE_KEYVAULT_SP_USERNAME_DEV': 'Doctor',
                  'AZURE_KEYVAULT_SP_PASSWORD_DEV': 'Who',
@@ -137,20 +137,20 @@ class TestDeployToDatabricks(object):
 
     def test_schema_validity(self, victim):
         conf = {**takeoff_config(),
-                **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name"}]}
+                **{"task": "deploy_to_databricks", "jobs": [{"main_name": "foo", "name": "some-name"}]}
                 }
         res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{}]
         assert res["lang"] == "python"
 
         conf = {**takeoff_config(),
-                **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}]}]}
+                **{"task": "deploy_to_databricks", "jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}]}]}
                 }
         res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{"key": "val"}]
 
         conf = {**takeoff_config(),
-                **{"task": "deployToDatabricks", "jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}, {"key2": "val2"}]}]}
+                **{"task": "deploy_to_databricks", "jobs": [{"main_name": "foo", "name": "some-name", "arguments": [{"key": "val"}, {"key2": "val2"}]}]}
                 }
         res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{"key": "val"}, {"key2": "val2"}]

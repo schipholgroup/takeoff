@@ -12,7 +12,7 @@ from takeoff.azure.credentials.container_registry import DockerRegistry
 from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import run_bash_command
+from takeoff.util import run_shell_command
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +98,6 @@ class DockerImageBuilder(Step):
             docker_file: The name of the dockerfile to build
             tag: The docker tag to apply to the image name
         """
-
         cmd = [
             "docker",
             "build",
@@ -113,7 +112,7 @@ class DockerImageBuilder(Step):
 
         logger.info(f"Building docker image for {docker_file} with command \n{' '.join(cmd)}")
 
-        return_code = run_bash_command(cmd)
+        return_code = run_shell_command(cmd)
 
         if return_code != 0:
             raise ChildProcessError("Could not build the image for some reason!")
@@ -131,7 +130,7 @@ class DockerImageBuilder(Step):
 
         logger.info(f"Uploading docker image {tag}")
 
-        return_code = run_bash_command(cmd)
+        return_code = run_shell_command(cmd)
 
         if return_code != 0:
             raise ChildProcessError("Could not push image for some reason!")
