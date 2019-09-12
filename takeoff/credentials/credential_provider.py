@@ -1,9 +1,11 @@
 import abc
 from typing import Union, Tuple, Dict
 
+from takeoff.application_version import ApplicationVersion
+
 
 class BaseProvider:
-    def __init__(self, config, env):
+    def __init__(self, config: dict, env: ApplicationVersion):
         self.config = config
         self.env = env
 

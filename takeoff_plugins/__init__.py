@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def deploy_env_logic(config: dict):
-    branch = BranchName().get(config)
+    branch = BranchName(config, None).get()
     tag = get_tag()
 
     if tag:

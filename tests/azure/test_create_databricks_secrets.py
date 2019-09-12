@@ -6,7 +6,7 @@ import pytest
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretsFromVault, CreateDatabricksSecretFromValue, CreateDatabricksSecretsMixin
-from takeoff.credentials.Secret import Secret
+from takeoff.credentials.secret import Secret
 from tests.azure import takeoff_config
 
 

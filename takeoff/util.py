@@ -5,7 +5,7 @@ import os
 import pkgutil
 import subprocess
 from dataclasses import dataclass
-from typing import Callable, List, Pattern, Union
+from typing import Callable, List, Pattern, Union, Optional
 
 from git import Repo
 from jinja2 import Template
@@ -135,10 +135,10 @@ def run_bash_command(command: List[str]) -> int:
     return process.poll()
 
 
-def load_takeoff_plugins():
+def load_takeoff_plugins(plugin_path_prefix: Optional[str] = "takeoff_"):
     """https://packaging.python.org/guides/creating-and-discovering-plugins/"""
     return {
         name: importlib.import_module(name)
         for finder, name, ispkg in pkgutil.iter_modules()
-        if name.startswith("takeoff_")
+        if name.startswith(plugin_path_prefix)
     }

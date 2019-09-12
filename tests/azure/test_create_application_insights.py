@@ -7,7 +7,7 @@ from voluptuous import MultipleInvalid
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_application_insights import CreateApplicationInsights
-from takeoff.credentials.Secret import Secret
+from takeoff.credentials.secret import Secret
 from tests.azure import takeoff_config
 
 BASE_CONF = {'task': 'create_application_insights',

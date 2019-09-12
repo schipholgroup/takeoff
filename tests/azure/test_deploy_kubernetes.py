@@ -10,7 +10,7 @@ from kubernetes.client import V1SecretList
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
-from takeoff.credentials.Secret import Secret
+from takeoff.credentials.secret import Secret
 from tests.azure import takeoff_config
 
 env_variables = {'AZURE_TENANTID': 'David',

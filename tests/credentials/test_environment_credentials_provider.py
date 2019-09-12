@@ -1,7 +1,7 @@
 import os
 from unittest import mock
 
-from takeoff.credentials.EnvironmentCredentialsMixin import EnvironmentCredentialsMixin as victim
+from takeoff.credentials.environment_credentials_provider import EnvironmentCredentialsMixin as victim
 
 
 class TestEnvironmentCredentialsMixin(object):

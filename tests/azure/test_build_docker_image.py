@@ -5,11 +5,11 @@ import mock
 import pytest
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.build_docker_image import DockerImageBuilder, DockerFile
-from takeoff.azure.credentials.container_registry import DockerCredentials
+from takeoff.build_docker_image import DockerImageBuilder, DockerFile
+from takeoff.credentials.container_registry import DockerCredentials
 from tests.azure import takeoff_config
 
-BASE_CONF = {"task": "build_docker_image"}
+BASE_CONF = {"task": "build_docker_image", "credentials": "azure_keyvault"}
 
 CREDS = DockerCredentials("My", "Little", "pony")
 ENV_VARIABLES = {"HOME": "my_home",
@@ -17,9 +17,10 @@ ENV_VARIABLES = {"HOME": "my_home",
 
 
 @pytest.fixture(autouse=True)
+@mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
 def victim() -> DockerImageBuilder:
     with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
-         mock.patch("takeoff.azure.build_docker_image.DockerRegistry.credentials", return_value=CREDS):
+         mock.patch("takeoff.build_docker_image.DockerRegistry.credentials", return_value=CREDS):
         conf = {**takeoff_config(), **BASE_CONF}
         return DockerImageBuilder(ApplicationVersion('DEV', '2.1.0', 'MASTER'), conf)
 

@@ -8,7 +8,7 @@ from tests.credentials.base_environment_keys_test import EnvironmentKeyBaseTest,
 
 class TestApplicationName(EnvironmentKeyBaseTest):
     def call_victim(self, config):
-        return victim().get(config)
+        return victim(config, None).get()
 
     @mock.patch.dict(os.environ, OS_KEYS)
     def test_credentials(self):

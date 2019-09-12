@@ -2,7 +2,7 @@ from unittest import mock
 
 from azure.keyvault.models import SecretBundle
 
-from takeoff.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
 
 
 class TestAzureKeyVaultCredentialsMixin(object):

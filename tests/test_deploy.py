@@ -25,6 +25,8 @@ environment_variables = {
 
 env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 
+conf_ext = {"environment_keys": {"application_name": "CI_PROJECT_NAME"}}
+
 
 def filename(s):
     return f".takeoff/{s}.yml"
@@ -45,7 +47,7 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
         if s == '.takeoff/deployment.yml':
             return {'steps': [{'task': 'configureEventhub',
                                'createConsumerGroups': [{'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName1'},
-                                          {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
+                                                        {'eventhubEntity': 'sdhdevciss', 'consumerGroup': 'consumerGroupName2'}]
                                }]}
         elif s == '.takeoff/config.yml':
             return {}
@@ -140,11 +142,12 @@ class MockedClass(Step):
         return vol.Schema({}, extra=vol.ALLOW_EXTRA)
 
 
+@mock.patch.dict(os.environ, environment_variables)
 @mock.patch.dict('takeoff.steps.steps', {'mocked': MockedClass})
 @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
 def test_run_task(_):
     from takeoff.deploy import run_task
-    res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})
+    res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo', **conf_ext})
 
     assert res == 'yeah, science!'
 
@@ -171,11 +174,12 @@ def test_read_takeoff_plugins(_, mock_load_yaml, __):
     m.assert_called_once_with(paths)
 
 
+@mock.patch.dict(os.environ, environment_variables)
 def test_add_custom_path():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)
 
-    env = find_env_function()
+    env = find_env_function("_takeoff_")
 
-    assert env().branch == "master"
+    assert env(conf_ext).branch == "master"
     sys.path.remove(paths[0])
