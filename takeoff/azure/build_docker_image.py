@@ -8,7 +8,6 @@ from typing import List, Union
 import voluptuous as vol
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.container_registry import DockerRegistry
 from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
@@ -47,18 +46,9 @@ class DockerFile(object):
 
 
 class DockerImageBuilder(Step):
-    """Builds and pushes one or more docker images.
-
-    Depends on:
-
-    - Credentials for a docker registry (username, password, registry) must be
-      available in your cloud vault.
-    - The docker-cli must be available
-    """
-
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
-        self.docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
+        self.docker_credentials = DockerRegistryNew(config, env).credentials(self.config)
 
     def populate_docker_config(self):
         """Creates ~/.docker/config.json and writes the credentials for the registry to the file"""

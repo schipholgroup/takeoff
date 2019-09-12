@@ -1,2 +1,3 @@
 steps:
   - task: build_docker_image
+    credentials: azure_keyvault # or environment_variables
