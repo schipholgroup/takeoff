@@ -1,4 +1,4 @@
-FROM schipholhub/takeoff-base:SNAPSHOT
+FROM schipholhub/takeoff-base:1.0.2
 
 COPY setup.py /root
 COPY README.md /root
