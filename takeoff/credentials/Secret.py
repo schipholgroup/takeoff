@@ -13,10 +13,13 @@ class Secret:
     def __hash__(self):
         return hash(self.key)
 
-    def __eq__(self, other: "Secret"):
-        return self.key == other.key
+    def __eq__(self, other):
+        if isinstance(other, Secret):
+            return self.key == other.key
+        else:
+            return False
 
-    def __ne__(self, other: "Secret"):
+    def __ne__(self, other):
         return not self.__eq__(other)
 
     def __lt__(self, other: "Secret"):

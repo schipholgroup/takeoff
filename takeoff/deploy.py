@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import Callable, List
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.credentials.branch_name import BranchName
@@ -21,7 +21,7 @@ def deploy_env_logic(config: dict) -> ApplicationVersion:
         return ApplicationVersion("DEV", git_hash, branch)
 
 
-def find_env_function():
+def find_env_function() -> Callable:
     for plugin in load_takeoff_plugins().values():
         if hasattr(plugin, "deploy_env_logic"):
             return plugin.deploy_env_logic
@@ -63,4 +63,4 @@ def run_task(env: ApplicationVersion, task: str, task_config: dict):
     if task not in steps:
         raise ValueError(f"Deployment step {task} is unknown, please check the config")
     else:
-        return steps[task](env, task_config).run()
+        return steps[task](env, task_config).run()  # type: ignore
