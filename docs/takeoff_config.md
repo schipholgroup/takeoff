@@ -78,14 +78,14 @@ ci_environment_keys_*:
 {:.table}
 | field | description 
 | ----- | ----------- 
-| `service_principal` | Values used to authentice against an [Azure Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals)
+| `service_principal` | Values used to authenticate against an [Azure Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals)
 | `service_principal.tenant` | CI environment variable containing the Azure Tenant ID (usually a UUID)
 | `service_principal.client_id` | CI environment variable containing the client id (usually a UUID)
 | `service_principal.secret` | CI environment variable containing the secret 
 
 #### Example 
 
-Assume you have two enviroments, a `dev` and `prd`. The following snippet could be part of you `.takeoff/config.yml`
+Assume you have two enviroments, a `dev` and `prd`. The following snippet could be part of your `.takeoff/config.yml`
 
 ```yaml
 ci_environment_keys_dev:
