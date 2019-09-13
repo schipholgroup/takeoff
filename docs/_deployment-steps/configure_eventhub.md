@@ -1,14 +1,14 @@
 ---
 layout: page
-title: Configure Eventhub
+title: Configure EventHub
 date: 2019-01-21
 updated: 2019-09-13
-summary: Configure Eventhub with consumer groups and producer policies
+summary: Configure EventHub with consumer groups and producer policies
 permalink: deployment-step/configure-eventhub
-category: Eventhub
+category: EventHub
 ---
 
-# Configure Eventhub
+# Configure EventHub
 
 Creates [Azure EventHub](https://docs.microsoft.com/en-us/azure/event-hubs/) consumer groups in a given EventHub namespace. This will also create one EventHub consumer policy per consumer group. The name of this policy equals the name of your application. In addition, also creates producer policies.
 

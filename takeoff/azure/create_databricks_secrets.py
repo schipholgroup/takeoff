@@ -117,7 +117,7 @@ class CreateDatabricksSecretsFromVault(Step, CreateDatabricksSecretsMixin):
 
 
 class CreateDatabricksSecretFromValue(SubStep, CreateDatabricksSecretsMixin):
-    """Not meant as a step but as a subconfiguration of an existing step such as `ConfigureEventhub`.
+    """Not meant as a step but as a subconfiguration of an existing step such as `ConfigureEventHub`.
 
     This class will allow for the creation of databricks secrets related to a `Step`. For example the creation
     of eventhub connection strings as databricks secret.
