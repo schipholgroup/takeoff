@@ -6,7 +6,7 @@ import pytest
 import voluptuous as vol
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.configure_eventhub import ConfigureEventhub
+from takeoff.azure.configure_eventhub import ConfigureEventHub
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretsFromVault
 from takeoff.azure.deploy_to_databricks import DeployToDatabricks
 from takeoff.deploy import main
@@ -41,7 +41,7 @@ def test_no_run_task():
 @mock.patch("takeoff.deploy.get_full_yaml_filename", side_effect=filename)
 @mock.patch("takeoff.deploy.get_environment")
 @mock.patch("takeoff.deploy.load_yaml")
-@mock.patch.object(ConfigureEventhub, 'run', return_value=None)
+@mock.patch.object(ConfigureEventHub, 'run', return_value=None)
 def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __):
     def load(s):
         if s == '.takeoff/deployment.yml':
@@ -57,7 +57,7 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
 
     mock_get_version.return_value = env
 
-    with mock.patch.object(ConfigureEventhub, "__init__", return_value=None) as mock_task:
+    with mock.patch.object(ConfigureEventHub, "__init__", return_value=None) as mock_task:
         main()
         mock_task.assert_called_once_with(
             env, {
