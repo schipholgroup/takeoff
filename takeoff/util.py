@@ -137,9 +137,9 @@ def run_shell_command(command: List[str]) -> int:
 
 def load_takeoff_plugins():
     """https://packaging.python.org/guides/creating-and-discovering-plugins/"""
-    print(DEFAULT_TAKEOFF_PLUGIN_PREFIX)
-    return {
+    plugins = {
         name: importlib.import_module(name)
         for finder, name, ispkg in pkgutil.iter_modules()
         if name.startswith(DEFAULT_TAKEOFF_PLUGIN_PREFIX)
     }
+    return plugins

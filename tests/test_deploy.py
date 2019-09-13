@@ -47,7 +47,7 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
         if s == '.takeoff/deployment.yml':
             return {'steps': [{'task': 'configure_eventhub',
                                'create_consumer_groups': [{'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName1'},
-                                          {'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName2'}]
+                                                          {'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName2'}]
                                }]}
         elif s == '.takeoff/config.yml':
             return {}
@@ -171,7 +171,7 @@ def test_read_takeoff_plugins(_, mock_load_yaml, __):
     with mock.patch("takeoff.deploy.get_environment") as mock_env:
         with mock.patch("takeoff.deploy.add_takeoff_plugin_paths") as m:
             main()
-    m.assert_called_once_with(paths)
+    m.assert_called_once_with(paths + ["."])
 
 
 @mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
