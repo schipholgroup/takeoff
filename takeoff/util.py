@@ -5,11 +5,13 @@ import os
 import pkgutil
 import subprocess
 from dataclasses import dataclass
-from typing import Callable, List, Pattern, Union, Optional
+from typing import Callable, List, Pattern, Union
 
 from git import Repo
 from jinja2 import Template
 from yaml import load
+
+from takeoff.conf import DEFAULT_TAKEOFF_PLUGIN_PREFIX
 
 logger = logging.getLogger(__name__)
 
@@ -133,10 +135,11 @@ def run_shell_command(command: List[str]) -> int:
     return process.poll()
 
 
-def load_takeoff_plugins(plugin_path_prefix: Optional[str] = "_takeoff_"):
+def load_takeoff_plugins():
     """https://packaging.python.org/guides/creating-and-discovering-plugins/"""
+    print(DEFAULT_TAKEOFF_PLUGIN_PREFIX)
     return {
         name: importlib.import_module(name)
         for finder, name, ispkg in pkgutil.iter_modules()
-        if name.startswith(plugin_path_prefix)
+        if name.startswith(DEFAULT_TAKEOFF_PLUGIN_PREFIX)
     }

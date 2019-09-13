@@ -48,6 +48,8 @@ class CIEnvironmentCredentials(BaseProvider, EnvironmentCredentialsMixin):
     def get_credentials(self, lookup: Union[str, Dict[str, str], Tuple[str, str]]):
         if not isinstance(lookup, str):
             raise ValueError("Please provide a string")
+        if not self.env:
+            raise ValueError("Needs ApplicationVersion")
         credential_kwargs = super()._transform_environment_key_to_credential_kwargs(
             self.config[f"ci_environment_keys_{self.env.environment_formatted}"][lookup]
         )

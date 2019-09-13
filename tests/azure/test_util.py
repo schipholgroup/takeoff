@@ -1,6 +1,8 @@
 import os
 import sys
 
+import mock
+
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure import util as victim
 from takeoff.deploy import add_takeoff_plugin_paths
@@ -13,6 +15,7 @@ def test_get_default_resource_group():
     assert res == "rgdev"
 
 
+@mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_get_custom_resource_group():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)
@@ -27,6 +30,7 @@ def test_get_default_keyvault():
     assert res == "keyvaultdev"
 
 
+@mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_get_custom_keyvault():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)
@@ -41,6 +45,7 @@ def test_get_default_cosmos():
     assert res == "cosmosdev"
 
 
+@mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_get_custom_cosmos():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)
@@ -55,6 +60,7 @@ def test_get_default_eventhub():
     assert res == "eventhubdev"
 
 
+@mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_get_custom_eventhub():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)
@@ -69,6 +75,7 @@ def test_get_default_kubernetes():
     assert res == "kubernetesdev"
 
 
+@mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_get_custom_kubernetes():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)
@@ -83,6 +90,7 @@ def test_get_default_eventhub_entity_name():
     assert res == "Michaeldev"
 
 
+@mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_get_custom_eventhub_entity_name():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)

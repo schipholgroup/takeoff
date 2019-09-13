@@ -1,5 +1,5 @@
 import logging
-from typing import List, Callable, Optional
+from typing import List, Callable
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.credentials.branch_name import BranchName
@@ -21,8 +21,8 @@ def deploy_env_logic(config: dict) -> ApplicationVersion:
         return ApplicationVersion("DEV", git_hash, branch)
 
 
-def find_env_function(plugin_path_prefix: Optional[str]) -> Callable:
-    for plugin in load_takeoff_plugins(plugin_path_prefix).values():
+def find_env_function() -> Callable:
+    for plugin in load_takeoff_plugins().values():
         if hasattr(plugin, "deploy_env_logic"):
             return plugin.deploy_env_logic
     return deploy_env_logic

@@ -174,12 +174,12 @@ def test_read_takeoff_plugins(_, mock_load_yaml, __):
     m.assert_called_once_with(paths)
 
 
-@mock.patch.dict(os.environ, environment_variables)
+@mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_add_custom_path():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)
 
-    env = find_env_function("_takeoff_")
+    env = find_env_function()
 
     assert env(conf_ext).branch == "master"
     sys.path.remove(paths[0])
