@@ -107,14 +107,11 @@ class ConfigureEventHub(Step):
 
     def _setup_consumer_groups(self):
         """Constructs consumer groups for all EventHub entities requested."""
-        eventhub_namespace = get_eventhub_name(self.config, self.env)
-        resource_group = get_resource_group_name(self.config, self.env)
-
         groups = [
             EventHubConsumerGroup(
                 EventHub(
-                    resource_group,
-                    eventhub_namespace,
+                    get_resource_group_name(self.config, self.env),
+                    get_eventhub_name(self.config, self.env),
                     get_eventhub_entity_name(group["eventhub_entity"], self.env),
                 ),
                 group["consumer_group"],
@@ -186,7 +183,7 @@ class ConfigureEventHub(Step):
             self.create_databricks_secrets([secret], application_name)
 
     def _eventhub_exists(self, group: EventHubConsumerGroup) -> bool:
-        """Checks if the Evenhub entity exists
+        """Checks if the EventHub entity exists
 
         Args:
             group: Object containing names of EventHub namespace and entity
