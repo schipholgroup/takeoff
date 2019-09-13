@@ -25,7 +25,7 @@ def default_naming(key: str) -> Callable[[dict, ApplicationVersion], str]:
     """The default naming convention
 
     Args:
-        The fieldname in `.takeoff/config.yml` under `azure:` containing the
+        key: The fieldname in `.takeoff/config.yml` under `azure:` containing the
         naming rule.
 
     Returns:

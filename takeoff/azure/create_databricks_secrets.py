@@ -42,7 +42,7 @@ class CreateDatabricksSecretsMixin(object):
         pass
 
     def _create_scope(self, scope_name: str):
-        """Creates a Databricks secret scope
+        """Creates a Databricks secret scope if it doesn't exist yet
 
         Args:
             scope_name: The name of the scope to create
@@ -53,6 +53,7 @@ class CreateDatabricksSecretsMixin(object):
 
     def _add_secrets(self, scope_name: str, secrets: List[Secret]):
         """Add Databricks secrets to the provided scope
+
         Args:
             scope_name: The name of the scope to create secrets in
             secrets: List of secrets

@@ -34,11 +34,11 @@ Add the following task to `deployment.yaml`:
 | `create_consumer_groups` __[optional]__ | Contains the specification for each consumer group 
 | `create_consumer_groups.eventhub_entity_naming` | The name of the existing EventHub 
 | `create_consumer_groups.consumer_group` __[optional]__ | The name of the consumer group to be created
-| `create_consumer_groups.create_databricks_secret` | Whether a databricks secret should be created for the consumer group | One of `true`, `false`
+| `create_consumer_groups.create_databricks_secret` | Whether a Databricks secret should be created for the consumer group | One of `true`, `false`
 | `create_producer_policies` __[optional]__ | Contains the specification for each producer policy
 | `create_producer_policies.eventhub_entity_naming` | The name of the existing EventHub 
 | `create_producer_policies.producer_policy` | The name of producer policy to be created
-| `create_producer_policies.create_databricks_secret` | Whether a databricks secret should be created for the producer policy | One of `true`, `false`
+| `create_producer_policies.create_databricks_secret` | Whether a Databricks secret should be created for the producer policy | One of `true`, `false`
 
 ## Takeoff config
 Credentials for a Azure Active Directory user (username, password) must be available in your cloud vault. In addition Databricks credentials and your subscription ID must be available in the KeyVault.
@@ -58,11 +58,13 @@ azure:
         subscription_id: "subscription-id"
 ```
 
+Here `eventhub_naming` is the naming rule for your EventHub namespace.
+
 ## Examples
 
 Assume an application name `myapp` and version `1.2.0`. This goes to `prd` environment.
 
-Minimum configuration example for one consumer group. This will create a single consumer policy (if it didn't already exists) for `some-eventhubprd` with name `some-eventhubprd-connection-string`
+Minimum configuration example for one consumer group. This will create a single consumer group (if it didn't already exists) for `some-eventhubprd` with name `some-eventhubprd-connection-string`
 ```yaml
 - task: configure_eventhub
   create_consumer_groups:

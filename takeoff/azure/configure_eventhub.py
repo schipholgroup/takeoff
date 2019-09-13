@@ -229,6 +229,7 @@ class ConfigureEventHub(Step):
 
     def _authorization_rules_exists(self, hub: EventHub, name: str) -> bool:
         """Checks if the EventHub contains given authorization rule.
+
         Args:
             hub: Object containing information on the EventHub entity
             name: Name of the authorization rule
@@ -313,18 +314,17 @@ class ConfigureEventHub(Step):
         return [ConnectingString(hub.name, conn) for hub, conn in zip(eventhub_entities, connection_strings)]
 
     @staticmethod
-    def _get_unique_eventhubs(consumer_groups_to_create: List[EventHubConsumerGroup]) -> Set[EventHub]:
+    def _get_unique_eventhubs(eventhubs: List[EventHubConsumerGroup]) -> Set[EventHub]:
         """Deduplicated EventHub consumer groups from the Takeoff config
 
         Args:
-            consumer_groups_to_create: List of consumer groups to create
+            eventhubs: List of consumer groups to create
 
         Returns:
             Unique set of objects containing Evenhub metadata
         """
         return set(
-            EventHub(_.eventhub.resource_group, _.eventhub.namespace, _.eventhub.name)
-            for _ in consumer_groups_to_create
+            EventHub(_.eventhub.resource_group, _.eventhub.namespace, _.eventhub.name) for _ in eventhubs
         )
 
     def _get_eventhub_client(self) -> EventHubManagementClient:
