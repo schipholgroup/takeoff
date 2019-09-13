@@ -60,7 +60,17 @@ def get_matching_group(find_in: str, pattern: Pattern[str], group: int):
     return match.groups()[group]
 
 
-def has_prefix_match(find_in: str, to_find: str, pattern: Pattern[str]):
+def has_prefix_match(find_in: str, to_find: str, pattern: Pattern[str]) -> bool:
+    """ Checks whether the first match of the provided pattern is the target string
+
+    Args:
+        find_in: String to search in
+        to_find: Target string to compare the first match of the pattern to
+        pattern: The pattern against which to match
+
+    Returns:
+        bool: True if the first match of the provided pattern is the target string, False otherwise
+    """
     match = pattern.search(find_in)
 
     if match:
@@ -94,10 +104,27 @@ def get_full_yaml_filename(filename: str) -> str:
 
 
 def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
-    # Wheels enforce a strict naming convention. This function helps us adhere to this naming convention
-    # The convention is: {distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl
-    # In our case, we need to use underscores to concatenate words within a package name and version name.
-    # build-tag is optional, and we do not supply it.
+    """Get the name of the whl file given an application and its current tag
+
+    Wheels enforce a strict naming convention. This function helps us adhere to this naming convention
+    The convention is: {distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl
+    In our case, we need to use underscores to concatenate words within a package name and version name.
+    build-tag is optional, and we do not supply it. We also assume the following values:
+      - python tag = py3
+      - abi tag = none
+      - platform tag = any
+
+    This function assumes that the wheel path is prefixed with the build_definition name, and therefore
+    that whl's are stored in a directory named `build_definition_name`
+
+    Args:
+        build_definition_name: The base name to use. All hyphens are replaced with `_`s in the whl name to
+            ensure compliance with the whl naming convention
+        artifact_tag: The tag of the artifact to fetch.
+        file_ext: the file extension to use. For whls this should be `.whl`
+    Returns:
+        str: the whl name
+    """
     return (
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
         f"{artifact_tag.replace('-', '_')}-py3-none-any{file_ext}"
@@ -105,6 +132,22 @@ def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
 
 
 def get_main_py_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
+    """Get the name of the main_py file given an application and its current tag
+
+    This function assumes that the main_py name follows the following pattern:
+    {application_name}-main-{artifact_tag}.py
+
+    This function assumes that the main_py path is prefixed with the build_definition name, and therefore
+    that these files are stored in a directory named `build_definition_name`
+
+    Args:
+        build_definition_name: The base name to use. All hyphens are replaced with `_`s in the file name to
+            ensure compliance with the naming convention
+        artifact_tag: The tag of the artifact to fetch.
+        file_ext: the file extension to use. For main_py this should be `.py`
+    Returns:
+        str: the whl name
+    """
     return (
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
         f"main-{artifact_tag.replace('-', '_')}{file_ext}"
