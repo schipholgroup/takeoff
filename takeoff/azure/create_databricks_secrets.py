@@ -25,7 +25,16 @@ class CreateDatabricksSecretsMixin(object):
     def __init__(self):
         raise BaseException("Should not instantiate this class")
 
-    def _scope_exists(self, scopes: dict, scope_name: str):
+    def _scope_exists(self, scopes: dict, scope_name: str) -> bool:
+        """Checks if the Databricks secret scope exists
+
+        Args:
+            scopes: All existing Databricks secret scopes
+            scope_name: The scope to search for
+
+        Returns:
+            Whether the scope_name already exists.
+        """
         return scope_name in set(_["name"] for _ in scopes["scopes"])
 
     @abc.abstractmethod
@@ -33,11 +42,22 @@ class CreateDatabricksSecretsMixin(object):
         pass
 
     def _create_scope(self, scope_name: str):
+        """Creates a Databricks secret scope if it doesn't exist yet
+
+        Args:
+            scope_name: The name of the scope to create
+        """
         scopes = self.get_secret_api().list_scopes()
         if not self._scope_exists(scopes, scope_name):
             self.get_secret_api().create_scope(scope_name, None)
 
     def _add_secrets(self, scope_name: str, secrets: List[Secret]):
+        """Add Databricks secrets to the provided scope
+
+        Args:
+            scope_name: The name of the scope to create secrets in
+            secrets: List of secrets
+        """
         for secret in secrets:
             logger.info(f"Set secret {scope_name}: {secret.key}")
             self.get_secret_api().put_secret(scope_name, secret.key, secret.val, None)
@@ -98,7 +118,7 @@ class CreateDatabricksSecretsFromVault(Step, CreateDatabricksSecretsMixin):
 
 
 class CreateDatabricksSecretFromValue(SubStep, CreateDatabricksSecretsMixin):
-    """Not meant as a step but as a subconfiguration of an existing step such as `ConfigureEventhub`.
+    """Not meant as a step but as a subconfiguration of an existing step such as `ConfigureEventHub`.
 
     This class will allow for the creation of databricks secrets related to a `Step`. For example the creation
     of eventhub connection strings as databricks secret.

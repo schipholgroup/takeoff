@@ -10,12 +10,12 @@ from takeoff.application_version import ApplicationVersion
 from takeoff.azure.configure_eventhub import (
     EventHub,
     EventHubConsumerGroup,
-    ConfigureEventhub,
+    ConfigureEventHub,
     EventHubProducerPolicy, ConnectingString)
 from tests.azure import takeoff_config
 
 BASE_CONF = {'task': 'configure_eventhub',
-             'create_consumer_groups': [{'eventhub_entity': 'Dave', 'consumer_group': 'Mustaine'}]}
+             'create_consumer_groups': [{'eventhub_entity_naming': 'Dave{env}', 'consumer_group': 'Mustaine'}]}
 
 TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
                  'AZURE_KEYVAULT_SP_USERNAME_DEV': 'Doctor',
@@ -25,7 +25,7 @@ TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
 
 
 @dataclass(frozen=True)
-class MockEventhubClientResponse():
+class MockEventHubClientResponse():
     name: str
     primary_connection_string: str = None
 
@@ -33,37 +33,37 @@ class MockEventhubClientResponse():
 @mock.patch.dict(os.environ, TEST_ENV_VARS)
 def victim():
     m_client = mock.MagicMock()
-    m_client.consumer_groups.list_by_event_hub.return_value = {MockEventhubClientResponse("group1"), MockEventhubClientResponse("group2")}
+    m_client.consumer_groups.list_by_event_hub.return_value = {MockEventHubClientResponse("group1"), MockEventHubClientResponse("group2")}
     m_client.consumer_groups.create_or_update.return_value = {}
-    m_client.event_hubs.list_by_namespace.return_value = {MockEventhubClientResponse("hub1"), MockEventhubClientResponse("hub2")}
-    m_client.event_hubs.list_authorization_rules.return_value = {MockEventhubClientResponse("rule1"), MockEventhubClientResponse("rule2")}
-    m_client.event_hubs.list_keys.return_value = MockEventhubClientResponse('potatoes1', 'potato-connection')
+    m_client.event_hubs.list_by_namespace.return_value = {MockEventHubClientResponse("hub1"), MockEventHubClientResponse("hub2")}
+    m_client.event_hubs.list_authorization_rules.return_value = {MockEventHubClientResponse("rule1"), MockEventHubClientResponse("rule2")}
+    m_client.event_hubs.list_keys.return_value = MockEventHubClientResponse('potatoes1', 'potato-connection')
 
     with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
-         mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=m_client):
+         mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._get_eventhub_client", return_value=m_client):
 
         conf = {**takeoff_config(), **BASE_CONF}
         conf['azure'].update({"eventhub_naming": "eventhub{env}"})
-        return ConfigureEventhub(ApplicationVersion('DEV', 'local', 'foo'), conf)
+        return ConfigureEventHub(ApplicationVersion('DEV', 'local', 'foo'), conf)
 
 
-class TestConfigureEventhub(object):
+class TestConfigureEventHub(object):
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=None)
+    @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._get_eventhub_client", return_value=None)
     def test_validate_minimal_schema(self, _, __):
         conf = {**takeoff_config(), **BASE_CONF}
         conf['azure'].update({"eventhub_naming": "eventhub{env}"})
 
-        ConfigureEventhub(ApplicationVersion("dev", "v", "branch"), conf)
+        ConfigureEventHub(ApplicationVersion("dev", "v", "branch"), conf)
 
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._get_eventhub_client", return_value=None)
+    @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._get_eventhub_client", return_value=None)
     def test_validate_minimal_schema_missing_key(self, _, __):
-        conf = {**takeoff_config(), 'task': 'createEventhubConsumerGroups'}
+        conf = {**takeoff_config(), 'task': 'createEventHubConsumerGroups'}
         conf['azure'].update({"eventhub_naming": "eventhub{env}"})
 
         with pytest.raises(vol.MultipleInvalid):
-            ConfigureEventhub(ApplicationVersion("dev", "v", "branch"), conf)
+            ConfigureEventHub(ApplicationVersion("dev", "v", "branch"), conf)
 
     def test_get_unique_eventhubs(self, victim):
         groups = [
@@ -111,7 +111,7 @@ class TestConfigureEventhub(object):
     def test_create_producer_policy_with_databricks(self, victim):
         policy = EventHubProducerPolicy('my-entity', True)
 
-        with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventhub.create_databricks_secrets') as databricks_call:
+        with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventHub.create_databricks_secrets') as databricks_call:
             victim._create_producer_policy(policy=policy,
                                            resource_group='my-group',
                                            eventhub_namespace='my-namespace',
@@ -138,7 +138,7 @@ class TestConfigureEventhub(object):
     def test_create_producer_policy_without_databricks(self, victim):
         policy = EventHubProducerPolicy('my-entity', False)
 
-        with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventhub.create_databricks_secrets') as databricks_call:
+        with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventHub.create_databricks_secrets') as databricks_call:
             victim._create_producer_policy(policy=policy,
                                            resource_group='my-group',
                                            eventhub_namespace='my-namespace',
@@ -185,7 +185,7 @@ class TestConfigureEventhub(object):
         assert result == expected_result
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
-    @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._create_producer_policy")
+    @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._create_producer_policy")
     def test_create_eventhub_producer_policies(self, producer_policy_fun, victim):
         policies = [
             EventHubProducerPolicy('entity1', False),
@@ -201,15 +201,15 @@ class TestConfigureEventhub(object):
 
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
-    @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._create_consumer_group")
+    @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._create_consumer_group")
     def test_create_eventhub_consumer_groups(self, consumer_group_fun, victim):
         groups = [
             EventHubConsumerGroup(EventHub('my-group', 'my-namespace', 'entity1'), 'group1', False),
             EventHubConsumerGroup(EventHub('my-group', 'my-namespace', 'entity2'), 'group2', True),
         ]
 
-        with mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._eventhub_exists", return_value=True):
-            with mock.patch("takeoff.azure.configure_eventhub.ConfigureEventhub._group_exists", return_value=False):
+        with mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._eventhub_exists", return_value=True):
+            with mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._group_exists", return_value=False):
                 victim.create_eventhub_consumer_groups(groups)
 
         calls = [mock.call(group=EventHubConsumerGroup(EventHub('my-group', 'my-namespace', 'entity1'), 'group1', False)),
@@ -220,7 +220,7 @@ class TestConfigureEventhub(object):
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_create_eventhub_consumer_group(self, victim):
         group = EventHubConsumerGroup(EventHub('my-rg', 'my-namespace', 'my-entity'), 'my-group', False)
-        with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventhub.create_databricks_secrets') as databricks_call:
+        with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventHub.create_databricks_secrets') as databricks_call:
             victim._create_consumer_group(group)
 
         victim.eventhub_client.consumer_groups.create_or_update.assert_called_with('my-rg',
@@ -233,7 +233,7 @@ class TestConfigureEventhub(object):
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_create_eventhub_consumer_group(self, victim):
         group = EventHubConsumerGroup(EventHub('my-rg', 'my-namespace', 'my-entity'), 'my-group', True)
-        with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventhub.create_databricks_secrets') as databricks_call:
+        with mock.patch('takeoff.azure.configure_eventhub.ConfigureEventHub.create_databricks_secrets') as databricks_call:
             victim._create_consumer_group(group)
 
         victim.eventhub_client.consumer_groups.create_or_update.assert_called_with('my-rg',
