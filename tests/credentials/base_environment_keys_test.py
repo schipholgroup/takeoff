@@ -8,8 +8,8 @@ OS_KEYS = {'AZ_SP_CLIENT_ID_ENV': 'd0aaa0de-c1ef-456f-a025-c5d6341193bb',
            'AZ_SP_CLIENT_SECRET_ENV': '3ceb401f-6462-48da-b42f-b1d1745c2590',
            'CI_PROJECT_NAME': 'test-project',
            'CI_BRANCH_NAME': 'master',
-           'DOCKER_USERNAME': "registryuser",
-           'DOCKER_PASSWORD': "registrypass",
+           'DOCKER_USERNAME': "dockeruser",
+           'DOCKER_PASSWORD': "dockerpass",
            'DOCKER_REGISTRY': "mylittlepony",
            }
 

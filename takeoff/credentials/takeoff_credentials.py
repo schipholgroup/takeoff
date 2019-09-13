@@ -1,10 +1,6 @@
-from takeoff.azure.credentials.keyvault_credentials_provider import (
-    AzureKeyVaultProvider,
-)
+from takeoff.azure.credentials.keyvault_credentials_provider import AzureKeyVaultProvider
 from takeoff.credentials.credential_provider import BaseProvider
-from takeoff.credentials.environment_credentials_provider import (
-    CIEnvironmentCredentials,
-)
+from takeoff.credentials.environment_credentials_provider import CIEnvironmentCredentials
 
 
 class TakeoffCredentials:

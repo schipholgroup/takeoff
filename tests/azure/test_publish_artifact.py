@@ -1,4 +1,5 @@
 import glob
+import os
 import unittest
 
 import azure
@@ -226,6 +227,7 @@ class TestPublishArtifact(unittest.TestCase):
         "takeoff.azure.publish_artifact.ArtifactStore.store_settings",
         return_value="foo",
     )
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "my-app"})
     @mock.patch("takeoff.azure.publish_artifact.get_tag", return_value="a tag")
     def test_publish_to_pypi(self, _, __, ___):
         conf = {
