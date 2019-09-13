@@ -56,7 +56,9 @@ def get_matching_group(find_in: str, pattern: Pattern[str], group: int):
 
     found_groups = len(match.groups())
     if found_groups < group:
-        raise IndexError(f"Couldn't find that many groups, the number of groups found is: {found_groups}")
+        raise IndexError(
+            f"Couldn't find that many groups, the number of groups found is: {found_groups}"
+        )
     return match.groups()[group]
 
 
@@ -90,7 +92,9 @@ def get_full_yaml_filename(filename: str) -> str:
             return concat_filename
         else:
             logger.info(f"Could not find file: {concat_filename}")
-    raise FileNotFoundError(f"Could not find any valid file for base_filename: {filename}")
+    raise FileNotFoundError(
+        f"Could not find any valid file for base_filename: {filename}"
+    )
 
 
 def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
@@ -104,7 +108,9 @@ def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     )
 
 
-def get_main_py_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
+def get_main_py_name(
+    build_definition_name: str, artifact_tag: str, file_ext: str
+) -> str:
     return (
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
         f"main-{artifact_tag.replace('-', '_')}{file_ext}"
@@ -123,7 +129,9 @@ def run_shell_command(command: List[str]) -> int:
     Returns:
         The result of the bash command. 0 for success, >=1 for failure.
     """
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True
+    )
     while True:
         output = process.stdout.readline()
         if output == "" and process.poll() is not None:
@@ -133,7 +141,7 @@ def run_shell_command(command: List[str]) -> int:
     return process.poll()
 
 
-def load_takeoff_plugins(plugin_path_prefix: Optional[str] = "takeoff_"):
+def load_takeoff_plugins(plugin_path_prefix: Optional[str] = "_takeoff_"):
     """https://packaging.python.org/guides/creating-and-discovering-plugins/"""
     return {
         name: importlib.import_module(name)

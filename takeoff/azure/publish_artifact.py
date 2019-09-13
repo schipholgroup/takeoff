@@ -11,7 +11,13 @@ from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.storage_account import BlobStore
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_shell_command
+from takeoff.util import (
+    get_tag,
+    get_whl_name,
+    get_main_py_name,
+    get_jar_name,
+    run_shell_command,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +40,13 @@ SCHEMA = vol.All(
         vol.All(
             {
                 vol.Required("task"): "publish_artifact",
-                vol.Required("language", description="Programming language artifact was built in."): vol.All(
-                    str, vol.In(["python", "scala"])
-                ),
-                vol.Required("target", description="List of targets to publish the artifact to"): vol.All(
-                    [str, vol.In(["cloud_storage", "pypi", "ivy"])]
-                ),
+                vol.Required(
+                    "language",
+                    description="Programming language artifact was built in.",
+                ): vol.All(str, vol.In(["python", "scala"])),
+                vol.Required(
+                    "target", description="List of targets to publish the artifact to"
+                ): vol.All([str, vol.In(["cloud_storage", "pypi", "ivy"])]),
                 vol.Optional(
                     "python_file_path",
                     description=(
@@ -77,7 +84,9 @@ class PublishArtifact(Step):
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
-        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(
+            self.config, self.env
+        )
 
     def run(self):
         if self.config["language"] == "python":
@@ -100,7 +109,9 @@ class PublishArtifact(Step):
         """
         jars = glob.glob("target/scala-2.*/*-assembly-*.jar")
         if len(jars) != 1:
-            raise FileNotFoundError(f"jars found: {jars}; There can (and must) be only one!")
+            raise FileNotFoundError(
+                f"jars found: {jars}; There can (and must) be only one!"
+            )
 
         return jars[0]
 
@@ -116,7 +127,9 @@ class PublishArtifact(Step):
         """
         wheels = glob.glob("dist/*.whl")
         if len(wheels) != 1:
-            raise FileNotFoundError(f"wheels found: {wheels}; There can (and must) be only one!")
+            raise FileNotFoundError(
+                f"wheels found: {wheels}; There can (and must) be only one!"
+            )
         return wheels[0]
 
     def publish_python_package(self):
@@ -125,7 +138,9 @@ class PublishArtifact(Step):
             if target == "pypi":
                 self.publish_to_pypi()
             elif target == "cloud_storage":
-                self.upload_to_cloud_storage(file=self._get_wheel(), file_extension=".whl")
+                self.upload_to_cloud_storage(
+                    file=self._get_wheel(), file_extension=".whl"
+                )
                 # only upload a py file if the path has been specified
                 if "python_file_path" in self.config.keys():
                     self.upload_to_cloud_storage(
@@ -138,7 +153,9 @@ class PublishArtifact(Step):
         """Publishes the jar to all specified targets"""
         for target in self.config["target"]:
             if target == "cloud_storage":
-                self.upload_to_cloud_storage(file=self._get_jar(), file_extension=".jar")
+                self.upload_to_cloud_storage(
+                    file=self._get_jar(), file_extension=".jar"
+                )
             elif target == "ivy":
                 self.publish_to_ivy()
             else:
@@ -153,22 +170,34 @@ class PublishArtifact(Step):
         Raises:
             ValueError if the filetype is not supported.
         """
-        blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
+        blob_service = BlobStore(self.vault_name, self.vault_client).service_client(
+            self.config
+        )
 
         build_definition_name = self.application_name
         if file_extension == ".py":
-            filename = get_main_py_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_main_py_name(
+                build_definition_name, self.env.artifact_tag, file_extension
+            )
         elif file_extension == ".whl":
-            filename = get_whl_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_whl_name(
+                build_definition_name, self.env.artifact_tag, file_extension
+            )
         elif file_extension == ".jar":
-            filename = get_jar_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_jar_name(
+                build_definition_name, self.env.artifact_tag, file_extension
+            )
         else:
             raise ValueError(f"Unsupported filetype extension: {file_extension}")
 
         self._upload_file_to_azure_storage_account(blob_service, file, filename)
 
     def _upload_file_to_azure_storage_account(
-        self, client: BlockBlobService, source: str, destination: str, container: str = None
+        self,
+        client: BlockBlobService,
+        source: str,
+        destination: str,
+        container: str = None,
     ):
         """Upload the file to the specified Azure Storage Account.
 
@@ -180,7 +209,9 @@ class PublishArtifact(Step):
             container: Name of the container the file should be uploaded to
         """
         if not container:
-            container = self.config["azure"]["common"]["artifacts_shared_storage_account_container_name"]
+            container = self.config["azure"]["common"][
+                "artifacts_shared_storage_account_container_name"
+            ]
         logger.info(
             f"""uploading artifact from
              | from ${source}
@@ -188,7 +219,9 @@ class PublishArtifact(Step):
              | in container {container}"""
         )
 
-        client.create_blob_from_path(container_name=container, blob_name=destination, file_path=source)
+        client.create_blob_from_path(
+            container_name=container, blob_name=destination, file_path=source
+        )
 
     def publish_to_pypi(self):
         """Uses `twine` to upload to PyPi"""

@@ -1,4 +1,6 @@
-from takeoff.credentials.environment_credentials_provider import SingleEnviromentCredentialProvider
+from takeoff.credentials.environment_credentials_provider import (
+    SingleEnviromentCredentialProvider,
+)
 from takeoff.util import current_filename
 
 

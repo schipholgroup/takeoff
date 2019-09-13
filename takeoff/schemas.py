@@ -47,8 +47,12 @@ CI_KEYS_SCHEMA = {
             vol.Optional("service_principal"): vol.Schema(
                 {
                     vol.Required("tenant", default="AZURE_TENANTID"): str,
-                    vol.Required("client_id", default="AZURE_KEYVAULT_SP_USERNAME_DEV"): str,
-                    vol.Required("secret", default="AZURE_KEYVAULT_SP_PASSWORD_DEV"): str,
+                    vol.Required(
+                        "client_id", default="AZURE_KEYVAULT_SP_USERNAME_DEV"
+                    ): str,
+                    vol.Required(
+                        "secret", default="AZURE_KEYVAULT_SP_PASSWORD_DEV"
+                    ): str,
                 }
             )
         }
@@ -58,8 +62,12 @@ CI_KEYS_SCHEMA = {
             vol.Optional("service_principal"): vol.Schema(
                 {
                     vol.Required("tenant", default="AZURE_TENANTID"): str,
-                    vol.Required("client_id", default="AZURE_KEYVAULT_SP_USERNAME_TST"): str,
-                    vol.Required("secret", default="AZURE_KEYVAULT_SP_PASSWORD_TST"): str,
+                    vol.Required(
+                        "client_id", default="AZURE_KEYVAULT_SP_USERNAME_TST"
+                    ): str,
+                    vol.Required(
+                        "secret", default="AZURE_KEYVAULT_SP_PASSWORD_TST"
+                    ): str,
                 }
             )
         }
@@ -69,8 +77,12 @@ CI_KEYS_SCHEMA = {
             vol.Optional("service_principal"): vol.Schema(
                 {
                     vol.Required("tenant", default="AZURE_TENANTID"): str,
-                    vol.Required("client_id", default="AZURE_KEYVAULT_SP_USERNAME_ACP"): str,
-                    vol.Required("secret", default="AZURE_KEYVAULT_SP_PASSWORD_ACP"): str,
+                    vol.Required(
+                        "client_id", default="AZURE_KEYVAULT_SP_USERNAME_ACP"
+                    ): str,
+                    vol.Required(
+                        "secret", default="AZURE_KEYVAULT_SP_PASSWORD_ACP"
+                    ): str,
                 }
             )
         }
@@ -80,15 +92,21 @@ CI_KEYS_SCHEMA = {
             vol.Optional("service_principal"): vol.Schema(
                 {
                     vol.Required("tenant", default="AZURE_TENANTID"): str,
-                    vol.Required("client_id", default="AZURE_KEYVAULT_SP_USERNAME_PRD"): str,
-                    vol.Required("secret", default="AZURE_KEYVAULT_SP_PASSWORD_PRD"): str,
+                    vol.Required(
+                        "client_id", default="AZURE_KEYVAULT_SP_USERNAME_PRD"
+                    ): str,
+                    vol.Required(
+                        "secret", default="AZURE_KEYVAULT_SP_PASSWORD_PRD"
+                    ): str,
                 }
             )
         }
     ),
 }
 
-AZURE_COMMON = {vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str}
+AZURE_COMMON = {
+    vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str
+}
 
 AZURE_SCHEMA = {
     vol.Required(
@@ -119,9 +137,9 @@ TAKEOFF_BASE_SCHEMA = vol.Schema(
         vol.Required("environment_keys"): ENVIROMENT_KEYS_SCHEMA,
         vol.Optional("azure"): AZURE_SCHEMA,
         vol.Optional("common"): COMMON_SCHEMA,
-        vol.Optional("plugins", description="A list of absolute paths containing takeoff plugins"): vol.All(
-            [str], vol.Length(min=1)
-        ),
+        vol.Optional(
+            "plugins", description="A list of absolute paths containing takeoff plugins"
+        ): vol.All([str], vol.Length(min=1)),
         **CI_KEYS_SCHEMA,
     },
     extra=vol.ALLOW_EXTRA,

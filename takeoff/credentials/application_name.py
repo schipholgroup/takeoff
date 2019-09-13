@@ -9,7 +9,9 @@ Example:
 This name is used throughout Takeoff anywhere a name is needed.
 """
 
-from takeoff.credentials.environment_credentials_provider import SingleEnviromentCredentialProvider
+from takeoff.credentials.environment_credentials_provider import (
+    SingleEnviromentCredentialProvider,
+)
 from takeoff.util import current_filename
 
 
