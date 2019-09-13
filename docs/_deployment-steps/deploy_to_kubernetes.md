@@ -16,7 +16,6 @@ of any secrets available in your cloud vault that match the application name. Th
 If any of the Kubernetes resources already exists, this step will update them where appropriate.
 
 This task is usually used in combination with [Build Docker Image](build-docker-image) (assuming your Kubernetes config references the image that is built)
-Most often is used in combination with [Deploy artifacts to Azure Blob](upload-to-blob)
 
 ## Deployment
 Add the following task to `deployment.yaml`:
@@ -34,7 +33,7 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | ----- | ----------- 
 | `deployment_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) [Kubernetes deployment config]() | Mandatory value, must be a valid path in the repository |
 | `service_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) [Kubernetes service config]() | Mandatory value, must be a valid path in the repository |
-| `service_ips` (optional) | A list of IP addresses to user per environment. Can be useful if you have a static IP address per environment | A valid IP address |
+| `service_ips` __[optional]__ | A list of IP addresses to user per environment. Can be useful if you have a static IP address per environment | A valid IP address |
 
 
 An example of `my_deployment_config.yml.j2` 
@@ -110,3 +109,27 @@ azure:
       password: "registry-password"
       registry: "registry-server"
 ```
+
+## Examples
+Minimum Takeoff deployment configuration example to deploy a Kubernetes deployment and Service:
+```yaml
+steps:
+- task: deploy_to_kubernetes
+  deployment_config_path: my_deployment_config.yml.j2
+  service_config_path: my_service_config.yml.j2
+```
+
+Extended configuration example, where we have defined a static IP address per environment for the service:
+
+```yaml
+steps:
+- task: deploy_to_kubernetes
+  deployment_config_path: my_deployment_config.yml.j2
+  service_config_path: my_service_config.yml.j2
+  service_ips:
+    dev: "127.0.0.1"
+    acp: "0.0.0.0"
+    prd: "8.8.8.8"
+```
+In this case, depending on what branch of the code Takeoff is running, it will apply a different value for `service_ip` to
+the Kubernetes service yaml Jinja template.
