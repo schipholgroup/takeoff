@@ -1,14 +1,18 @@
+import logging
 import os
 from typing import Dict, List, Union, Tuple
 
 from takeoff.credentials.credential_provider import BaseProvider
 from takeoff.util import inverse_dictionary
 
+logger = logging.getLogger(__name__)
+
 
 class EnvironmentCredentialsMixin(object):
     def _transform_environment_key_to_single_credential(self, name, os_key) -> Dict[str, str]:
-        credentials: Dict[str, str] = self._read_os_variables([os_key])
-        if len(credentials) == 0:
+        try:
+            credentials: Dict[str, str] = self._read_os_variables([os_key])
+        except KeyError:
             raise ValueError(f"Could not find environment variable {os_key}")
         value = list(credentials.values())[0]
         credential_kwargs = {name: value}
@@ -37,7 +41,7 @@ class SingleEnviromentCredentialProvider(BaseProvider, EnvironmentCredentialsMix
     def get_credentials(self, lookup: Union[str, Dict[str, str], Tuple[str, str]]):
         if not isinstance(lookup, tuple):
             raise ValueError("Please provide a tuple")
-        self._transform_environment_key_to_single_credential(*lookup)
+        return self._transform_environment_key_to_single_credential(*lookup)
 
 
 class CIEnvironmentCredentials(BaseProvider, EnvironmentCredentialsMixin):
