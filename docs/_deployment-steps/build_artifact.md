@@ -22,6 +22,7 @@ Add the following task to ``deployment.yaml``:
 {:.table}
 | field | description | values
 | ----- | ----------- |
+| `task` | `"build_artifact"`
 | `build_tool` | The language identifier of your project | One of `python`, `sbt`
 
 ### Building Python wheels

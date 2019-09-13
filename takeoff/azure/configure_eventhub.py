@@ -10,7 +10,7 @@ from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromValue
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from takeoff.azure.credentials.subscription_id import SubscriptionId
-from takeoff.azure.util import get_resource_group_name, get_eventhub_name
+from takeoff.azure.util import get_resource_group_name, get_eventhub_name, get_eventhub_entity_name
 from takeoff.credentials.Secret import Secret
 from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
@@ -25,7 +25,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             vol.Length(min=1),
             [
                 {
-                    vol.Required("eventhub_entity"): str,
+                    vol.Required("eventhub_entity_naming"): str,
                     vol.Required("consumer_group"): str,
                     vol.Optional("create_databricks_secret", default=False): bool,
                 }
@@ -35,7 +35,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             vol.Length(min=1),
             [
                 {
-                    vol.Required("eventhub_entity"): str,
+                    vol.Required("eventhub_entity_naming"): str,
                     vol.Optional("producer_policy"): str,
                     vol.Optional("create_databricks_secret", default=False): bool,
                 }
@@ -81,13 +81,6 @@ class ConnectingString(object):
     eventhub_entity: str
     connection_string: str
 
-    @property
-    def eventhub_entity_without_environment(self):
-        """The eventhub entity is postfixed with the environment, for example: 'eventhubdev'.
-        To have secrets in databricks environment agnostic, we remove that postfix.
-        """
-        return self.eventhub_entity[:-3]
-
 
 class ConfigureEventhub(Step):
     """Configures Eventhub
@@ -122,7 +115,7 @@ class ConfigureEventhub(Step):
                 EventHub(
                     resource_group,
                     eventhub_namespace,
-                    group["eventhub_entity"] + self.env.environment_formatted,
+                    get_eventhub_entity_name(group["eventhub_entity"], self.env),
                 ),
                 group["consumer_group"],
                 group["create_databricks_secret"],
@@ -139,7 +132,11 @@ class ConfigureEventhub(Step):
         self.create_eventhub_producer_policies(policies)
 
     def create_eventhub_producer_policies(self, producer_policies: List[EventHubProducerPolicy]):
-        """Constructs producer policies for all Eventhub entities requested."""
+        """Constructs producer policies for all Eventhub entities requested.
+
+        Args:
+            producer_policies: List of producer policies to create
+        """
         eventhub_namespace = get_eventhub_name(self.config, self.env)
         resource_group = get_resource_group_name(self.config, self.env)
         application_name = ApplicationName().get(self.config)
@@ -151,11 +148,11 @@ class ConfigureEventhub(Step):
             self._create_producer_policy(policy, resource_group, eventhub_namespace, application_name)
 
     def _create_producer_policy(
-            self,
-            policy: EventHubProducerPolicy,
-            resource_group: str,
-            eventhub_namespace: str,
-            application_name: str,
+        self,
+        policy: EventHubProducerPolicy,
+        resource_group: str,
+        eventhub_namespace: str,
+        application_name: str,
     ):
         """Creates given producer policy on Eventhub. Optionally constructs Databricks secret
         containing the connection string for the policy.
@@ -280,7 +277,10 @@ class ConfigureEventhub(Step):
             entities = self._get_unique_eventhubs([group])
             connection_strings = self._create_connection_strings(eventhub_entities=entities)
             secrets = [
-                Secret(f"{_.eventhub_entity_without_environment}-connection-string", _.connection_string)
+                Secret(
+                    f"{get_eventhub_entity_name(_.eventhub_entity, self.env)}-connection-string",
+                    _.connection_string,
+                )
                 for _ in connection_strings
             ]
 
