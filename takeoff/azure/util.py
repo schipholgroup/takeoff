@@ -1,12 +1,10 @@
-from typing import Callable, Union
+from typing import Callable
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.util import load_takeoff_plugins
 
 
-def _get_naming_function(
-    function_name: str, default: Callable[[Union[dict, str], ApplicationVersion], str]
-) -> Callable[[Union[dict, str], ApplicationVersion], str]:
+def _get_naming_function(function_name: str, default: Callable) -> Callable:
     """Find the right naming function
 
     Args:
@@ -110,7 +108,7 @@ def get_eventhub_entity_name(eventhub_entity_naming: str, env: ApplicationVersio
         env: The application version
     """
 
-    def _format(naming: str, env: ApplicationVersion):
+    def _format(naming: str, env: ApplicationVersion) -> str:
         return naming.format(env=env.environment_formatted)
 
     f = _get_naming_function("get_eventhub_entity_name", default=_format)
