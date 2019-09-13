@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Azure Databricks jobs
-date: 2019-01-16
+title: Databricks jobs
+date: 2019-09-13
 summary: Deploy a streaming or batch job to Databricks
 permalink: deployment-step/databricks-job
 category: Databricks
@@ -9,9 +9,12 @@ category: Databricks
 
 # Deploy to Databricks
 
-Deploys a [streaming or batch job to Databricks](https://docs.databricks.com/user-guide/jobs.html). In the process, if there was already an old version of the job running, this will shut down the old job and deploy the new version.
+Deploys a [streaming or batch job to Databricks](https://docs.databricks.com/user-guide/jobs.html). In the process, if there 
+was already an old version of the job running, this will shut down the old job and deploy the new version.
 
-Most often is used in combination with [Deploy artifacts to Azure Blob](upload-to-blob)
+Most often is used in combination with [Deploy artifacts to Azure Blob](upload-to-blob), as this is where the jar or whl and `main.py` file
+will be fetched from. This assumes Databricks has access to Azure blob to fetch these artifacts from. This should be after 
+the [upload_to_blob](upload-to-blob) task if used together
 
 ## Deployment
 Add the following task to ``deployment.yaml``:
@@ -27,7 +30,6 @@ Add the following task to ``deployment.yaml``:
     - eventhubs.consumer_group: "my-consumer-group"
 ```
 
-This should be after the [upload_to_blob](upload-to-blob) task if used together
 
 {:.table}
 | field | description | value
@@ -40,7 +42,10 @@ This should be after the [upload_to_blob](upload-to-blob) task if used together
 | `jobs[].arguments` (optional) | Key value pairs to be passed into your project | defaults to no arguments
 
 
-The `json` file can use any of [supported keys](https://docs.databricks.com/api/latest/jobs.html#request-structure). During deployment the existence of the key `schedule` in the `json` file will determine if the job is streaming or batch. When `schedule` is present it is considered a batch job, otherwise a streaming job. A streaming job will be kicked off immediately upon deployment.
+The `json` file can use any of [supported keys](https://docs.databricks.com/api/latest/jobs.html#request-structure). 
+During deployment the existence of the key `schedule` in the `json` file will determine if the job is streaming or batch. 
+When `schedule` is present it is considered a batch job, otherwise a streaming job. A streaming job will be kicked off 
+immediately upon deployment. A batch job will not.
 
 An example of `databricks.json.pyspark.j2` 
 
