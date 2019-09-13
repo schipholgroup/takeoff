@@ -47,7 +47,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
                 description=(
                     "Naming convention for the resource."
                     "This should include the {env} parameter. For example"
-                    "myeventhub_{env}"
+                    "myeventhub{env}"
                 ),
             ): str
         },
@@ -90,6 +90,14 @@ class ConnectingString(object):
 
 
 class ConfigureEventhub(Step):
+    """Configures Eventhub
+
+    Credentials for an AAD user (username, password) must be available
+    in your cloud vault.
+
+    Optionally propagate the consumer- or producer secrets to Databricks as secret.
+    """
+
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 
@@ -105,6 +113,7 @@ class ConfigureEventhub(Step):
             self._setup_producer_policies()
 
     def _setup_consumer_groups(self):
+        """Constructs consumer groups for all Eventhub entities requested."""
         eventhub_namespace = get_eventhub_name(self.config, self.env)
         resource_group = get_resource_group_name(self.config, self.env)
 
@@ -130,6 +139,7 @@ class ConfigureEventhub(Step):
         self.create_eventhub_producer_policies(policies)
 
     def create_eventhub_producer_policies(self, producer_policies: List[EventHubProducerPolicy]):
+        """Constructs producer policies for all Eventhub entities requested."""
         eventhub_namespace = get_eventhub_name(self.config, self.env)
         resource_group = get_resource_group_name(self.config, self.env)
         application_name = ApplicationName().get(self.config)
@@ -141,12 +151,21 @@ class ConfigureEventhub(Step):
             self._create_producer_policy(policy, resource_group, eventhub_namespace, application_name)
 
     def _create_producer_policy(
-        self,
-        policy: EventHubProducerPolicy,
-        resource_group: str,
-        eventhub_namespace: str,
-        application_name: str,
+            self,
+            policy: EventHubProducerPolicy,
+            resource_group: str,
+            eventhub_namespace: str,
+            application_name: str,
     ):
+        """Creates given producer policy on Eventhub. Optionally constructs Databricks secret
+        containing the connection string for the policy.
+
+        Args:
+            policy: Name of the Eventhub entity
+            resource_group: The name of the resource group
+            eventhub_namespace: The name of the Eventhub namespace
+            application_name: The name of this application
+        """
         common_azure_parameters = {
             "resource_group_name": resource_group,
             "namespace_name": eventhub_namespace,
@@ -170,6 +189,14 @@ class ConfigureEventhub(Step):
             self.create_databricks_secrets([secret], application_name)
 
     def _eventhub_exists(self, group: EventHubConsumerGroup) -> bool:
+        """Checks if the Evenhub entity exists
+
+        Args:
+            group: Object containing names of Eventhub namespace and entity
+
+        Returns:
+            True if the entity exists, otherwise False
+        """
         hubs = list(
             self.eventhub_client.event_hubs.list_by_namespace(
                 group.eventhub.resource_group, group.eventhub.namespace
@@ -182,6 +209,13 @@ class ConfigureEventhub(Step):
         )
 
     def _group_exists(self, group: EventHubConsumerGroup) -> bool:
+        """Checks if the Eventhub consumer group has already been made.
+        Args:
+            group: Object containing names of Eventhub namespace and entity
+
+        Returns:
+            True if the consumer group exists, otherwise False
+        """
         consumer_groups = list(
             self.eventhub_client.consumer_groups.list_by_event_hub(
                 group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name
@@ -197,6 +231,14 @@ class ConfigureEventhub(Step):
         return False
 
     def _authorization_rules_exists(self, hub: EventHub, name: str) -> bool:
+        """Checks if the Eventhub contains given authorization rule.
+        Args:
+            hub: Object containing information on the Eventhub entity
+            name: Name of the authorization rule
+
+        Returns:
+            True if the authorization rule exists, otherwise False
+        """
         logging.info(
             f"Retrieving rules, Resource Group {hub.resource_group}, "
             f"Eventhub Namespace {hub.namespace}, "
@@ -213,11 +255,23 @@ class ConfigureEventhub(Step):
         return False
 
     def create_databricks_secrets(self, secrets: List[Secret], application_name):
+        """Creates a Databricks secret from the provided secrets
+
+        Args:
+            secrets: A list of secrets
+            application_name: The name of this application
+        """
         databricks_secrets = CreateDatabricksSecretFromValue(self.env, self.config)
         databricks_secrets._create_scope(application_name)
         databricks_secrets._add_secrets(application_name, secrets)
 
     def _create_consumer_group(self, group: EventHubConsumerGroup):
+        """Creates given consumer groups on Eventhub. Optionally constructs Databricks secret
+        containing the connection string for the consumer group.
+
+        Args:
+            group: Object containing names of Eventhub namespace and entity
+        """
         self.eventhub_client.consumer_groups.create_or_update(
             group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name, group.consumer_group
         )
@@ -233,6 +287,14 @@ class ConfigureEventhub(Step):
             self.create_databricks_secrets(secrets, application_name)
 
     def _create_connection_strings(self, eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
+        """Creates connections strings for all given Eventhub entities.
+
+        Args:
+            eventhub_entities: List of objects containing Eventhub metadata
+
+        Returns:
+            List of connection strings, one for each requested consumer group.
+        """
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
         for hub in eventhub_entities:
@@ -252,12 +314,25 @@ class ConfigureEventhub(Step):
 
     @staticmethod
     def _get_unique_eventhubs(consumer_groups_to_create: List[EventHubConsumerGroup]) -> Set[EventHub]:
+        """Deduplicated Eventhub consumer groups from the Takeoff config
+
+        Args:
+            consumer_groups_to_create: List of consumer groups to create
+
+        Returns:
+            Unique set of objects containing Evenhub metadata
+        """
         return set(
             EventHub(_.eventhub.resource_group, _.eventhub.namespace, _.eventhub.name)
             for _ in consumer_groups_to_create
         )
 
-    def _get_eventhub_client(self):
+    def _get_eventhub_client(self) -> EventHubManagementClient:
+        """Constructs an Eventhub Management client
+
+        Returns:
+            An Eventhub Management client
+        """
         credentials = ActiveDirectoryUserCredentials(
             vault_name=self.vault_name, vault_client=self.vault_client
         ).credentials(self.config)
@@ -266,6 +341,12 @@ class ConfigureEventhub(Step):
         )
 
     def create_eventhub_consumer_groups(self, consumer_groups: List[EventHubConsumerGroup]):
+        """Creates a new Eventhub consumer group if one does not exist.
+
+        Args:
+            consumer_groups: A list of EventHubConsumerGroup containing the name of the consumer
+            group to create.
+        """
         for group in consumer_groups:
             if self._eventhub_exists(group) and not self._group_exists(group):
                 self._create_consumer_group(group=group)
