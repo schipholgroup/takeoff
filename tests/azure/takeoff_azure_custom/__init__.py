@@ -16,3 +16,7 @@ def get_eventhub_name(*args):
 
 def get_kubernetes_name(*args):
     return "pony"
+
+
+def get_eventhub_entity_name(*args):
+    return "Romeo"

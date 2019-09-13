@@ -76,3 +76,17 @@ def test_get_custom_kubernetes():
     res = victim.get_kubernetes_name({}, ENV)
     assert res == "pony"
     sys.path.remove(paths[0])
+
+
+def test_get_default_eventhub_entity_name():
+    res = victim.get_eventhub_entity_name("Michael{env}", ENV)
+    assert res == "Michaeldev"
+
+
+def test_get_custom_eventhub_entity_name():
+    paths = [os.path.dirname(os.path.realpath(__file__))]
+    add_takeoff_plugin_paths(paths)
+
+    res = victim.get_eventhub_entity_name("", ENV)
+    assert res == "Romeo"
+    sys.path.remove(paths[0])
