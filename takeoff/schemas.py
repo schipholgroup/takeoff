@@ -88,7 +88,7 @@ CI_KEYS_SCHEMA = {
     ),
 }
 
-AZURE_COMMON = {vol.Optional("artifacts_shared_blob_container_name", default="libraries"): str}
+AZURE_COMMON = {vol.Optional("artifacts_shared_storage_account_container_name", default="libraries"): str}
 
 AZURE_SCHEMA = {
     vol.Required(
@@ -112,7 +112,7 @@ AZURE_SCHEMA = {
     vol.Optional("common"): AZURE_COMMON,
 }
 
-COMMON_SCHEMA = {vol.Optional("databricks_library_path"): str}
+COMMON_SCHEMA = {vol.Optional("databricks_fs_libraries_mount_path"): str}
 
 TAKEOFF_BASE_SCHEMA = vol.Schema(
     {
