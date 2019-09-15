@@ -171,4 +171,5 @@ def load_takeoff_plugins():
         for finder, name, ispkg in pkgutil.iter_modules()
         if name.startswith(DEFAULT_TAKEOFF_PLUGIN_PREFIX)
     }
+    logging.info(f"Found Takeoff plugins {plugins}")
     return plugins

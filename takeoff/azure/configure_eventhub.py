@@ -270,7 +270,6 @@ class ConfigureEventHub(Step):
             group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name, group.consumer_group
         )
         if group.create_databricks_secret:
-            application_name = self.application_name
             entities = self._get_unique_eventhubs([group])
             connection_strings = self._create_connection_strings(eventhub_entities=entities)
             secrets = [
@@ -281,7 +280,7 @@ class ConfigureEventHub(Step):
                 for _ in connection_strings
             ]
 
-            self.create_databricks_secrets(secrets, application_name)
+            self.create_databricks_secrets(secrets, self.application_name)
 
     def _create_connection_strings(self, eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
         """Creates connections strings for all given EventHub entities.

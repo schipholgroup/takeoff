@@ -59,19 +59,11 @@ def victim():
         "runs": [{"run_id": "run1"}, {"run_id": "run2"}]
     }
 
-    with mock.patch(
-        "takeoff.azure.deploy_to_databricks.KeyVaultClient.vault_and_client",
-        return_value=(None, None),
-    ), mock.patch(
-        "takeoff.step.ApplicationName.get", return_value="my_app"
-    ), mock.patch(
-        "takeoff.azure.deploy_to_databricks.Databricks",
-        return_value=MockDatabricksClient(),
-    ), mock.patch(
-        "takeoff.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client
-    ), mock.patch(
-        "takeoff.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client
-    ):
+    with mock.patch("takeoff.azure.deploy_to_databricks.KeyVaultClient.vault_and_client", return_value=(None, None)), \
+         mock.patch("takeoff.step.ApplicationName.get", return_value="my_app"), \
+         mock.patch("takeoff.azure.deploy_to_databricks.Databricks", return_value=MockDatabricksClient()), \
+         mock.patch("takeoff.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client), \
+         mock.patch("takeoff.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client):
         conf = {
             **takeoff_config(),
             **BASE_CONF,
@@ -130,22 +122,22 @@ class TestDeployToDatabricks(object):
         )
 
         assert {
-            "name": "app-42",
-            "libraries": [{"whl": "some.whl"}, {"jar": "some.jar"}],
-            "new_cluster": {
-                "spark_version": "4.1.x-scala2.11",
-                "spark_conf": {
-                    "spark.sql.warehouse.dir": "/some_",
-                    "some.setting": "true",
-                },
-                "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/app"}},
-            },
-            "some_int": 5,
-            "spark_python_task": {
-                "python_file": "some.py",
-                "parameters": ["--foo", "bar"],
-            },
-        } == job_config
+                   "name": "app-42",
+                   "libraries": [{"whl": "some.whl"}, {"jar": "some.jar"}],
+                   "new_cluster": {
+                       "spark_version": "4.1.x-scala2.11",
+                       "spark_conf": {
+                           "spark.sql.warehouse.dir": "/some_",
+                           "some.setting": "true",
+                       },
+                       "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/app"}},
+                   },
+                   "some_int": 5,
+                   "spark_python_task": {
+                       "python_file": "some.py",
+                       "parameters": ["--foo", "bar"],
+                   },
+               } == job_config
 
     @mock.patch(
         "takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)
@@ -216,7 +208,7 @@ class TestDeployToDatabricks(object):
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
 
-        res = victim.create_config("job_name", conf, "app_name")
+        res = victim.create_config("job_name", conf)
 
         assert res == {
             "name": "job_name",
@@ -231,7 +223,7 @@ class TestDeployToDatabricks(object):
                 },
             },
             "some_int": 5,
-            "libraries": [{"jar": "/path/app_name/app_name-bar.jar"}],
+            "libraries": [{"jar": "/path/my_app/my_app-bar.jar"}],
             "spark_jar_task": {
                 "main_class_name": "foo.class",
                 "parameters": ["--key", "val", "--key2", "val2"],
@@ -340,9 +332,7 @@ class TestDeployToDatabricks(object):
             },
         }
 
-        res = victim.create_config(
-            "job_with_schedule", conf, "application_with_schedule"
-        )
+        res = victim.create_config("job_with_schedule", conf)
 
         assert res == {
             "new_cluster": {
@@ -371,7 +361,7 @@ class TestDeployToDatabricks(object):
         }
 
     def test_correct_schedule_as_parameter_in_job_config_with_env_schedule(
-        self, victim
+            self, victim
     ):
         conf = {
             "main_name": "some.py",
@@ -386,9 +376,7 @@ class TestDeployToDatabricks(object):
             },
         }
 
-        res = victim.create_config(
-            "job_with_schedule", conf, "application_with_schedule"
-        )
+        res = victim.create_config("job_with_schedule", conf)
 
         assert res == {
             "new_cluster": {
@@ -417,7 +405,7 @@ class TestDeployToDatabricks(object):
         }
 
     def test_correct_schedule_as_parameter_in_job_config_with_env_schedule_for_other_env(
-        self, victim
+            self, victim
     ):
         conf = {
             "main_name": "some.py",
@@ -432,9 +420,7 @@ class TestDeployToDatabricks(object):
             },
         }
 
-        res = victim.create_config(
-            "job_with_schedule", conf, "application_with_schedule"
-        )
+        res = victim.create_config("job_with_schedule", conf)
 
         assert res == {
             "new_cluster": {
@@ -466,9 +452,7 @@ class TestDeployToDatabricks(object):
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
 
-        res = victim.create_config(
-            "job_with_schedule", conf, "application_with_schedule"
-        )
+        res = victim.create_config("job_with_schedule", conf)
 
         assert res == {
             "new_cluster": {
@@ -500,9 +484,7 @@ class TestDeployToDatabricks(object):
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
 
-        res = victim.create_config(
-            "job_with_schedule", conf, "application_with_schedule"
-        )
+        res = victim.create_config("job_with_schedule", conf)
 
         assert res == {
             "new_cluster": {
@@ -558,14 +540,14 @@ class TestDeployToDatabricks(object):
             },
         }
         with mock.patch(
-            "takeoff.azure.deploy_to_databricks.DeployToDatabricks.create_config",
-            return_value=job_config,
+                "takeoff.azure.deploy_to_databricks.DeployToDatabricks.create_config",
+                return_value=job_config,
         ) as config_mock:
             with mock.patch(
-                "takeoff.azure.deploy_to_databricks.DeployToDatabricks.remove_job"
+                    "takeoff.azure.deploy_to_databricks.DeployToDatabricks.remove_job"
             ) as remove_mock:
                 with mock.patch(
-                    "takeoff.azure.deploy_to_databricks.DeployToDatabricks._submit_job"
+                        "takeoff.azure.deploy_to_databricks.DeployToDatabricks._submit_job"
                 ) as submit_mock:
                     victim.deploy_to_databricks()
 
@@ -579,10 +561,10 @@ class TestDeployToDatabricks(object):
     )
     def test_remove_job_batch(self, _, victim):
         with mock.patch(
-            "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
-            return_value=["id1", "id2"],
+                "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
+                return_value=["id1", "id2"],
         ):
-            victim.remove_job("my-job", "my-branch", False)
+            victim.remove_job("my-branch", False)
 
         calls = [mock.call("id1"), mock.call("id2")]
 
@@ -590,13 +572,13 @@ class TestDeployToDatabricks(object):
 
     def test_remove_job_streaming(self, victim):
         with mock.patch(
-            "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
-            return_value=["id1", "id2"],
+                "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
+                return_value=["id1", "id2"],
         ):
             with mock.patch(
-                "takeoff.azure.deploy_to_databricks.DeployToDatabricks._kill_it_with_fire"
+                    "takeoff.azure.deploy_to_databricks.DeployToDatabricks._kill_it_with_fire"
             ) as kill_mock:
-                victim.remove_job("my-job", "my-branch", True)
+                victim.remove_job("my-branch", True)
 
         calls = [mock.call("id1"), mock.call("id2")]
 
@@ -605,10 +587,10 @@ class TestDeployToDatabricks(object):
 
     def test_remove_non_existing_job(self, victim):
         with mock.patch(
-            "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
-            return_value=[],
+                "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
+                return_value=[],
         ):
-            victim.remove_job("my-job", "my-branch", False)
+            victim.remove_job("my-branch", False)
 
         victim.jobs_api.delete_job.assert_not_called()
 

@@ -22,7 +22,7 @@ ENV_VARIABLES = {"HOME": "my_home",
 @pytest.fixture(autouse=True)
 def victim() -> DockerImageBuilder:
     with mock.patch("takeoff.build_docker_image.DockerRegistry.credentials", return_value=CREDS), \
-            mock.patch("takeoff.step.ApplicationName.get", return_value="myapp"):
+         mock.patch("takeoff.step.ApplicationName.get", return_value="myapp"):
         conf = {**takeoff_config(), **BASE_CONF}
         return DockerImageBuilder(ApplicationVersion('DEV', '2.1.0', 'MASTER'), conf)
 
@@ -60,7 +60,7 @@ class TestDockerImageBuilder:
     @mock.patch.dict(os.environ, ENV_VARIABLES)
     @mock.patch("takeoff.build_docker_image.DockerRegistry.credentials", return_value=CREDS)
     def test_validate_minimal_schema(self, _):
-        conf = {**takeoff_config(), **{'task': 'build_docker_image', "credentials": "environment_variables"}}
+        conf = {**takeoff_config(), **BASE_CONF}
 
         res = DockerImageBuilder(ApplicationVersion("dev", "v", "branch"), conf)
         assert res.config['dockerfiles'] == [{"file": "Dockerfile", "postfix": None, "custom_image_name": None}]
@@ -69,13 +69,12 @@ class TestDockerImageBuilder:
     @mock.patch("takeoff.build_docker_image.DockerRegistry.credentials", return_value=CREDS)
     def test_validate_full_schema(self, _):
         conf = {**takeoff_config(),
-                **{'task': 'build_docker_image',
-                   "credentials": "environment_variables",
-                   "dockerfiles": [{
-                       "file": "Dockerfile_custom",
-                       "postfix": "Dave",
-                       "custom_image_name": "Mustaine"
-                   }]}}
+                **BASE_CONF, **{
+                "dockerfiles": [{
+                    "file": "Dockerfile_custom",
+                    "postfix": "Dave",
+                    "custom_image_name": "Mustaine"
+                }]}}
 
         DockerImageBuilder(ApplicationVersion("dev", "v", "branch"), conf)
 

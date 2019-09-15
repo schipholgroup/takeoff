@@ -9,11 +9,11 @@ Example:
 This name is used throughout Takeoff anywhere a name is needed.
 """
 
-from takeoff.credentials.environment_credentials_provider import SingleEnviromentCredentialProvider
+from takeoff.credentials.environment_credentials_provider import SingleEnvironmentCredentialProvider
 from takeoff.util import current_filename
 
 
-class ApplicationName(SingleEnviromentCredentialProvider):
+class ApplicationName(SingleEnvironmentCredentialProvider):
     """Reads environment variables to determine the application name.
 
     Assumes there is an environment variable that exposes the name of the application. Most
@@ -21,5 +21,5 @@ class ApplicationName(SingleEnviromentCredentialProvider):
     """
 
     def get(self) -> str:
-        fn = current_filename(__file__)
-        return self.get_credentials((fn, self.config["environment_keys"][fn]))[fn]
+        filename = current_filename(__file__)
+        return self.get_credentials((filename, self.config["environment_keys"][filename]))[filename]

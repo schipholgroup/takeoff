@@ -24,7 +24,7 @@ class KeyVaultSecrets:
 class KeyVaultCredentialsMixin(object):
     """Collection of Azure KeyVault helper functions"""
 
-    def __init__(self, vault_name, vault_client):
+    def __init__(self, vault_name: str, vault_client: KeyVaultClient):
         self.vault_name = vault_name
         self.vault_client = vault_client
 
@@ -140,8 +140,8 @@ class KeyVaultCredentialsMixin(object):
 
 
 class AzureKeyVaultProvider(BaseProvider, KeyVaultCredentialsMixin):
-    def __init__(self, config, env):
-        super().__init__(config, env)
+    def __init__(self, config, app_version):
+        super().__init__(config, app_version)
         self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
 
     def get_credentials(self, lookup: Union[str, Dict[str, str], Tuple[str, str]]):

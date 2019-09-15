@@ -49,6 +49,14 @@ class DockerFile(object):
 
 
 class DockerImageBuilder(Step):
+    """Builds and pushes one or more docker images.
+
+     Depends on:
+     - Credentials for a docker registry (username, password, registry) must be
+       available in your cloud vault.
+     - The docker-cli must be available
+     """
+
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
         self.docker_credentials = DockerRegistry(config, env).credentials()
@@ -137,7 +145,6 @@ class DockerImageBuilder(Step):
             if df.custom_image_name:
                 repository = df.custom_image_name
 
-            # only append a postfix if there is one provided
             if df.postfix:
                 repository += df.postfix
 

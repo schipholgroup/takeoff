@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.credentials.environment_credentials_provider import EnvironmentCredentialsMixin as victim, SingleEnviromentCredentialProvider, CIEnvironmentCredentials
+from takeoff.credentials.environment_credentials_provider import EnvironmentCredentialsMixin as victim, SingleEnvironmentCredentialProvider, CIEnvironmentCredentials
 
 
 class TestEnvironmentCredentialsMixin:
@@ -31,11 +31,11 @@ class TestEnvironmentCredentialsMixin:
 class TestSingleEnviromentCredentialProvider:
     @mock.patch.dict(os.environ, {"MY_KEY": "Bert", "key2": "bar"})
     def test_get_credentials(self):
-        assert SingleEnviromentCredentialProvider({}, None).get_credentials(("app-name", "MY_KEY")) == {"app-name": "Bert"}
+        assert SingleEnvironmentCredentialProvider({}, None).get_credentials(("app-name", "MY_KEY")) == {"app-name": "Bert"}
 
     def test_get_credentials_invalid_type(self):
         with pytest.raises(ValueError):
-            SingleEnviromentCredentialProvider({}, None).get_credentials("str")
+            SingleEnvironmentCredentialProvider({}, None).get_credentials("str")
 
 
 class TestCIEnvironmentCredentials:
