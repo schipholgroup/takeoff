@@ -24,6 +24,15 @@ class AzureSp(object):
 
 
 def render_string_with_jinja(path: str, params: dict) -> str:
+    """Read a file contents and render the jinja template
+
+    Args:
+        path: path to the file to render
+        params: the values to fill into the jinja template
+
+    Returns:
+        str: rendered jinja template as a string
+    """
     with open(path) as file_:
         template = Template(file_.read())
     rendered = template.render(**params)
@@ -31,6 +40,18 @@ def render_string_with_jinja(path: str, params: dict) -> str:
 
 
 def render_file_with_jinja(path: str, params: dict, parse_function: Callable) -> dict:
+    """Render a file with jinja, with a provided callable.
+
+    The callable is used to parse the file into a python object, once the jinja template has been rendered
+
+    Args:
+        path: path to the file to render
+        params: the values to fill into the jinja template
+        parse_function: the function to use to parse the file into a python object
+
+    Returns:
+        dict: parsed values from the file
+    """
     rendered = render_string_with_jinja(path, params)
     return parse_function(rendered)
 
@@ -46,7 +67,15 @@ def get_short_hash(n: int = 7) -> str:
     return repo.git.rev_parse(sha, short=n)
 
 
-def b64_encode(s: str):
+def b64_encode(s: str) -> str:
+    """Apply base64 encoding to a given string
+
+    Args:
+        s: string to encode
+
+    Returns:
+        str: base64 encoded string
+    """
     return base64.b64encode(s.encode()).decode()
 
 
