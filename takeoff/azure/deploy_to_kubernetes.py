@@ -85,8 +85,8 @@ IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
-        vol.Optional("deployment_config_path", default="kubernetes_config/deployment.yaml.j2"): str,
-        vol.Optional("service_config_path", default="kubernetes_config/service.yaml.j2"): str,
+        vol.Optional("deployment_config_path"): str,
+        vol.Optional("service_config_path"): str,
         vol.Optional("service_ips"): {
             vol.Optional("dev"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
             vol.Optional("acp"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
@@ -127,24 +127,30 @@ class DeployToKubernetes(BaseKubernetes):
 
         # load some Kubernetes config
         application_name = ApplicationName().get(self.config)
-        kubernetes_deployment = render_file_with_jinja(
-            self.config["deployment_config_path"],
-            {
-                "docker_tag": self.env.artifact_tag,
-                "namespace": self.kubernetes_namespace,
-                "application_name": application_name,
-            },
-            yaml.load,
-        )
-        kubernetes_service = render_file_with_jinja(
-            self.config["service_config_path"],
-            {
-                "service_ip": service_ip,
-                "namespace": self.kubernetes_namespace,
-                "application_name": application_name,
-            },
-            yaml.load,
-        )
+
+        kubernetes_deployment = None
+        if self.config["deployment_config_path"]:
+            kubernetes_deployment = render_file_with_jinja(
+                self.config["deployment_config_path"],
+                {
+                    "docker_tag": self.env.artifact_tag,
+                    "namespace": self.kubernetes_namespace,
+                    "application_name": application_name,
+                },
+                yaml.load,
+            )
+
+        kubernetes_service = None
+        if self.config["service_config_path"]:
+            kubernetes_service = render_file_with_jinja(
+                self.config["service_config_path"],
+                {
+                    "service_ip": service_ip,
+                    "namespace": self.kubernetes_namespace,
+                    "application_name": application_name,
+                },
+                yaml.load,
+            )
         logging.info("Deploying ----------------------------------------")
         pprint(kubernetes_deployment)
         pprint(kubernetes_service)
@@ -319,7 +325,8 @@ class DeployToKubernetes(BaseKubernetes):
     def _create_docker_registry_secret(self):
         """Create a secret containing credentials for logging into the defined docker registry
 
-        The credentials are fetched from your keyvault provider, and are inserted into a secret called 'acr-auth'
+        The credentials are fetched from your keyvault provider,
+        and are inserted into a secret called 'acr-auth'
         """
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
         secrets = [
@@ -356,7 +363,7 @@ class DeployToKubernetes(BaseKubernetes):
         secrets.append(Secret("build-version", self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
 
-    def deploy_to_kubernetes(self, deployment_config: dict, service_config: dict):
+    def deploy_to_kubernetes(self, deployment_config: Union[dict, None], service_config: Union[dict, None]):
         """Run a full deployment to Kubernetes, given configuration.
 
         Args:
@@ -378,11 +385,13 @@ class DeployToKubernetes(BaseKubernetes):
         self._create_docker_registry_secret()
         logger.info("Docker registry secret available")
 
-        self._create_or_patch_deployment(deployment_config, self.kubernetes_namespace)
-        logger.info("Deployment available")
+        if deployment_config:
+            self._create_or_patch_deployment(deployment_config, self.kubernetes_namespace)
+            logger.info("Deployment available")
 
-        self._create_or_patch_service(service_config, self.kubernetes_namespace)
-        logger.info("Service available")
+        if service_config:
+            self._create_or_patch_service(service_config, self.kubernetes_namespace)
+            logger.info("Service available")
 
     @property
     def kubernetes_namespace(self):
