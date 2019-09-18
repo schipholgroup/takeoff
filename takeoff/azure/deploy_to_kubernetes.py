@@ -129,7 +129,7 @@ class DeployToKubernetes(BaseKubernetes):
         application_name = ApplicationName().get(self.config)
 
         kubernetes_deployment = None
-        if self.config["deployment_config_path"]:
+        if "deployment_config_path" in self.config:
             kubernetes_deployment = render_file_with_jinja(
                 self.config["deployment_config_path"],
                 {
@@ -141,7 +141,7 @@ class DeployToKubernetes(BaseKubernetes):
             )
 
         kubernetes_service = None
-        if self.config["service_config_path"]:
+        if "service_config_path" in self.config:
             kubernetes_service = render_file_with_jinja(
                 self.config["service_config_path"],
                 {
@@ -374,6 +374,9 @@ class DeployToKubernetes(BaseKubernetes):
 
         # load the kubeconfig we just fetched
         kubernetes.config.load_kube_config()
+        kubeconfig_dir = os.path.expanduser("~/.kube")
+        test = open(f'{kubeconfig_dir}/config', 'r')
+        print(test.read())
         logger.info("Kubeconfig loaded")
 
         self._create_namespace_if_not_exists(self.kubernetes_namespace)
