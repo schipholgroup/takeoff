@@ -129,7 +129,7 @@ class DeployToKubernetes(BaseKubernetes):
         application_name = ApplicationName().get(self.config)
 
         kubernetes_deployment = None
-        if self.config["deployment_config_path"]:
+        if "deployment_config_path" in self.config:
             kubernetes_deployment = render_file_with_jinja(
                 self.config["deployment_config_path"],
                 {
@@ -141,7 +141,7 @@ class DeployToKubernetes(BaseKubernetes):
             )
 
         kubernetes_service = None
-        if self.config["service_config_path"]:
+        if "service_config_path" in self.config:
             kubernetes_service = render_file_with_jinja(
                 self.config["service_config_path"],
                 {
