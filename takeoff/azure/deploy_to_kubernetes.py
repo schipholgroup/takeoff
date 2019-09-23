@@ -1,16 +1,15 @@
 import json
 import logging
 import os
-from pprint import pprint
 from tempfile import NamedTemporaryFile
-from typing import Callable, List, Union
+from typing import Callable, List
 
 import kubernetes
 import voluptuous as vol
 import yaml
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
 from azure.mgmt.containerservice.models import CredentialResults
-from kubernetes.client import CoreV1Api, ExtensionsV1beta1Api
+from kubernetes.client import CoreV1Api
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
@@ -86,14 +85,8 @@ IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
-        vol.Optional("kubernetes_config_path"): str,
-        vol.Optional("deployment_config_path"): str,
-        vol.Optional("service_config_path"): str,
-        vol.Optional("service_ips"): {
-            vol.Optional("dev"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
-            vol.Optional("acp"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
-            vol.Optional("prd"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
-        },
+        vol.Required("kubernetes_config_path"): str,
+        vol.Optional("values"): dict,
         "azure": {
             vol.Required(
                 "kubernetes_naming",
@@ -116,51 +109,17 @@ class DeployToKubernetes(BaseKubernetes):
         super().__init__(env, config)
 
         self.core_v1_api = CoreV1Api()
-        self.extensions_v1_beta_api = kubernetes.client.ExtensionsV1beta1Api()
 
     def schema(self) -> vol.Schema:
         return DEPLOY_SCHEMA
 
     def run(self):
-        # get the ip address for this environment
-        service_ip = None
-        if "service_ips" in self.config:
-            service_ip = self.config["service_ips"][self.env.environment.lower()]
-
         # load some Kubernetes config
         application_name = ApplicationName().get(self.config)
 
-        kubernetes_deployment = None
-        if "deployment_config_path" in self.config:
-            kubernetes_deployment = render_file_with_jinja(
-                self.config["deployment_config_path"],
-                {
-                    "docker_tag": self.env.artifact_tag,
-                    "namespace": self.kubernetes_namespace,
-                    "application_name": application_name,
-                },
-                yaml.load,
-            )
-
-        kubernetes_service = None
-        if "service_config_path" in self.config:
-            kubernetes_service = render_file_with_jinja(
-                self.config["service_config_path"],
-                {
-                    "service_ip": service_ip,
-                    "namespace": self.kubernetes_namespace,
-                    "application_name": application_name,
-                },
-                yaml.load,
-            )
-        logging.info("Deploying ----------------------------------------")
-        pprint(kubernetes_deployment)
-        pprint(kubernetes_service)
-        logging.info("--------------------------------------------------")
-
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
-        self.deploy_to_kubernetes(self.config['kubernetes_config_path'], application_name) # deployment_config=kubernetes_deployment, service_config=kubernetes_service)
+        self.deploy_to_kubernetes(self.config['kubernetes_config_path'], application_name)
 
     @staticmethod
     def is_needle_in_haystack(needle: str, haystack: dict) -> bool:
@@ -197,36 +156,9 @@ class DeployToKubernetes(BaseKubernetes):
         existing_services = kubernetes_resource_listing_function(namespace=namespace).to_dict()
         return self.is_needle_in_haystack(resource_name, existing_services)
 
-    def _kubernetes_namespace_exists(self, namespace: str):
-        """Check if a Kubernetes namespace exists on the cluster
-
-        Args:
-            namespace: name of the namespace for which to check existence
-
-        Returns:
-            bool: True if the namespace exists, False otherwise
-        """
-        existing_namespaces = self.core_v1_api.list_namespace().to_dict()
-        return self.is_needle_in_haystack(namespace, existing_namespaces)
-
-    def _create_namespace_if_not_exists(self, kubernetes_namespace: str):
-        """Create a given namespace if it does not yet exist on the cluster
-
-        If the namespace does already exist, this function does nothing
-
-        Args:
-            kubernetes_namespace: namespace to create if it doesn't exist
-        """
-        if not self._kubernetes_namespace_exists(kubernetes_namespace):
-            logger.info(
-                f"No Kubernetes namespace for this application. Creating namespace: {kubernetes_namespace}"
-            )
-            namespace_to_create = kubernetes.client.V1Namespace(metadata={"name": kubernetes_namespace})
-            self.core_v1_api.create_namespace(body=namespace_to_create)
-
     def _create_or_patch_resource(
         self,
-        client: Union[CoreV1Api, ExtensionsV1beta1Api],
+        client: CoreV1Api,
         resource_type: str,
         name: str,
         namespace: str,
@@ -261,37 +193,6 @@ class DeployToKubernetes(BaseKubernetes):
                 f"No existing Kubernetes resource found, creating resource: {name} in namespace {namespace}"
             )
             create_function(namespace=namespace, body=resource_config)
-
-    def _create_or_patch_service(self, service_config: dict, kubernetes_namespace: str):
-        """Create or patch a Kubernetes service
-
-        Args:
-            service_config: service configuration to use. Should contain [metadata][name]
-            kubernetes_namespace: namespace to deploy service in
-        """
-        service_name = service_config["metadata"]["name"]
-        self._create_or_patch_resource(
-            client=self.core_v1_api,
-            resource_type="service",
-            name=service_name,
-            namespace=kubernetes_namespace,
-            resource_config=service_config,
-        )
-
-    def _create_or_patch_deployment(self, deployment: dict, kubernetes_namespace: str):
-        """Create or patch a Kubernetes deployment
-
-        Args:
-            deployment: deployment configuration to use. Name will be application name
-            kubernetes_namespace: namespace to deploy service in
-        """
-        self._create_or_patch_resource(
-            client=self.extensions_v1_beta_api,
-            resource_type="deployment",
-            name=ApplicationName().get(self.config),
-            namespace=kubernetes_namespace,
-            resource_config=deployment,
-        )
 
     def _create_or_patch_secrets(
         self, secrets: List[Secret], kubernetes_namespace: str, name: str = None, secret_type: str = "Opaque"
@@ -369,8 +270,8 @@ class DeployToKubernetes(BaseKubernetes):
         """Run a full deployment to Kubernetes, given configuration.
 
         Args:
-            kubernetes_config_path: path to Kubernetes configuration to use
-            application_name: current application name
+            deployment_config: Kubernetes deployment configuration to use
+            service_config: Kubernetes service ocnfiguration to use
         """
         self._authenticate_with_kubernetes()
 
@@ -381,9 +282,16 @@ class DeployToKubernetes(BaseKubernetes):
                 "application_name": application_name,
             },
             yaml.load)
+
         kubernetes_config_path = NamedTemporaryFile(delete=False, mode='w')
         kubernetes_config_path.write(json.dumps(kubernetes_config))
         kubernetes_config_path.close()
+
+        self._create_keyvault_secrets()
+        logger.info("Keyvault secrets available")
+
+        self._create_docker_registry_secret()
+        logger.info("Docker registry secret available")
 
         cmd = ["kubectl",
                "config",
