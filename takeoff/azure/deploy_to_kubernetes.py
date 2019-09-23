@@ -119,7 +119,7 @@ class DeployToKubernetes(BaseKubernetes):
 
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
-        self.deploy_to_kubernetes(self.config['kubernetes_config_path'], application_name)
+        self.deploy_to_kubernetes(self.config["kubernetes_config_path"], application_name)
 
     @staticmethod
     def is_needle_in_haystack(needle: str, haystack: dict) -> bool:
@@ -157,12 +157,7 @@ class DeployToKubernetes(BaseKubernetes):
         return self.is_needle_in_haystack(resource_name, existing_services)
 
     def _create_or_patch_resource(
-        self,
-        client: CoreV1Api,
-        resource_type: str,
-        name: str,
-        namespace: str,
-        resource_config: dict,
+        self, client: CoreV1Api, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         """Create or patch a given Kubernetes resource
 
@@ -277,15 +272,13 @@ class DeployToKubernetes(BaseKubernetes):
 
         kubernetes_config = render_file_with_jinja(
             kubernetes_config_path,
-            {
-                "docker_tag": self.env.artifact_tag,
-                "application_name": application_name,
-            },
-            yaml.load)
+            {"docker_tag": self.env.artifact_tag, "application_name": application_name},
+            yaml.load,
+        )
 
-        kubernetes_config_path = NamedTemporaryFile(delete=False, mode='w')
-        kubernetes_config_path.write(json.dumps(kubernetes_config))
-        kubernetes_config_path.close()
+        rendered_kubernetes_config_path = NamedTemporaryFile(delete=False, mode="w")
+        rendered_kubernetes_config_path.write(json.dumps(kubernetes_config))
+        rendered_kubernetes_config_path.close()
 
         self._create_keyvault_secrets()
         logger.info("Keyvault secrets available")
@@ -293,24 +286,12 @@ class DeployToKubernetes(BaseKubernetes):
         self._create_docker_registry_secret()
         logger.info("Docker registry secret available")
 
-        cmd = ["kubectl",
-               "config",
-               "set-context",
-               self.cluster_name,
-               "--namespace",
-               "default"]
+        cmd = ["kubectl", "config", "set-context", self.cluster_name, "--namespace", "default"]
         run_shell_command(cmd)
 
-        cmd = [
-            "kubectl",
-            "replace",
-            "--force",
-            "-f",
-            kubernetes_config_path.name
-        ]
+        cmd = ["kubectl", "replace", "--force", "-f", rendered_kubernetes_config_path.name]
         print(cmd)
         print(run_shell_command(cmd))
-
 
     @property
     def kubernetes_namespace(self):
