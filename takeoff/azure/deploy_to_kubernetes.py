@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from pprint import pprint
+from tempfile import NamedTemporaryFile
 from typing import Callable, List, Union
 
 import kubernetes
@@ -21,7 +22,7 @@ from takeoff.credentials.Secret import Secret
 from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import render_file_with_jinja, b64_encode
+from takeoff.util import render_file_with_jinja, b64_encode, run_shell_command
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +86,7 @@ IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
+        vol.Optional("kubernetes_config_path"): str,
         vol.Optional("deployment_config_path"): str,
         vol.Optional("service_config_path"): str,
         vol.Optional("service_ips"): {
@@ -158,7 +160,7 @@ class DeployToKubernetes(BaseKubernetes):
 
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
-        self.deploy_to_kubernetes(deployment_config=kubernetes_deployment, service_config=kubernetes_service)
+        self.deploy_to_kubernetes(self.config['kubernetes_config_path'], application_name) # deployment_config=kubernetes_deployment, service_config=kubernetes_service)
 
     @staticmethod
     def is_needle_in_haystack(needle: str, haystack: dict) -> bool:
@@ -363,35 +365,44 @@ class DeployToKubernetes(BaseKubernetes):
         secrets.append(Secret("build-version", self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
 
-    def deploy_to_kubernetes(self, deployment_config: Union[dict, None], service_config: Union[dict, None]):
+    def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
         """Run a full deployment to Kubernetes, given configuration.
 
         Args:
-            deployment_config: Kubernetes deployment configuration to use
-            service_config: Kubernetes service ocnfiguration to use
+            kubernetes_config_path: path to Kubernetes configuration to use
+            application_name: current application name
         """
         self._authenticate_with_kubernetes()
 
-        # load the kubeconfig we just fetched
-        kubernetes.config.load_kube_config()
-        logger.info("Kubeconfig loaded")
+        kubernetes_config = render_file_with_jinja(
+            kubernetes_config_path,
+            {
+                "docker_tag": self.env.artifact_tag,
+                "application_name": application_name,
+            },
+            yaml.load)
+        kubernetes_config_path = NamedTemporaryFile(delete=False, mode='w')
+        kubernetes_config_path.write(json.dumps(kubernetes_config))
+        kubernetes_config_path.close()
 
-        self._create_namespace_if_not_exists(self.kubernetes_namespace)
-        logger.info("Namespace available")
+        cmd = ["kubectl",
+               "config",
+               "set-context",
+               self.cluster_name,
+               "--namespace",
+               "default"]
+        run_shell_command(cmd)
 
-        self._create_keyvault_secrets()
-        logger.info("Keyvault secrets available")
+        cmd = [
+            "kubectl",
+            "replace",
+            "--force",
+            "-f",
+            kubernetes_config_path.name
+        ]
+        print(cmd)
+        print(run_shell_command(cmd))
 
-        self._create_docker_registry_secret()
-        logger.info("Docker registry secret available")
-
-        if deployment_config:
-            self._create_or_patch_deployment(deployment_config, self.kubernetes_namespace)
-            logger.info("Deployment available")
-
-        if service_config:
-            self._create_or_patch_service(service_config, self.kubernetes_namespace)
-            logger.info("Service available")
 
     @property
     def kubernetes_namespace(self):
