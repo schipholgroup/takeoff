@@ -226,12 +226,30 @@ class TestDeployToKubernetes(object):
             'type': 'kubernetes.io/dockerconfigjson'
         }
 
-        with mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry", return_value=RegistryCredentials('my-registry', 'my-username', 'my-password')):
+        with mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry",
+                        return_value=RegistryCredentials('my-registry', 'my-username', 'my-password')):
             with mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock:
                 with mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
                     victim._create_docker_registry_secret()
         create_mock.assert_called_once_with(body=expected_body, namespace='my_little_pony')
         patch_mock.assert_not_called()
+
+    def test_render_kubernetes_config(self, victim):
+        result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony')
+
+        expected_result = {
+            'apiVersion': 'extensions/v1beta1',
+            'kind': 'Deployment',
+            'metadata': {'name': 'my-app'},
+            'spec': {'replicas': 2,
+                     'template': {'metadata': {'labels': {'app': 'my-app'}},
+                                  'spec': {'containers': [{'image': 'my-image:v',
+                                                           'imagePullPolicy': 'Always',
+                                                           'name': 'my-app',
+                                                           'ports': [{'containerPort': 8080}]}],
+                                           'imagePullSecrets': [{'name': 'acr-auth'}]}}}}
+
+        assert result == expected_result
 
 
 @dataclass(frozen=True)

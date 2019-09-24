@@ -19,9 +19,9 @@ jobs = [
     JobConfig("tim-postfix-SNAPSHOT", 7),
 ]
 
-streaming_job_config = "tests/azure/test_job_config.json.j2"
-batch_job_config = "tests/azure/test_job_config_scheduled.json.j2"
-dynamic_schedule_job_config = "tests/azure/test_job_config_schedule_dynamically.json.j2"
+streaming_job_config = "tests/azure/files/test_job_config.json.j2"
+batch_job_config = "tests/azure/files/test_job_config_scheduled.json.j2"
+dynamic_schedule_job_config = "tests/azure/files/test_job_config_schedule_dynamically.json.j2"
 
 BASE_CONF = {'task': 'deploy_to_databricks', 'jobs': [{"main_name": "Dave"}]}
 TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
@@ -160,7 +160,7 @@ class TestDeployToDatabricks(object):
     def test_yaml_to_databricks_json(self, _, __, victim):
         conf = {
             "main_name": "foo.class",
-            "config_file": "tests/azure/test_databricks.json.j2",
+            "config_file": "tests/azure/files/test_databricks.json.j2",
             "lang": "scala",
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }

@@ -86,7 +86,6 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
         vol.Required("kubernetes_config_path"): str,
-        vol.Optional("values"): dict,
         "azure": {
             vol.Required(
                 "kubernetes_naming",
@@ -261,6 +260,21 @@ class DeployToKubernetes(BaseKubernetes):
         secrets.append(Secret("build-version", self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
 
+    def _render_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> dict:
+        kubernetes_config = render_file_with_jinja(
+            kubernetes_config_path,
+            {"docker_tag": self.env.artifact_tag, "application_name": application_name},
+            yaml.load,
+        )
+        return kubernetes_config
+
+    def _write_kubernetes_config(self, kubernetes_config: dict) -> str:
+        rendered_kubernetes_config_path = NamedTemporaryFile(delete=False, mode="w")
+        rendered_kubernetes_config_path.write(json.dumps(kubernetes_config))
+        rendered_kubernetes_config_path.close()
+
+        return rendered_kubernetes_config_path.name
+
     def _render_and_write_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
@@ -271,17 +285,8 @@ class DeployToKubernetes(BaseKubernetes):
         Returns:
             The path to the temporary file where the rendered kubernetes configuration is stored.
         """
-        kubernetes_config = render_file_with_jinja(
-            kubernetes_config_path,
-            {"docker_tag": self.env.artifact_tag, "application_name": application_name},
-            yaml.load,
-        )
-
-        rendered_kubernetes_config_path = NamedTemporaryFile(delete=False, mode="w")
-        rendered_kubernetes_config_path.write(json.dumps(kubernetes_config))
-        rendered_kubernetes_config_path.close()
-
-        return rendered_kubernetes_config_path.name
+        kubernetes_config = self._render_kubernetes_config(kubernetes_config_path, application_name)
+        return self._write_kubernetes_config(kubernetes_config)
 
     def _create_from_kubernetes_config_file(self, file_path: str):
         """
@@ -308,8 +313,9 @@ class DeployToKubernetes(BaseKubernetes):
         """
         self._authenticate_with_kubernetes()
 
-        rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(kubernetes_config_path,
-                                                                                   application_name)
+        rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
+            kubernetes_config_path, application_name
+        )
         logger.info("Kubernetes config rendered")
 
         self._create_keyvault_secrets()
