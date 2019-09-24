@@ -261,15 +261,16 @@ class DeployToKubernetes(BaseKubernetes):
         secrets.append(Secret("build-version", self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
 
-    def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
-        """Run a full deployment to Kubernetes, given configuration.
-
-        Args:
-            deployment_config: Kubernetes deployment configuration to use
-            service_config: Kubernetes service ocnfiguration to use
+    def _render_and_write_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> str:
         """
-        self._authenticate_with_kubernetes()
+        Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
+        Args:
+            kubernetes_config_path: The raw, jinja-templated kubernetes configuration path.
+            application_name: Current application name
 
+        Returns:
+            The path to the temporary file where the rendered kubernetes configuration is stored.
+        """
         kubernetes_config = render_file_with_jinja(
             kubernetes_config_path,
             {"docker_tag": self.env.artifact_tag, "application_name": application_name},
@@ -280,18 +281,45 @@ class DeployToKubernetes(BaseKubernetes):
         rendered_kubernetes_config_path.write(json.dumps(kubernetes_config))
         rendered_kubernetes_config_path.close()
 
+        return rendered_kubernetes_config_path.name
+
+    def _create_from_kubernetes_config_file(self, file_path: str):
+        """
+        Create/Update the kubernetes resources based on the provided file_path to the configuration. This
+        function assumes that the file does NOT contain any Jinja-templated variables anymore (i.e. it's
+        been rendered)
+
+        Args:
+            file_path: Path to the kubernetes configuration
+        """
+        # workaround for some CI runners that override the default k8s namespace
+        cmd = ["kubectl", "config", "set-context", self.cluster_name, "--namespace", "default"]
+        run_shell_command(cmd)
+
+        cmd = ["kubectl", "replace", "--force", "-f", file_path]
+        run_shell_command(cmd)
+
+    def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
+        """Run a full deployment to Kubernetes, given configuration.
+
+        Args:
+            kubernetes_config_path: path to the jinja-templated kubernetes config
+            application_name: current application name
+        """
+        self._authenticate_with_kubernetes()
+
+        rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(kubernetes_config_path,
+                                                                                   application_name)
+        logger.info("Kubernetes config rendered")
+
         self._create_keyvault_secrets()
         logger.info("Keyvault secrets available")
 
         self._create_docker_registry_secret()
         logger.info("Docker registry secret available")
 
-        cmd = ["kubectl", "config", "set-context", self.cluster_name, "--namespace", "default"]
-        run_shell_command(cmd)
-
-        cmd = ["kubectl", "replace", "--force", "-f", rendered_kubernetes_config_path.name]
-        print(cmd)
-        print(run_shell_command(cmd))
+        self._create_from_kubernetes_config_file(rendered_kubernetes_config_path)
+        logger.info("Applied rendered Kubernetes config")
 
     @property
     def kubernetes_namespace(self):
