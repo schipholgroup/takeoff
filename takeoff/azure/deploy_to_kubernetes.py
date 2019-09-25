@@ -288,7 +288,7 @@ class DeployToKubernetes(BaseKubernetes):
         kubernetes_config = self._render_kubernetes_config(kubernetes_config_path, application_name)
         return self._write_kubernetes_config(kubernetes_config)
 
-    def _create_from_kubernetes_config_file(self, file_path: str):
+    def _apply_kubernetes_config_file(self, file_path: str):
         """
         Create/Update the kubernetes resources based on the provided file_path to the configuration. This
         function assumes that the file does NOT contain any Jinja-templated variables anymore (i.e. it's
@@ -324,7 +324,7 @@ class DeployToKubernetes(BaseKubernetes):
         self._create_docker_registry_secret()
         logger.info("Docker registry secret available")
 
-        self._create_from_kubernetes_config_file(rendered_kubernetes_config_path)
+        self._apply_kubernetes_config_file(rendered_kubernetes_config_path)
         logger.info("Applied rendered Kubernetes config")
 
     @property
