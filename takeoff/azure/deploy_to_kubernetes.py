@@ -313,6 +313,10 @@ class DeployToKubernetes(BaseKubernetes):
         """
         self._authenticate_with_kubernetes()
 
+        # load the kubeconfig we just fetched
+        kubernetes.config.load_kube_config()
+        logger.info("Kubeconfig loaded")
+
         rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
             kubernetes_config_path, application_name
         )
