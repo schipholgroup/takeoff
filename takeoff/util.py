@@ -5,7 +5,7 @@ import os
 import pkgutil
 import subprocess
 from dataclasses import dataclass
-from typing import Callable, List, Pattern, Union
+from typing import Callable, List, Pattern, Union, Tuple
 
 from git import Repo
 from jinja2 import Template
@@ -144,7 +144,7 @@ def get_jar_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"
 
 
-def run_shell_command(command: List[str]) -> (int, str):
+def run_shell_command(command: List[str]) -> Tuple[int, List]:
     """Runs a shell command using `subprocess.Popen`
 
     In addition to running any bash command, the output of process is streamed directly to the stdout.

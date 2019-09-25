@@ -302,12 +302,7 @@ class DeployToKubernetes(BaseKubernetes):
         for line in output:
             if "unchanged" in line:
                 resource = line.split(" ")[0]
-                cmd = [
-                    "kubectl",
-                    "rollout",
-                    "restart",
-                    resource
-                ]
+                cmd = ["kubectl", "rollout", "restart", resource]
                 _, output = run_shell_command(cmd)
                 logger.info(f"Restarted: {resource}")
 
@@ -327,7 +322,7 @@ class DeployToKubernetes(BaseKubernetes):
         cmd = ["kubectl", "apply", "-f", file_path]
         _, response = run_shell_command(cmd)
 
-        if self.config['restart_unchanged_resources']:
+        if self.config["restart_unchanged_resources"]:
             self._restart_unchanged_resources(response)
 
     def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):

@@ -13,10 +13,10 @@ Deploy a Kubernetes resource, as well as optionally a Kubernetes secret containi
  secret containing the Docker registry credentials is always called "acr-auth". Also can create a Kubernetes secret
 of any secrets available in your cloud vault that match the application name. This Kubernetes secret will be given the name: 
 {application_name}-secret. All cloud vault secrets will be stored in a key-value form in this single Kubernetes Secret.
-If any of the Kubernetes resources already exists, this step will update them where appropriate. An update is done forcefully, using
-replace. This means that the existing pod is removed, and a new one replaces it with the correct config. The reason for this behaviour
-is that it makes it possible to update a resource on Kubernetes with a new image, even if that image has the same tag as previously 
-configured. 
+If any of the Kubernetes resources already exists, this step will update them where appropriate (similar to what the 
+`kubectl apply -f` command will do. In some cases, you may wish to restart a Kubernetes resource, even if the Kubernetes 
+yaml configuration has not changed. An example of this is if you build a new Docker image, with the same tag. The default Kubernetes 
+behaviour is to not restart the resource. Takeoff allows you to override this behaviour if so desired. 
 
 This task is usually used in combination with [Build Docker Image](build-docker-image) (assuming your Kubernetes config references the image that is built)
 
@@ -36,6 +36,8 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | `kubernetes_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) Kubernetes deployment config | Mandatory value, must be a valid path in the repository |
 | `create_keyvault_secrets` | Whether or not to create Kubernetes secrets for each keyvault secret that has `application-name-` as prefix. | Boolean, defaults to True. |
 | `create_image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Boolean, defaults to True. |
+| `restart_unchanged_resources` | Whether or not to restart unchanged Kubernetes resources. Takeoff will attempt to restart all unchanged resources, which may result in error messages in the 
+ logs, as not all resources are 'restartable' | Boolean, defaults to False. | 
 
 
 An example of `kubernetes_config_path.yml.j2` 
@@ -109,7 +111,8 @@ steps:
   kubernetes_config_path: my_kubernetes_config.yml.j2
 ```
 
-Extended configuration example, where we have explicitly disabled the creation of kubernetes secrets by Takeoff:
+Extended configuration example, where we have explicitly disabled the creation of kubernetes secrets by Takeoff. In this case,
+we also want to restart the resources, even if their Kubernetes yaml config is unchanged.
 
 ```yaml
 steps:
@@ -117,4 +120,5 @@ steps:
   kubernetes_config_path: my_kubernetes_config.yml.j2
   create_keyvault_secrets: false
   create_image_pull_secret: false
+  restart_unchanged_resources: true
 ```
