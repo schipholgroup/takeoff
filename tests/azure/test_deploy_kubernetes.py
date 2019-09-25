@@ -46,7 +46,7 @@ class RegistryCredentials:
         return self
 
 
-BASE_CONF = {'task': 'deploy_to_kubernetes'}
+BASE_CONF = {'task': 'deploy_to_kubernetes', 'kubernetes_config_path': 'kubernetes_config/k8s.yml.j2'}
 
 
 @pytest.fixture(scope="session")
@@ -69,14 +69,6 @@ class TestDeployToKubernetes(object):
         res.config["service_config_path"] = "kubernetes_config/service.yaml.j2"
         res.config['service'] = []
 
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    def test_validate_schema_invalid_ip(self, _):
-        conf = {**takeoff_config(), **BASE_CONF, "service_ips": {"dev": "Dave"}}
-        conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
-
-        with pytest.raises(vol.MultipleInvalid):
-            DeployToKubernetes(ApplicationVersion("dev", "v", "branch"), conf)
-
     def test_is_needle_in_haystack(self):
         haystack = KubernetesResponse("hello").to_dict()
         assert DeployToKubernetes.is_needle_in_haystack('something', haystack)
@@ -90,14 +82,6 @@ class TestDeployToKubernetes(object):
 
     def test_kubernetes_resource_does_not_exist(self, victim):
         assert not victim._kubernetes_resource_exists("unfindable", "", KubernetesResponse)
-
-    @mock.patch("kubernetes.client.CoreV1Api.list_namespace", return_value=KubernetesResponse("hello"))
-    def test_kubernetes_namespace_exists(self, _, victim):
-        assert victim._kubernetes_namespace_exists("something")
-
-    @mock.patch("kubernetes.client.CoreV1Api.list_namespace", return_value=KubernetesResponse("hello"))
-    def test_kubernetes_namespace_does_not_exist(self, _, victim):
-        assert not victim._kubernetes_namespace_exists("unfindable")
 
     @mock.patch.object(DeployToKubernetes, "is_needle_in_haystack", return_value=False)
     def test_create_resource(self, _, victim):
@@ -130,68 +114,6 @@ class TestDeployToKubernetes(object):
                     mock_list.assert_called_once_with(namespace="some_namespace")
                     mock_patch.assert_called_once_with(name="some_secret", namespace="some_namespace", body={})
                     mock_create.assert_not_called()
-
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_namespace_exists", return_value=False)
-    def test_create_namespace_if_not_exists(self, _, victim):
-        with mock.patch("kubernetes.client.CoreV1Api.create_namespace") as api_mock:
-            victim._create_namespace_if_not_exists("blabla")
-        api_mock.assert_called_once()
-
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_namespace_exists", return_value=True)
-    def test_create_namespace_if_exists(self, _, victim):
-        with mock.patch.object(victim.core_v1_api, "create_namespace") as api_mock:
-            victim._create_namespace_if_not_exists("blabla")
-        api_mock.assert_not_called()
-
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_resource_exists", return_value=True)
-    def test_patch_resource_service(self, _, victim):
-        with mock.patch.object(victim.core_v1_api, "patch_namespaced_service") as api_mock:
-            victim._create_or_patch_resource(victim.core_v1_api, "service", "some_service", "some_namespace", {})
-        api_mock.assert_called_once_with(name='some_service', namespace='some_namespace', body={})
-
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_resource_exists", return_value=False)
-    def test_create_resource_service(self, _, victim):
-        with mock.patch.object(victim.core_v1_api, "create_namespaced_service") as api_mock:
-            victim._create_or_patch_resource(victim.core_v1_api, "service", "some_service", "some_namespace", {})
-        api_mock.assert_called_once_with(namespace='some_namespace', body={})
-
-    @mock.patch.dict(os.environ, env_variables)
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_resource_exists", return_value=False)
-    def test_create_deployment(self, _, victim):
-        with mock.patch.object(victim.extensions_v1_beta_api, "create_namespaced_deployment") as create_mock:
-            with mock.patch.object(victim.extensions_v1_beta_api, "patch_namespaced_deployment") as patch_mock:
-                victim._create_or_patch_deployment({}, "some_namespace")
-        create_mock.assert_called_once_with(namespace='some_namespace', body={})
-        patch_mock.assert_not_called()
-
-    @mock.patch.dict(os.environ, env_variables)
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_resource_exists", return_value=True)
-    def test_patch_deployment(self, _, victim):
-        with mock.patch.object(victim.extensions_v1_beta_api, "create_namespaced_deployment") as create_mock:
-            with mock.patch.object(victim.extensions_v1_beta_api, "patch_namespaced_deployment") as patch_mock:
-                victim._create_or_patch_deployment({}, "some_namespace")
-        patch_mock.assert_called_once_with(name='my_little_pony', namespace='some_namespace', body={})
-        create_mock.assert_not_called()
-
-    @mock.patch.dict(os.environ, env_variables)
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_resource_exists", return_value=False)
-    def test_create_service(self, _, victim):
-        metadata_config = {"metadata": {"name": "my-service"}}
-        with mock.patch.object(victim.core_v1_api, "create_namespaced_service") as create_mock:
-            with mock.patch.object(victim.core_v1_api, "patch_namespaced_service") as patch_mock:
-                victim._create_or_patch_service(metadata_config, "some_namespace")
-        create_mock.assert_called_once_with(namespace='some_namespace', body=metadata_config)
-        patch_mock.assert_not_called()
-
-    @mock.patch.dict(os.environ, env_variables)
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_resource_exists", return_value=True)
-    def test_patch_service(self, _, victim):
-        metadata_config = {"metadata": {"name": "my-service"}}
-        with mock.patch.object(victim.core_v1_api, "create_namespaced_service") as create_mock:
-            with mock.patch.object(victim.core_v1_api, "patch_namespaced_service") as patch_mock:
-                victim._create_or_patch_service(metadata_config, "some_namespace")
-        patch_mock.assert_called_once_with(name='my-service', namespace='some_namespace', body={"metadata": {"name": "my-service"}})
-        create_mock.assert_not_called()
 
     @mock.patch.dict(os.environ, env_variables)
     @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._kubernetes_resource_exists", return_value=False)
@@ -304,12 +226,30 @@ class TestDeployToKubernetes(object):
             'type': 'kubernetes.io/dockerconfigjson'
         }
 
-        with mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry", return_value=RegistryCredentials('my-registry', 'my-username', 'my-password')):
+        with mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry",
+                        return_value=RegistryCredentials('my-registry', 'my-username', 'my-password')):
             with mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock:
                 with mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
                     victim._create_docker_registry_secret()
         create_mock.assert_called_once_with(body=expected_body, namespace='my_little_pony')
         patch_mock.assert_not_called()
+
+    def test_render_kubernetes_config(self, victim):
+        result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony')
+
+        expected_result = {
+            'apiVersion': 'extensions/v1beta1',
+            'kind': 'Deployment',
+            'metadata': {'name': 'my-app'},
+            'spec': {'replicas': 2,
+                     'template': {'metadata': {'labels': {'app': 'my-app'}},
+                                  'spec': {'containers': [{'image': 'my-image:v',
+                                                           'imagePullPolicy': 'Always',
+                                                           'name': 'my-app',
+                                                           'ports': [{'containerPort': 8080}]}],
+                                           'imagePullSecrets': [{'name': 'acr-auth'}]}}}}
+
+        assert result == expected_result
 
 
 @dataclass(frozen=True)
