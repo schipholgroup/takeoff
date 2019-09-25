@@ -324,11 +324,11 @@ class DeployToKubernetes(BaseKubernetes):
         )
         logger.info("Kubernetes config rendered")
 
-        if self.config['create_keyvault_secrets']:
+        if self.config["create_keyvault_secrets"]:
             self._create_keyvault_secrets()
             logger.info("Keyvault secrets available")
 
-        if self.config['create_image_pull_secret']:
+        if self.config["create_image_pull_secret"]:
             self._create_docker_registry_secret()
             logger.info("Docker registry secret available")
 
