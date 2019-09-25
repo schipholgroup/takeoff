@@ -9,8 +9,8 @@ category: Kubernetes
 
 # Deploy to Kubernetes
 
-Deploy a Kubernetes resource, as well as a Kubernetes secret containing your Docker registry credentials. This
- secret containing the Docker registry credentials is always called "acr-auth". Also will create a Kubernetes secret
+Deploy a Kubernetes resource, as well as optionally a Kubernetes secret containing your Docker registry credentials. This
+ secret containing the Docker registry credentials is always called "acr-auth". Also can create a Kubernetes secret
 of any secrets available in your cloud vault that match the application name. This Kubernetes secret will be given the name: 
 {application_name}-secret. All cloud vault secrets will be stored in a key-value form in this single Kubernetes Secret.
 If any of the Kubernetes resources already exists, this step will update them where appropriate. An update is done forcefully, using
@@ -34,6 +34,8 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | field | description | value
 | ----- | ----------- 
 | `kubernetes_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) Kubernetes deployment config | Mandatory value, must be a valid path in the repository |
+| `create_keyvault_secrets` | Whether or not to create Kubernetes secrets for each keyvault secret that has `application-name-` as prefix. | Boolean, defaults to True. |
+| `create_image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Boolean, defaults to True. |
 
 
 An example of `kubernetes_config_path.yml.j2` 
@@ -105,4 +107,14 @@ Minimum Takeoff deployment configuration example to deploy Kubernetes resources:
 steps:
 - task: deploy_to_kubernetes
   kubernetes_config_path: my_kubernetes_config.yml.j2
+```
+
+Extended configuration example, where we have explicitly disabled the creation of kubernetes secrets by Takeoff:
+
+```yaml
+steps:
+- task: deploy_to_kubernetes
+  kubernetes_config_path: my_kubernetes_config.yml.j2
+  create_keyvault_secrets: false
+  create_image_pull_secret: false
 ```
