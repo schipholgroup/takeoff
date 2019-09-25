@@ -86,6 +86,8 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
         vol.Required("kubernetes_config_path"): str,
+        vol.Optional("create_keyvault_secrets", default=True): bool,
+        vol.Optional("create_image_pull_secret", default=True): bool,
         "azure": {
             vol.Required(
                 "kubernetes_naming",
@@ -313,16 +315,22 @@ class DeployToKubernetes(BaseKubernetes):
         """
         self._authenticate_with_kubernetes()
 
+        # load the kubeconfig we just fetched
+        kubernetes.config.load_kube_config()
+        logger.info("Kubeconfig loaded")
+
         rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
             kubernetes_config_path, application_name
         )
         logger.info("Kubernetes config rendered")
 
-        self._create_keyvault_secrets()
-        logger.info("Keyvault secrets available")
+        if self.config['create_keyvault_secrets']:
+            self._create_keyvault_secrets()
+            logger.info("Keyvault secrets available")
 
-        self._create_docker_registry_secret()
-        logger.info("Docker registry secret available")
+        if self.config['create_image_pull_secret']:
+            self._create_docker_registry_secret()
+            logger.info("Docker registry secret available")
 
         self._apply_kubernetes_config_file(rendered_kubernetes_config_path)
         logger.info("Applied rendered Kubernetes config")
