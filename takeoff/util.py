@@ -144,7 +144,7 @@ def get_jar_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"
 
 
-def run_shell_command(command: List[str]) -> int:
+def run_shell_command(command: List[str]) -> (int, str):
     """Runs a shell command using `subprocess.Popen`
 
     In addition to running any bash command, the output of process is streamed directly to the stdout.
@@ -153,13 +153,16 @@ def run_shell_command(command: List[str]) -> int:
         The result of the bash command. 0 for success, >=1 for failure.
     """
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
+    output_lines = []
     while True:
         output = process.stdout.readline()
         if output == "" and process.poll() is not None:
             break
+
         if output:
             print(output.strip())
-    return process.poll()
+            output_lines.append(output)
+    return process.poll(), output_lines
 
 
 def load_takeoff_plugins():
