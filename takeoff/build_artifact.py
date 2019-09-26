@@ -59,7 +59,7 @@ class BuildArtifact(Step):
         self._remove_old_artifacts("dist/")
 
         cmd = ["python", "setup.py", "bdist_wheel"]
-        return_code = run_shell_command(cmd)
+        return_code, _ = run_shell_command(cmd)
 
         if return_code != 0:
             raise ChildProcessError("Could not build the package for some reason!")
@@ -75,7 +75,7 @@ class BuildArtifact(Step):
         self._remove_old_artifacts("target/")
 
         cmd = ["sbt", "clean", "assembly"]
-        return_code = run_shell_command(cmd)
+        return_code, _ = run_shell_command(cmd)
 
         if return_code != 0:
             raise ChildProcessError("Could not build the package for some reason!")

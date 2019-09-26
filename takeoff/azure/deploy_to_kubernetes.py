@@ -88,6 +88,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Required("kubernetes_config_path"): str,
         vol.Optional("create_keyvault_secrets", default=True): bool,
         vol.Optional("create_image_pull_secret", default=True): bool,
+        vol.Optional("restart_unchanged_resources", default=False): bool,
         "azure": {
             vol.Required(
                 "kubernetes_naming",
@@ -290,6 +291,24 @@ class DeployToKubernetes(BaseKubernetes):
         kubernetes_config = self._render_kubernetes_config(kubernetes_config_path, application_name)
         return self._write_kubernetes_config(kubernetes_config)
 
+    def _restart_unchanged_resources(self, output: List):
+        """
+        Trigger a restart of resources that were unchanges, given a list of output lines from the kubectl
+        CLI client
+
+        Args:
+            output: List of output lines that kubectl produced when apply -f was run
+        """
+        for line in output:
+            if "unchanged" in line:
+                resource = line.split(" ")[0]
+                cmd = ["kubectl", "rollout", "restart", resource]
+                exit_code, output = run_shell_command(cmd)
+                if exit_code == 0:
+                    logger.info(f"Restarted: {resource}")
+                else:
+                    raise ChildProcessError(f"Couldn't restart Kubernetes resource: {resource}")
+
     def _apply_kubernetes_config_file(self, file_path: str):
         """
         Create/Update the kubernetes resources based on the provided file_path to the configuration. This
@@ -301,10 +320,17 @@ class DeployToKubernetes(BaseKubernetes):
         """
         # workaround for some CI runners that override the default k8s namespace
         cmd = ["kubectl", "config", "set-context", self.cluster_name, "--namespace", "default"]
-        run_shell_command(cmd)
+        exit_code, _ = run_shell_command(cmd)
+        if exit_code != 0:
+            raise ChildProcessError(f"Couldn't set-context for cluster {self.cluster_name}")
 
-        cmd = ["kubectl", "replace", "--force", "-f", file_path]
-        run_shell_command(cmd)
+        cmd = ["kubectl", "apply", "-f", file_path]
+        exit_code, response = run_shell_command(cmd)
+        if exit_code != 0:
+            raise ChildProcessError(f"Couldn't apply Kubernetes config from path {file_path}")
+
+        if self.config["restart_unchanged_resources"]:
+            self._restart_unchanged_resources(response)
 
     def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
         """Run a full deployment to Kubernetes, given configuration.

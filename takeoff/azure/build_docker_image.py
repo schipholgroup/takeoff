@@ -112,7 +112,7 @@ class DockerImageBuilder(Step):
 
         logger.info(f"Building docker image for {docker_file} with command \n{' '.join(cmd)}")
 
-        return_code = run_shell_command(cmd)
+        return_code, _ = run_shell_command(cmd)
 
         if return_code != 0:
             raise ChildProcessError("Could not build the image for some reason!")
@@ -130,7 +130,7 @@ class DockerImageBuilder(Step):
 
         logger.info(f"Uploading docker image {tag}")
 
-        return_code = run_shell_command(cmd)
+        return_code, _ = run_shell_command(cmd)
 
         if return_code != 0:
             raise ChildProcessError("Could not push image for some reason!")
