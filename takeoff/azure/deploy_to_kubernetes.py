@@ -303,8 +303,11 @@ class DeployToKubernetes(BaseKubernetes):
             if "unchanged" in line:
                 resource = line.split(" ")[0]
                 cmd = ["kubectl", "rollout", "restart", resource]
-                _, output = run_shell_command(cmd)
-                logger.info(f"Restarted: {resource}")
+                exit_code, output = run_shell_command(cmd)
+                if exit_code == 0:
+                    logger.info(f"Restarted: {resource}")
+                else:
+                    raise ChildProcessError(f"Couldn't restart Kubernetes resource: {resource}")
 
     def _apply_kubernetes_config_file(self, file_path: str):
         """
@@ -317,10 +320,14 @@ class DeployToKubernetes(BaseKubernetes):
         """
         # workaround for some CI runners that override the default k8s namespace
         cmd = ["kubectl", "config", "set-context", self.cluster_name, "--namespace", "default"]
-        run_shell_command(cmd)
+        exit_code, _ = run_shell_command(cmd)
+        if exit_code != 0:
+            raise ChildProcessError(f"Couldn't set-context for cluster {self.cluster_name}")
 
         cmd = ["kubectl", "apply", "-f", file_path]
-        _, response = run_shell_command(cmd)
+        exit_code, response = run_shell_command(cmd)
+        if exit_code != 0:
+            raise ChildProcessError(f"Couldn't apply Kubernetes config from path {file_path}")
 
         if self.config["restart_unchanged_resources"]:
             self._restart_unchanged_resources(response)
