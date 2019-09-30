@@ -6,7 +6,6 @@ from typing import Callable, List
 
 import kubernetes
 import voluptuous as vol
-import yaml
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
 from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes.client import CoreV1Api
@@ -268,8 +267,7 @@ class DeployToKubernetes(BaseKubernetes):
             kubernetes_config_path,
             {
                 "docker_tag": self.env.artifact_tag,
-                "application_name": application_name,
-                **self.config['template_values'][self.env.environment]
+                "application_name": application_name
             },
         )
         return kubernetes_config
