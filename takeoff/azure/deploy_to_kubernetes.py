@@ -21,7 +21,7 @@ from takeoff.credentials.Secret import Secret
 from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import render_file_with_jinja, b64_encode, run_shell_command
+from takeoff.util import render_string_with_jinja, b64_encode, run_shell_command
 
 logger = logging.getLogger(__name__)
 
@@ -263,15 +263,18 @@ class DeployToKubernetes(BaseKubernetes):
         secrets.append(Secret("build-version", self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
 
-    def _render_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> dict:
-        kubernetes_config = render_file_with_jinja(
+    def _render_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> str:
+        kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
-            {"docker_tag": self.env.artifact_tag, "application_name": application_name},
-            yaml.load,
+            {
+                "docker_tag": self.env.artifact_tag,
+                "application_name": application_name,
+                **self.config['template_values'][self.env.environment]
+            },
         )
         return kubernetes_config
 
-    def _write_kubernetes_config(self, kubernetes_config: dict) -> str:
+    def _write_kubernetes_config(self, kubernetes_config: str) -> str:
         rendered_kubernetes_config_path = NamedTemporaryFile(delete=False, mode="w")
         rendered_kubernetes_config_path.write(json.dumps(kubernetes_config))
         rendered_kubernetes_config_path.close()
