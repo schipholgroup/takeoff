@@ -265,10 +265,7 @@ class DeployToKubernetes(BaseKubernetes):
     def _render_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
-            {
-                "docker_tag": self.env.artifact_tag,
-                "application_name": application_name
-            },
+            {"docker_tag": self.env.artifact_tag, "application_name": application_name},
         )
         return kubernetes_config
 
