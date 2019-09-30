@@ -274,7 +274,7 @@ class DeployToKubernetes(BaseKubernetes):
 
     def _write_kubernetes_config(self, kubernetes_config: str) -> str:
         rendered_kubernetes_config_path = NamedTemporaryFile(delete=False, mode="w")
-        rendered_kubernetes_config_path.write(json.dumps(kubernetes_config))
+        rendered_kubernetes_config_path.write(kubernetes_config)
         rendered_kubernetes_config_path.close()
 
         return rendered_kubernetes_config_path.name
@@ -292,23 +292,16 @@ class DeployToKubernetes(BaseKubernetes):
         kubernetes_config = self._render_kubernetes_config(kubernetes_config_path, application_name)
         return self._write_kubernetes_config(kubernetes_config)
 
-    def _restart_unchanged_resources(self, output: List):
+    def _restart_unchanged_resources(self, file_path: str):
         """
-        Trigger a restart of resources that were unchanges, given a list of output lines from the kubectl
-        CLI client
+        Trigger a restart of all restartable resources.
 
         Args:
             output: List of output lines that kubectl produced when apply -f was run
         """
-        for line in output:
-            if "unchanged" in line:
-                resource = line.split(" ")[0]
-                cmd = ["kubectl", "rollout", "restart", resource]
-                exit_code, output = run_shell_command(cmd)
-                if exit_code == 0:
-                    logger.info(f"Restarted: {resource}")
-                else:
-                    raise ChildProcessError(f"Couldn't restart Kubernetes resource: {resource}")
+        cmd = ["kubectl", "rollout", "restart", "-f", file_path]
+        run_shell_command(cmd)
+        logger.info("Restarted all possible resources")
 
     def _apply_kubernetes_config_file(self, file_path: str):
         """
@@ -331,7 +324,7 @@ class DeployToKubernetes(BaseKubernetes):
             raise ChildProcessError(f"Couldn't apply Kubernetes config from path {file_path}")
 
         if self.config["restart_unchanged_resources"]:
-            self._restart_unchanged_resources(response)
+            self._restart_unchanged_resources(file_path)
 
     def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
         """Run a full deployment to Kubernetes, given configuration.
