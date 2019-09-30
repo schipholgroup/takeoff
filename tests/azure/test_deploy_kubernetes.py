@@ -237,17 +237,26 @@ class TestDeployToKubernetes(object):
     def test_render_kubernetes_config(self, victim):
         result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony')
 
-        expected_result = {
-            'apiVersion': 'extensions/v1beta1',
-            'kind': 'Deployment',
-            'metadata': {'name': 'my-app'},
-            'spec': {'replicas': 2,
-                     'template': {'metadata': {'labels': {'app': 'my-app'}},
-                                  'spec': {'containers': [{'image': 'my-image:v',
-                                                           'imagePullPolicy': 'Always',
-                                                           'name': 'my-app',
-                                                           'ports': [{'containerPort': 8080}]}],
-                                           'imagePullSecrets': [{'name': 'acr-auth'}]}}}}
+        # we need this stupid formatting to make the test pass...
+        expected_result = """apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app
+          image: my-image:v
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+      imagePullSecrets:
+        - name: acr-auth"""
 
         assert result == expected_result
 
