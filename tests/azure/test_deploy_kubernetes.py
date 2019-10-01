@@ -65,9 +65,7 @@ class TestDeployToKubernetes(object):
         conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
 
         res = DeployToKubernetes(ApplicationVersion("dev", "v", "branch"), conf)
-        res.config['deployment_config_path'] = "kubernetes_config/deployment.yaml.j2"
-        res.config["service_config_path"] = "kubernetes_config/service.yaml.j2"
-        res.config['service'] = []
+        assert res.config['kubernetes_config_path'] == "kubernetes_config/k8s.yml.j2"
 
     def test_is_needle_in_haystack(self):
         haystack = KubernetesResponse("hello").to_dict()
@@ -215,7 +213,7 @@ class TestDeployToKubernetes(object):
                 'initializers': None,
                 'labels': None,
                 'managed_fields': None,
-                'name': 'acr-auth',
+                'name': 'registry_auth',
                 'namespace': None,
                 'owner_references': None,
                 'resource_version': None,
@@ -231,11 +229,11 @@ class TestDeployToKubernetes(object):
             with mock.patch.object(victim.core_v1_api, "create_namespaced_secret") as create_mock:
                 with mock.patch.object(victim.core_v1_api, "patch_namespaced_secret") as patch_mock:
                     victim._create_docker_registry_secret()
-        create_mock.assert_called_once_with(body=expected_body, namespace='my_little_pony')
+        create_mock.assert_called_once_with(body=expected_body, namespace='default')
         patch_mock.assert_not_called()
 
     def test_render_kubernetes_config(self, victim):
-        result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony')
+        result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony', {"secret_pull_policy": "Always"})
 
         # we need this stupid formatting to make the test pass...
         expected_result = """apiVersion: extensions/v1beta1

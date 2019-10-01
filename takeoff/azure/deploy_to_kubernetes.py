@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from tempfile import NamedTemporaryFile
-from typing import Callable, List
+from typing import Callable, List, Dict
 
 import kubernetes
 import voluptuous as vol
@@ -85,8 +85,14 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
         vol.Required("kubernetes_config_path"): str,
-        vol.Optional("create_keyvault_secrets", default=True): bool,
-        vol.Optional("create_image_pull_secret", default=True): bool,
+        vol.Optional(
+            "image_pull_secret",
+            default={"create": True, "secret_name": "registry_auth", "namespace": "default"},
+        ): {
+            vol.Optional("create", default=True): bool,
+            vol.Optional("secret_name", default="registry_auth"): str,
+            vol.Optional("namespace", default="default"): str,
+        },
         vol.Optional("restart_unchanged_resources", default=False): bool,
         "azure": {
             vol.Required(
@@ -139,7 +145,7 @@ class DeployToKubernetes(BaseKubernetes):
         return False
 
     def _kubernetes_resource_exists(
-        self, resource_name: str, namespace: str, kubernetes_resource_listing_function: Callable
+            self, resource_name: str, namespace: str, kubernetes_resource_listing_function: Callable
     ) -> bool:
         """Check if a Kubernetes resource exists on the cluster
 
@@ -158,7 +164,7 @@ class DeployToKubernetes(BaseKubernetes):
         return self.is_needle_in_haystack(resource_name, existing_services)
 
     def _create_or_patch_resource(
-        self, client: CoreV1Api, resource_type: str, name: str, namespace: str, resource_config: dict
+            self, client: CoreV1Api, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         """Create or patch a given Kubernetes resource
 
@@ -191,7 +197,7 @@ class DeployToKubernetes(BaseKubernetes):
             create_function(namespace=namespace, body=resource_config)
 
     def _create_or_patch_secrets(
-        self, secrets: List[Secret], kubernetes_namespace: str, name: str = None, secret_type: str = "Opaque"
+            self, secrets: List[Secret], kubernetes_namespace: str, name: str = None, secret_type: str = "Opaque"
     ):
         """Create or patch a list of secrets in a given Kubernetes namespace
 
@@ -248,7 +254,10 @@ class DeployToKubernetes(BaseKubernetes):
         ]
         secret_type = "kubernetes.io/dockerconfigjson"
         self._create_or_patch_secrets(
-            secrets, self.kubernetes_namespace, name="acr-auth", secret_type=secret_type
+            secrets,
+            self.config["image_pull_secret"]["namespace"],
+            name=self.config["image_pull_secret"]["secret_name"],
+            secret_type=secret_type,
         )
 
     def _create_keyvault_secrets(self):
@@ -256,16 +265,14 @@ class DeployToKubernetes(BaseKubernetes):
 
         Adds build-version as a secret as well.
         """
-        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
-            ApplicationName().get(self.config)
-        )
-        secrets.append(Secret("build-version", self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
 
-    def _render_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> str:
+    def _render_kubernetes_config(
+            self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
+    ) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
-            {"docker_tag": self.env.artifact_tag, "application_name": application_name},
+            {"docker_tag": self.env.artifact_tag, "application_name": application_name, **secrets},
         )
         return kubernetes_config
 
@@ -276,7 +283,9 @@ class DeployToKubernetes(BaseKubernetes):
 
         return rendered_kubernetes_config_path.name
 
-    def _render_and_write_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> str:
+    def _render_and_write_kubernetes_config(
+            self, kubernetes_config_path: str, application_name: str, secrets: List[Secret]
+    ) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
         Args:
@@ -286,7 +295,9 @@ class DeployToKubernetes(BaseKubernetes):
         Returns:
             The path to the temporary file where the rendered kubernetes configuration is stored.
         """
-        kubernetes_config = self._render_kubernetes_config(kubernetes_config_path, application_name)
+        kubernetes_config = self._render_kubernetes_config(
+            kubernetes_config_path, application_name, {_.key.replace('-', '_'): _.val for _ in secrets}
+        )
         return self._write_kubernetes_config(kubernetes_config)
 
     def _restart_unchanged_resources(self, file_path: str):
@@ -336,16 +347,15 @@ class DeployToKubernetes(BaseKubernetes):
         kubernetes.config.load_kube_config()
         logger.info("Kubeconfig loaded")
 
+        secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
+            ApplicationName().get(self.config)
+        )
         rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
-            kubernetes_config_path, application_name
+            kubernetes_config_path, application_name, secrets
         )
         logger.info("Kubernetes config rendered")
 
-        if self.config["create_keyvault_secrets"]:
-            self._create_keyvault_secrets()
-            logger.info("Keyvault secrets available")
-
-        if self.config["create_image_pull_secret"]:
+        if self.config["image_pull_secret"]["create"]:
             self._create_docker_registry_secret()
             logger.info("Docker registry secret available")
 

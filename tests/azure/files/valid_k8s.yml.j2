@@ -12,7 +12,7 @@ spec:
       containers:
         - name: my-app
           image: my-image:{{ docker_tag }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ secret_pull_policy }}
           ports:
             - containerPort: 8080
       imagePullSecrets:
