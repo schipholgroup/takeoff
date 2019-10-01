@@ -81,7 +81,7 @@ class PublishArtifact(Step):
     def run(self):
         if self.config["language"] == "python":
             self.publish_python_package()
-        elif self.config["language"] in {"sbt"}:
+        elif self.config["language"] in {"scala"}:
             self.publish_jvm_package()
 
     def schema(self) -> vol.Schema:
