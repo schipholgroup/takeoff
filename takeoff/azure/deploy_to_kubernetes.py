@@ -1,15 +1,14 @@
 import json
 import logging
 import os
-from pprint import pprint
-from typing import Callable, List, Union
+from tempfile import NamedTemporaryFile
+from typing import Callable, List
 
 import kubernetes
 import voluptuous as vol
-import yaml
 from azure.mgmt.containerservice.container_service_client import ContainerServiceClient
 from azure.mgmt.containerservice.models import CredentialResults
-from kubernetes.client import CoreV1Api, ExtensionsV1beta1Api
+from kubernetes.client import CoreV1Api
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
@@ -21,7 +20,7 @@ from takeoff.credentials.container_registry import DockerRegistry
 from takeoff.credentials.secret import Secret
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import render_file_with_jinja, b64_encode
+from takeoff.util import render_string_with_jinja, b64_encode, run_shell_command
 
 logger = logging.getLogger(__name__)
 
@@ -89,13 +88,10 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Optional("credentials", default="environment_variables"): vol.All(
             str, vol.In("environment_variables", "azure_keyvault")
         ),
-        vol.Optional("deployment_config_path", default="kubernetes_config/deployment.yaml.j2"): str,
-        vol.Optional("service_config_path", default="kubernetes_config/service.yaml.j2"): str,
-        vol.Optional("service_ips"): {
-            vol.Optional("dev"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
-            vol.Optional("acp"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
-            vol.Optional("prd"): vol.All(str, vol.Match(IP_ADDRESS_MATCH)),
-        },
+        vol.Required("kubernetes_config_path"): str,
+        vol.Optional("create_keyvault_secrets", default=True): bool,
+        vol.Optional("create_image_pull_secret", default=True): bool,
+        vol.Optional("restart_unchanged_resources", default=False): bool,
         "azure": {
             vol.Required(
                 "kubernetes_naming",
@@ -119,44 +115,15 @@ class DeployToKubernetes(BaseKubernetes):
 
         self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
         self.core_v1_api = CoreV1Api()
-        self.extensions_v1_beta_api = kubernetes.client.ExtensionsV1beta1Api()
 
     def schema(self) -> vol.Schema:
         return DEPLOY_SCHEMA
 
     def run(self):
-        # get the ip address for this environment
-        service_ip = None
-        if "service_ips" in self.config:
-            service_ip = self.config["service_ips"][self.env.environment.lower()]
-
         # load some Kubernetes config
-        kubernetes_deployment = render_file_with_jinja(
-            self.config["deployment_config_path"],
-            {
-                "docker_tag": self.env.artifact_tag,
-                "namespace": self.kubernetes_namespace,
-                "application_name": self.application_name,
-            },
-            yaml.load,
-        )
-        kubernetes_service = render_file_with_jinja(
-            self.config["service_config_path"],
-            {
-                "service_ip": service_ip,
-                "namespace": self.kubernetes_namespace,
-                "application_name": self.application_name,
-            },
-            yaml.load,
-        )
-        logging.info("Deploying ----------------------------------------")
-        pprint(kubernetes_deployment)
-        pprint(kubernetes_service)
-        logging.info("--------------------------------------------------")
-
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
-        self.deploy_to_kubernetes(deployment_config=kubernetes_deployment, service_config=kubernetes_service)
+        self.deploy_to_kubernetes(self.config["kubernetes_config_path"], application_name)
 
     @staticmethod
     def is_needle_in_haystack(needle: str, haystack: dict) -> bool:
@@ -193,40 +160,8 @@ class DeployToKubernetes(BaseKubernetes):
         existing_services = kubernetes_resource_listing_function(namespace=namespace).to_dict()
         return self.is_needle_in_haystack(resource_name, existing_services)
 
-    def _kubernetes_namespace_exists(self, namespace: str):
-        """Check if a Kubernetes namespace exists on the cluster
-
-        Args:
-            namespace: name of the namespace for which to check existence
-
-        Returns:
-            bool: True if the namespace exists, False otherwise
-        """
-        existing_namespaces = self.core_v1_api.list_namespace().to_dict()
-        return self.is_needle_in_haystack(namespace, existing_namespaces)
-
-    def _create_namespace_if_not_exists(self, kubernetes_namespace: str):
-        """Create a given namespace if it does not yet exist on the cluster
-
-        If the namespace does already exist, this function does nothing
-
-        Args:
-            kubernetes_namespace: namespace to create if it doesn't exist
-        """
-        if not self._kubernetes_namespace_exists(kubernetes_namespace):
-            logger.info(
-                f"No Kubernetes namespace for this application. Creating namespace: {kubernetes_namespace}"
-            )
-            namespace_to_create = kubernetes.client.V1Namespace(metadata={"name": kubernetes_namespace})
-            self.core_v1_api.create_namespace(body=namespace_to_create)
-
     def _create_or_patch_resource(
-        self,
-        client: Union[CoreV1Api, ExtensionsV1beta1Api],
-        resource_type: str,
-        name: str,
-        namespace: str,
-        resource_config: dict,
+        self, client: CoreV1Api, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         """Create or patch a given Kubernetes resource
 
@@ -257,37 +192,6 @@ class DeployToKubernetes(BaseKubernetes):
                 f"No existing Kubernetes resource found, creating resource: {name} in namespace {namespace}"
             )
             create_function(namespace=namespace, body=resource_config)
-
-    def _create_or_patch_service(self, service_config: dict, kubernetes_namespace: str):
-        """Create or patch a Kubernetes service
-
-        Args:
-            service_config: service configuration to use. Should contain [metadata][name]
-            kubernetes_namespace: namespace to deploy service in
-        """
-        service_name = service_config["metadata"]["name"]
-        self._create_or_patch_resource(
-            client=self.core_v1_api,
-            resource_type="service",
-            name=service_name,
-            namespace=kubernetes_namespace,
-            resource_config=service_config,
-        )
-
-    def _create_or_patch_deployment(self, deployment: dict, kubernetes_namespace: str):
-        """Create or patch a Kubernetes deployment
-
-        Args:
-            deployment: deployment configuration to use. Name will be application name
-            kubernetes_namespace: namespace to deploy service in
-        """
-        self._create_or_patch_resource(
-            client=self.extensions_v1_beta_api,
-            resource_type="deployment",
-            name=self.application_name,
-            namespace=kubernetes_namespace,
-            resource_config=deployment,
-        )
 
     def _create_or_patch_secrets(
         self, secrets: List[Secret], kubernetes_namespace: str, name: str = None, secret_type: str = "Opaque"
@@ -322,8 +226,8 @@ class DeployToKubernetes(BaseKubernetes):
     def _create_docker_registry_secret(self):
         """Create a secret containing credentials for logging into the defined docker registry
 
-        The credentials are fetched from your keyvault provider, and are inserted into a
-        secret called 'acr-auth'
+        The credentials are fetched from your keyvault provider,
+        and are inserted into a secret called 'acr-auth'
         """
         docker_credentials = DockerRegistry(self.config, self.env).credentials()
         secrets = [
@@ -360,12 +264,73 @@ class DeployToKubernetes(BaseKubernetes):
         secrets.append(Secret("build-version", self.env.artifact_tag))
         self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
 
-    def deploy_to_kubernetes(self, deployment_config: dict, service_config: dict):
+    def _render_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> str:
+        kubernetes_config = render_string_with_jinja(
+            kubernetes_config_path,
+            {"docker_tag": self.env.artifact_tag, "application_name": application_name},
+        )
+        return kubernetes_config
+
+    def _write_kubernetes_config(self, kubernetes_config: str) -> str:
+        rendered_kubernetes_config_path = NamedTemporaryFile(delete=False, mode="w")
+        rendered_kubernetes_config_path.write(kubernetes_config)
+        rendered_kubernetes_config_path.close()
+
+        return rendered_kubernetes_config_path.name
+
+    def _render_and_write_kubernetes_config(self, kubernetes_config_path: str, application_name: str) -> str:
+        """
+        Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
+        Args:
+            kubernetes_config_path: The raw, jinja-templated kubernetes configuration path.
+            application_name: Current application name
+
+        Returns:
+            The path to the temporary file where the rendered kubernetes configuration is stored.
+        """
+        kubernetes_config = self._render_kubernetes_config(kubernetes_config_path, application_name)
+        return self._write_kubernetes_config(kubernetes_config)
+
+    def _restart_unchanged_resources(self, file_path: str):
+        """
+        Trigger a restart of all restartable resources.
+
+        Args:
+            output: List of output lines that kubectl produced when apply -f was run
+        """
+        cmd = ["kubectl", "rollout", "restart", "-f", file_path]
+        run_shell_command(cmd)
+        logger.info("Restarted all possible resources")
+
+    def _apply_kubernetes_config_file(self, file_path: str):
+        """
+        Create/Update the kubernetes resources based on the provided file_path to the configuration. This
+        function assumes that the file does NOT contain any Jinja-templated variables anymore (i.e. it's
+        been rendered)
+
+        Args:
+            file_path: Path to the kubernetes configuration
+        """
+        # workaround for some CI runners that override the default k8s namespace
+        cmd = ["kubectl", "config", "set-context", self.cluster_name, "--namespace", "default"]
+        exit_code, _ = run_shell_command(cmd)
+        if exit_code != 0:
+            raise ChildProcessError(f"Couldn't set-context for cluster {self.cluster_name}")
+
+        cmd = ["kubectl", "apply", "-f", file_path]
+        exit_code, response = run_shell_command(cmd)
+        if exit_code != 0:
+            raise ChildProcessError(f"Couldn't apply Kubernetes config from path {file_path}")
+
+        if self.config["restart_unchanged_resources"]:
+            self._restart_unchanged_resources(file_path)
+
+    def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
         """Run a full deployment to Kubernetes, given configuration.
 
         Args:
-            deployment_config: Kubernetes deployment configuration to use
-            service_config: Kubernetes service ocnfiguration to use
+            kubernetes_config_path: path to the jinja-templated kubernetes config
+            application_name: current application name
         """
         self._authenticate_with_kubernetes()
 
@@ -373,20 +338,21 @@ class DeployToKubernetes(BaseKubernetes):
         kubernetes.config.load_kube_config()
         logger.info("Kubeconfig loaded")
 
-        self._create_namespace_if_not_exists(self.kubernetes_namespace)
-        logger.info("Namespace available")
+        rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
+            kubernetes_config_path, application_name
+        )
+        logger.info("Kubernetes config rendered")
 
-        self._create_keyvault_secrets()
-        logger.info("Keyvault secrets available")
+        if self.config["create_keyvault_secrets"]:
+            self._create_keyvault_secrets()
+            logger.info("Keyvault secrets available")
 
-        self._create_docker_registry_secret()
-        logger.info("Docker registry secret available")
+        if self.config["create_image_pull_secret"]:
+            self._create_docker_registry_secret()
+            logger.info("Docker registry secret available")
 
-        self._create_or_patch_deployment(deployment_config, self.kubernetes_namespace)
-        logger.info("Deployment available")
-
-        self._create_or_patch_service(service_config, self.kubernetes_namespace)
-        logger.info("Service available")
+        self._apply_kubernetes_config_file(rendered_kubernetes_config_path)
+        logger.info("Applied rendered Kubernetes config")
 
     @property
     def kubernetes_namespace(self):

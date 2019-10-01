@@ -104,24 +104,24 @@ class TestDockerImageBuilder:
         assert_docker_json(mopen, mjson)
 
     @mock.patch.dict(os.environ, ENV_VARIABLES)
-    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=0)
+    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
     def test_build_image_success(self, m_bash):
         DockerImageBuilder.build_image("Thefile", "stag")
         assert_docker_build(m_bash)
 
     @mock.patch.dict(os.environ, ENV_VARIABLES)
-    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=1)
+    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(1, ['output_lines']))
     def test_build_image_failure(self, m_bash):
         with pytest.raises(ChildProcessError):
             DockerImageBuilder.build_image("Thefile", "stag")
         assert_docker_build(m_bash)
 
-    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=0)
+    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
     def test_push_image_success(self, m_bash):
         DockerImageBuilder.push_image("image/stag")
         assert_docker_push(m_bash)
 
-    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=1)
+    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(1, ['output_lines']))
     def test_push_image_failure(self, m_bash):
         with pytest.raises(ChildProcessError):
             DockerImageBuilder.push_image("image/stag")
@@ -130,7 +130,7 @@ class TestDockerImageBuilder:
     @mock.patch.dict(os.environ, {"PIP_EXTRA_INDEX_URL": "url/to/artifact/store",
                                   "CI_PROJECT_NAME": "myapp",
                                   "CI_COMMIT_REF_SLUG": "ignored"})
-    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=0)
+    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
     def test_deploy(self, m_bash, victim: DockerImageBuilder):
         files = [DockerFile("Dockerfile", None, None), DockerFile("File2", "-foo", "mycustom/repo")]
         victim.deploy(files)

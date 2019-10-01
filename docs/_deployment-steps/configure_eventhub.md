@@ -73,7 +73,7 @@ Minimum configuration example for one consumer group. This will create a single 
 ```
 
 Full configuration example. This create one consumer group for `entity1prd` with name `consgroup1` and additionally create a Databricks secret in scope `myapp` with name `entity1prd-connection-string`
-Also, this creates two producer policies for `entity2prd` with name `policy2` and `entity3prd` with name `policy2`. For the latter it creates a Databricks secret in scope `myapp` with name `entity3prd-connection-string`
+Also, this creates two producer policies for `entity2prd` with name `myapp-send-policy` and `entity3prd` with name `myapp-send-policy`. For the latter it creates a Databricks secret in scope `myapp` with name `entity3prd-connection-string`
 
 ```yaml
 - task: configure_eventhub
@@ -83,9 +83,7 @@ Also, this creates two producer policies for `entity2prd` with name `policy2` an
       create_databricks_secret: true
   create_producer_policies:
     - eventhub_entity_naming: entity3{env}
-      producer_policy: policy1
       create_databricks_secret: false
     - eventhub_entity_naming: entity2{env}
-      producer_policy: policy2
       create_databricks_secret: true
 ```
