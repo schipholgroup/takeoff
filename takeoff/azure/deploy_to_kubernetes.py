@@ -145,7 +145,7 @@ class DeployToKubernetes(BaseKubernetes):
         return False
 
     def _kubernetes_resource_exists(
-            self, resource_name: str, namespace: str, kubernetes_resource_listing_function: Callable
+        self, resource_name: str, namespace: str, kubernetes_resource_listing_function: Callable
     ) -> bool:
         """Check if a Kubernetes resource exists on the cluster
 
@@ -164,7 +164,7 @@ class DeployToKubernetes(BaseKubernetes):
         return self.is_needle_in_haystack(resource_name, existing_services)
 
     def _create_or_patch_resource(
-            self, client: CoreV1Api, resource_type: str, name: str, namespace: str, resource_config: dict
+        self, client: CoreV1Api, resource_type: str, name: str, namespace: str, resource_config: dict
     ):
         """Create or patch a given Kubernetes resource
 
@@ -197,7 +197,7 @@ class DeployToKubernetes(BaseKubernetes):
             create_function(namespace=namespace, body=resource_config)
 
     def _create_or_patch_secrets(
-            self, secrets: List[Secret], kubernetes_namespace: str, name: str = None, secret_type: str = "Opaque"
+        self, secrets: List[Secret], kubernetes_namespace: str, name: str = None, secret_type: str = "Opaque"
     ):
         """Create or patch a list of secrets in a given Kubernetes namespace
 
@@ -268,7 +268,7 @@ class DeployToKubernetes(BaseKubernetes):
         self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
 
     def _render_kubernetes_config(
-            self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
+        self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
     ) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
@@ -284,7 +284,7 @@ class DeployToKubernetes(BaseKubernetes):
         return rendered_kubernetes_config_path.name
 
     def _render_and_write_kubernetes_config(
-            self, kubernetes_config_path: str, application_name: str, secrets: List[Secret]
+        self, kubernetes_config_path: str, application_name: str, secrets: List[Secret]
     ) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
@@ -296,7 +296,7 @@ class DeployToKubernetes(BaseKubernetes):
             The path to the temporary file where the rendered kubernetes configuration is stored.
         """
         kubernetes_config = self._render_kubernetes_config(
-            kubernetes_config_path, application_name, {_.key.replace('-', '_'): _.val for _ in secrets}
+            kubernetes_config_path, application_name, {_.key.replace("-", "_"): _.val for _ in secrets}
         )
         return self._write_kubernetes_config(kubernetes_config)
 
