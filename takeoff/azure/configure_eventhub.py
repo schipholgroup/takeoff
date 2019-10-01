@@ -250,7 +250,7 @@ class ConfigureEventHub(Step):
             return True
         return False
 
-    def create_databricks_secrets(self, secrets: List[Secret], application_name):
+    def create_databricks_secrets(self, secrets: List[Secret]):
         """Creates a Databricks secret from the provided secrets
 
         Args:
@@ -258,8 +258,8 @@ class ConfigureEventHub(Step):
             application_name: The name of this application
         """
         databricks_secrets = CreateDatabricksSecretFromValue(self.env, self.config)
-        databricks_secrets._create_scope(application_name)
-        databricks_secrets._add_secrets(application_name, secrets)
+        databricks_secrets._create_scope(self.application_name)
+        databricks_secrets._add_secrets(self.application_name, secrets)
 
     def _create_consumer_group(self, group: EventHubConsumerGroup):
         """Creates given consumer groups on EventHub. Optionally constructs Databricks secret

@@ -155,13 +155,12 @@ class PublishArtifact(Step):
         """
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
-        build_definition_name = self.application_name
         if file_extension == ".py":
-            filename = get_main_py_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_main_py_name(self.application_name, self.env.artifact_tag, file_extension)
         elif file_extension == ".whl":
-            filename = get_whl_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_whl_name(self.application_name, self.env.artifact_tag, file_extension)
         elif file_extension == ".jar":
-            filename = get_jar_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_jar_name(self.application_name, self.env.artifact_tag, file_extension)
         else:
             raise ValueError(f"Unsupported filetype extension: {file_extension}")
 

@@ -84,31 +84,31 @@ class TestCreateDatabricksSecretsFromVault(object):
     @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
     def test_combine_secrets_without_deployment_secrets(self, _, victim_without_secrets):
-        combined_secrets = victim_without_secrets._combine_secrets("some-app-name")
+        combined_secrets = victim_without_secrets._combine_secrets()
         assert len(combined_secrets) == 2
 
     @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[])
     def test_combine_secrets_without_deployment_and_keyvault_secrets(self, _, victim_without_secrets):
-        combined_secrets = victim_without_secrets._combine_secrets("some-app-name")
+        combined_secrets = victim_without_secrets._combine_secrets()
         assert len(combined_secrets) == 0
 
     @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[])
     def test_combine_secrets_without_keyvault_secrets(self, _, victim):
-        combined_secrets = victim._combine_secrets("some-app-name")
+        combined_secrets = victim._combine_secrets()
         assert len(combined_secrets) == 3
 
     @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
     def test_combine_secrets_with_deployment_and_keyvault_secrets(self, _, victim):
-        combined_secrets = victim._combine_secrets("some-app-name")
+        combined_secrets = victim._combine_secrets()
         assert len(combined_secrets) == 5
 
     @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('FOO', 'foo'), Secret('BAR', 'bar')])
     def test_combine_secrets_with_duplicate_deployment_and_keyvault_secrets(self, _, victim):
-        combined_secrets = victim._combine_secrets("some-app-name")
+        combined_secrets = victim._combine_secrets()
         assert len(combined_secrets) == 3
 
     def test_create_scope(self, victim):
