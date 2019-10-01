@@ -101,10 +101,10 @@ def get_eventhub_entity_name(eventhub_entity_naming: str, env: ApplicationVersio
     """Returns the EventHub entity name
 
     If no plugin is provided this uses the default naming convention (as specified in
-    the `.takeoff/config.yml`) and resolves the `{env}` parameter based on the ApplicationVersion.
+    the `.takeoff/deployment.yml`) and resolves the `{env}` parameter based on the ApplicationVersion.
 
     Args:
-        config: The Takeoff config
+        str: The eventhub entity naming convention
         env: The application version
     """
 

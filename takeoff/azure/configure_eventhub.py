@@ -36,7 +36,6 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             [
                 {
                     vol.Required("eventhub_entity_naming"): str,
-                    vol.Optional("producer_policy"): str,
                     vol.Optional("create_databricks_secret", default=False): bool,
                 }
             ],
@@ -112,7 +111,7 @@ class ConfigureEventHub(Step):
                 EventHub(
                     get_resource_group_name(self.config, self.env),
                     get_eventhub_name(self.config, self.env),
-                    get_eventhub_entity_name(group["eventhub_entity"], self.env),
+                    get_eventhub_entity_name(group["eventhub_entity_naming"], self.env),
                 ),
                 group["consumer_group"],
                 group["create_databricks_secret"],
@@ -123,7 +122,10 @@ class ConfigureEventHub(Step):
 
     def _setup_producer_policies(self):
         policies = [
-            EventHubProducerPolicy(policy["eventhub_entity"], policy["create_databricks_secret"])
+            EventHubProducerPolicy(
+                get_eventhub_entity_name(policy["eventhub_entity_naming"], self.env),
+                policy["create_databricks_secret"],
+            )
             for policy in self.config["create_producer_policies"]
         ]
         self.create_eventhub_producer_policies(policies)
@@ -275,10 +277,7 @@ class ConfigureEventHub(Step):
             entities = self._get_unique_eventhubs([group])
             connection_strings = self._create_connection_strings(eventhub_entities=entities)
             secrets = [
-                Secret(
-                    f"{get_eventhub_entity_name(_.eventhub_entity, self.env)}-connection-string",
-                    _.connection_string,
-                )
+                Secret(f"{_.eventhub_entity}-connection-string", _.connection_string)
                 for _ in connection_strings
             ]
 
