@@ -260,13 +260,6 @@ class DeployToKubernetes(BaseKubernetes):
             secret_type=secret_type,
         )
 
-    def _create_keyvault_secrets(self):
-        """Create Kubernetes secrets of all secrets in the keyvault that match the application-name
-
-        Adds build-version as a secret as well.
-        """
-        self._create_or_patch_secrets(secrets, self.kubernetes_namespace)
-
     def _render_kubernetes_config(
         self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
     ) -> str:
