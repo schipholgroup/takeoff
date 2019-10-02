@@ -1,0 +1,1 @@
+DEFAULT_TAKEOFF_PLUGIN_PREFIX = "takeoff_"

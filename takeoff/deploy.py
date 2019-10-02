@@ -22,9 +22,16 @@ def deploy_env_logic(config: dict) -> ApplicationVersion:
 
 
 def find_env_function() -> Callable:
+    """Finds the `deploy_env_logic` function.
+
+    Returns:
+        Either the default function or a plugin function if it is found.
+    """
     for plugin in load_takeoff_plugins().values():
         if hasattr(plugin, "deploy_env_logic"):
+            logging.info("Using plugin 'deploy_env_logic' function")
             return plugin.deploy_env_logic
+    logging.info("Using default 'deploy_env_logic' function")
     return deploy_env_logic
 
 
@@ -44,8 +51,8 @@ def main():
     config = load_yaml(get_full_yaml_filename("config"))
     if "plugins" in config:
         paths = config["plugins"]
-        logger.info(f"Adding plugins from {paths}")
-        add_takeoff_plugin_paths(paths)
+        logger.info(f"Adding plugins from {paths} and current working directory")
+        add_takeoff_plugin_paths(paths + ["."])
 
     env = get_environment(config)
 

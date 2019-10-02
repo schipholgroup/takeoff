@@ -11,6 +11,8 @@ from git import Repo
 from jinja2 import Template
 from yaml import load
 
+from takeoff.conf import DEFAULT_TAKEOFF_PLUGIN_PREFIX
+
 logger = logging.getLogger(__name__)
 
 
@@ -166,8 +168,10 @@ def run_shell_command(command: List[str]) -> Tuple[int, List]:
 
 def load_takeoff_plugins():
     """https://packaging.python.org/guides/creating-and-discovering-plugins/"""
-    return {
+    plugins = {
         name: importlib.import_module(name)
         for finder, name, ispkg in pkgutil.iter_modules()
-        if name.startswith("takeoff_")
+        if name.startswith(DEFAULT_TAKEOFF_PLUGIN_PREFIX)
     }
+    logging.info(f"Found Takeoff plugins {plugins}")
+    return plugins

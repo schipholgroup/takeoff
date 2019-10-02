@@ -25,6 +25,8 @@ environment_variables = {
 
 env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 
+conf_ext = {"environment_keys": {"application_name": "CI_PROJECT_NAME"}}
+
 
 def filename(s):
     return f".takeoff/{s}.yml"
@@ -168,14 +170,15 @@ def test_read_takeoff_plugins(_, mock_load_yaml, __):
     with mock.patch("takeoff.deploy.get_environment") as mock_env:
         with mock.patch("takeoff.deploy.add_takeoff_plugin_paths") as m:
             main()
-    m.assert_called_once_with(paths)
+    m.assert_called_once_with(paths + ["."])
 
 
+@mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_add_custom_path():
     paths = [os.path.dirname(os.path.realpath(__file__))]
     add_takeoff_plugin_paths(paths)
 
     env = find_env_function()
 
-    assert env().branch == "master"
+    assert env(conf_ext).branch == "master"
     sys.path.remove(paths[0])
