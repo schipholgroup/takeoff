@@ -59,7 +59,7 @@ jobs:
       - run: docker build -t takeoff:latest -f Dockerfile .
       - run:
           command: |
-            docker login --username $REGISTRY_USER --password $REGISTRY_PASSWORD
+            docker login --username $REGISTRY_USER --password "${REGISTRY_PASSWORD}"
             version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
             docker tag takeoff:latest schipholhub/takeoff:${version}
             docker push schipholhub/takeoff:${version}
