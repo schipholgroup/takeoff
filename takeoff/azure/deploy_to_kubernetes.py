@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from tempfile import NamedTemporaryFile
-from typing import Callable, List, Dict
+from typing import List, Dict
 
 import kubernetes
 import voluptuous as vol
@@ -128,137 +128,25 @@ class DeployToKubernetes(BaseKubernetes):
 
         self.deploy_to_kubernetes(self.config["kubernetes_config_path"], application_name)
 
-    @staticmethod
-    def is_needle_in_haystack(needle: str, haystack: dict) -> bool:
-        """Helper method to check for existence of a k8s entity
-
-        Args:
-            needle: name of the Kubernetes entity you want to find
-            haystack: dict of entities, in the Kubernetes structure of entities (i.e. items->metadata->name
-
-        Returns:
-            bool: True if the needle is in the haystack, False otherwise
-        """
-        for dep in haystack["items"]:
-            if dep["metadata"]["name"] == needle:
-                return True
-        return False
-
-    def _kubernetes_resource_exists(
-        self, resource_name: str, namespace: str, kubernetes_resource_listing_function: Callable
-    ) -> bool:
-        """Check if a Kubernetes resource exists on the cluster
-
-        This is a generic function that is used by functions that check for more specific resource existence
-
-        Args:
-            resource_name: the name of the resource for which you are checking existence
-            namespace: Kubernetes namespace in which to search
-            kubernetes_resource_listing_function: the function to use to list resources. This function should
-                return a type that can be converted to a dictionary.
-
-        Returns:
-            bool: True if the resource exists, False otherwise
-        """
-        existing_services = kubernetes_resource_listing_function(namespace=namespace).to_dict()
-        return self.is_needle_in_haystack(resource_name, existing_services)
-
-    def _create_or_patch_resource(
-        self, client: CoreV1Api, resource_type: str, name: str, namespace: str, resource_config: dict
-    ):
-        """Create or patch a given Kubernetes resource
-
-        This function will call the function associated with the provided resource type from the Kubernetes
-        client API provided. This means that the client needs to have the `list_namespaced_{resource_type}`
-        function available for this to work. This function does not verify that the configuration provided
-        makes sense for the given resource. That is left to the caller.
-
-        Args:
-            client: the Kubernetes client to use.
-            resource_type: type of resource to target. Should be a valid Kubernetes resource type
-            name: name of the resource
-            namespace: namespace of the resource
-            resource_config: any configuration for the resource that is not covered by the other parameters
-        """
-        list_function = getattr(client, f"list_namespaced_{resource_type}")
-        patch_function = getattr(client, f"patch_namespaced_{resource_type}")
-        create_function = getattr(client, f"create_namespaced_{resource_type}")
-        if self._kubernetes_resource_exists(name, namespace, list_function):
-            # we need to patch the existing resource
-            logger.info(
-                f"Found existing Kubernetes resource, patching resource {name} in namespace {namespace}"
-            )
-            patch_function(name=name, namespace=namespace, body=resource_config)
-        else:
-            # the resource doesn't exist, we need to create it
-            logger.info(
-                f"No existing Kubernetes resource found, creating resource: {name} in namespace {namespace}"
-            )
-            create_function(namespace=namespace, body=resource_config)
-
-    def _create_or_patch_secrets(
-        self, secrets: List[Secret], kubernetes_namespace: str, name: str = None, secret_type: str = "Opaque"
-    ):
-        """Create or patch a list of secrets in a given Kubernetes namespace
-
-        When you provide multiple Secret objects in the list, these will be put into a single Kubernetes
-        Secret object, where each object is available in key-value form.
-
-        Args:
-            secrets: list of secrets to create of patch
-            kubernetes_namespace: namespace in which these secrets will be put
-            name: name of the Kubernetes secret. Defaults to {application-name}-secret
-            secret_type: type of Kubernetes secret. Defaults to Opaque.
-        """
-        application_name = ApplicationName().get(self.config)
-        secret_name = f"{application_name}-secret" if not name else name
-
-        secret = kubernetes.client.V1Secret(
-            metadata=kubernetes.client.V1ObjectMeta(name=secret_name),
-            type=secret_type,
-            data={_.key: b64_encode(_.val) for _ in secrets},
-        )
-
-        self._create_or_patch_resource(
-            client=self.core_v1_api,
-            resource_type="secret",
-            name=secret_name,
-            namespace=kubernetes_namespace,
-            resource_config=secret.to_dict(),
-        )
-
-    def _create_docker_registry_secret(self):
+    def _get_docker_registry_secret(self) -> str:
         """Create a secret containing credentials for logging into the defined docker registry
 
         The credentials are fetched from your keyvault provider,
         and are inserted into a secret called 'acr-auth'
         """
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
-        secrets = [
-            Secret(
-                key=".dockerconfigjson",
-                val=json.dumps(
-                    {
-                        "auths": {
-                            docker_credentials.registry: {
-                                "username": docker_credentials.username,
-                                "password": docker_credentials.password,
-                                "auth": b64_encode(
-                                    f"{docker_credentials.username}:{docker_credentials.password}"
-                                ),
-                            }
-                        }
+        val = json.dumps(
+            {
+                "auths": {
+                    docker_credentials.registry: {
+                        "username": docker_credentials.username,
+                        "password": docker_credentials.password,
+                        "auth": b64_encode(f"{docker_credentials.username}:{docker_credentials.password}"),
                     }
-                ),
-            )
-        ]
-        secret_type = "kubernetes.io/dockerconfigjson"
-        self._create_or_patch_secrets(
-            secrets,
-            self.config["image_pull_secret"]["namespace"],
-            name=self.config["image_pull_secret"]["secret_name"],
-            secret_type=secret_type,
+                }
+            }
         )
+        return val
 
     def _render_kubernetes_config(
         self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
@@ -324,8 +212,21 @@ class DeployToKubernetes(BaseKubernetes):
         if exit_code != 0:
             raise ChildProcessError(f"Couldn't apply Kubernetes config from path {file_path}")
 
-        if self.config["restart_unchanged_resources"]:
-            self._restart_unchanged_resources(file_path)
+    def _create_image_pull_secret(self, application_name: str):
+        pull_secrets_yaml = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "assets", "kubernetes_image_pull_secrets.yml.j2"
+        )
+        rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
+            kubernetes_config_path=pull_secrets_yaml,
+            application_name=application_name,
+            secrets=[
+                Secret("pull_secret", self._get_docker_registry_secret()),
+                Secret("namespace", self.config["image_pull_secret"]["namespace"]),
+                Secret("secret_name", self.config["image_pull_secret"]["secret_name"]),
+            ],
+        )
+        self._apply_kubernetes_config_file(rendered_kubernetes_config_path)
+        logger.info("Docker registry secret available")
 
     def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
         """Run a full deployment to Kubernetes, given configuration.
@@ -340,20 +241,23 @@ class DeployToKubernetes(BaseKubernetes):
         kubernetes.config.load_kube_config()
         logger.info("Kubeconfig loaded")
 
+        if self.config["image_pull_secret"]["create"]:
+            self._create_image_pull_secret(application_name)
+
         secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
             ApplicationName().get(self.config)
         )
+
         rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
             kubernetes_config_path, application_name, secrets
         )
         logger.info("Kubernetes config rendered")
 
-        if self.config["image_pull_secret"]["create"]:
-            self._create_docker_registry_secret()
-            logger.info("Docker registry secret available")
-
         self._apply_kubernetes_config_file(rendered_kubernetes_config_path)
         logger.info("Applied rendered Kubernetes config")
+
+        if self.config["restart_unchanged_resources"]:
+            self._restart_unchanged_resources(rendered_kubernetes_config_path)
 
     @property
     def kubernetes_namespace(self):
