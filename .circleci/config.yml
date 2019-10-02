@@ -55,7 +55,7 @@ jobs:
     steps:
       - checkout
       - run: env
-      - run: docker login --username $REGISTRY_USER --password "${REGISTRY_PASSWORD}"
+      - run: echo $REGISTRY_PASSWORD | docker login --username $REGISTRY_USER --password-stdin
       - run: env | grep -v ^PATH > .env
       - run: docker build -t takeoff:latest -f Dockerfile .
       - run:
