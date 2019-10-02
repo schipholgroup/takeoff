@@ -54,6 +54,7 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: env
       - run: docker login --username $REGISTRY_USER --password "${REGISTRY_PASSWORD}"
       - run: env | grep -v ^PATH > .env
       - run: docker build -t takeoff:latest -f Dockerfile .
