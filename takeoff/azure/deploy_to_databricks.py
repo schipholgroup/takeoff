@@ -38,7 +38,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             ],
             vol.Length(min=1),
         ),
-        "common": {vol.Required("databricks_fs_libraries_mount_path"): str},
+        "common": {vol.Optional("databricks_fs_libraries_mount_path"): str},
     },
     extra=vol.ALLOW_EXTRA,
 )
