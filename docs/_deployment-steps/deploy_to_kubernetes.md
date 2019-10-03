@@ -34,8 +34,10 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | field | description | value
 | ----- | ----------- 
 | `kubernetes_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) Kubernetes deployment config | Mandatory value, must be a valid path in the repository |
-| `create_keyvault_secrets` | Whether or not to create Kubernetes secrets for each keyvault secret that has `application-name-` as prefix. | Boolean, defaults to True. |
-| `create_image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Boolean, defaults to True. |
+| `image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True, with `secret_name=registry_auth` and `namespace=default` |
+| `image_pull_secret.create` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True
+| `image_pull_secret.secret_name` | The name of secret | Defaults to `secret_name`
+| `image_pull_secret.namespace` | The namespace where the secret should be created in | Default to `default` 
 | `restart_unchanged_resources` | Whether or not to restart unchanged Kubernetes resources. Takeoff will attempt to restart all unchanged resources, which may result in error messages in the 
  logs, as not all resources are 'restartable' | Boolean, defaults to False. | 
 
@@ -56,7 +58,7 @@ spec:
       containers:
       - name: my-app
         image: my-docker-image:{{docker_tag}}
-        imagePullPolicy: Always
+        imagePullPolicy: {{secret_pull_policy}}
         ports:
         - containerPort: 8443
         env:
@@ -89,6 +91,8 @@ An explanation for the Jinja templated values. These values get resolved automat
 | ----- | ----------- 
 | `docker_tag` | The docker tag to apply. In a D/T/A/P setup, this will allow you to point to the image that was built in a previous step in your Takeoff config without explicitly specifying this
 
+Any other templated variable, such as `{{secret_pull_policy}}` is a reference to a cloud vault key. The task will pull all secrets from the cloud vault prefixed with you application name and resolve them in the template.
+For the example above, if your application name is `myapp`, then a secret in your cloud vault must be `myapp-secret-pull-policy` or `myapp-secret_pull_policy`. The prefix gets removed by Takeoff and key `secret_pull_policy` with it's value will be passed into the template. Hyphens `-` get normalized to underscores `_`.
 
 ## Takeoff config
 Make sure `.takeoff/config.yml` contains the following keys:
@@ -104,21 +108,24 @@ azure:
 ```
 
 ## Examples
-Minimum Takeoff deployment configuration example to deploy Kubernetes resources:
+Minimum Takeoff deployment configuration example to deploy Kubernetes resources. This will not create image pull secrets:
 ```yaml
 steps:
 - task: deploy_to_kubernetes
   kubernetes_config_path: my_kubernetes_config.yml.j2
+  image_pull_secret: 
+    create: False
 ```
 
 Extended configuration example, where we have explicitly disabled the creation of kubernetes secrets by Takeoff. In this case,
-we also want to restart the resources, even if their Kubernetes yaml config is unchanged.
+we also want to restart the resources, even if their Kubernetes yaml config is unchanged. It will also create image pull secrets in namespace `default` with name `registry_auth`.
 
 ```yaml
 steps:
 - task: deploy_to_kubernetes
   kubernetes_config_path: my_kubernetes_config.yml.j2
-  create_keyvault_secrets: false
-  create_image_pull_secret: false
+  image_pull_secret: 
+    create: True
+    
   restart_unchanged_resources: true
 ```
