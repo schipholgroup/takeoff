@@ -1,0 +1,6 @@
+#!/Users/timvancann/miniconda3/envs/py37/bin/python
+
+# /usr/local/bin/python3 -u
+from cli import main
+
+main()
