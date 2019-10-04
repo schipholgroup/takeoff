@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from tempfile import NamedTemporaryFile
@@ -135,21 +134,19 @@ class DeployToKubernetes(BaseKubernetes):
         and are inserted into a secret called 'acr-auth'
         """
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
-        val = json.dumps(
-            {
-                "auths": {
-                    docker_credentials.registry: {
-                        "username": docker_credentials.username,
-                        "password": docker_credentials.password,
-                        "auth": b64_encode(f"{docker_credentials.username}:{docker_credentials.password}"),
-                    }
+        val = b64_encode(str({
+            "auths": {
+                docker_credentials.registry: {
+                    "username": docker_credentials.username,
+                    "password": docker_credentials.password,
+                    "auth": b64_encode(f"{docker_credentials.username}:{docker_credentials.password}"),
                 }
             }
-        )
+        }))
         return val
 
     def _render_kubernetes_config(
-        self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
+            self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
     ) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
@@ -165,7 +162,7 @@ class DeployToKubernetes(BaseKubernetes):
         return rendered_kubernetes_config_path.name
 
     def _render_and_write_kubernetes_config(
-        self, kubernetes_config_path: str, application_name: str, secrets: List[Secret]
+            self, kubernetes_config_path: str, application_name: str, secrets: List[Secret]
     ) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
@@ -212,11 +209,11 @@ class DeployToKubernetes(BaseKubernetes):
         if exit_code != 0:
             raise ChildProcessError(f"Couldn't apply Kubernetes config from path {file_path}")
 
-    def _create_image_pull_secret(self, application_name: str):
+    def _create_image_pull_secret(self, application_name: str) -> str:
         pull_secrets_yaml = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "assets", "kubernetes_image_pull_secrets.yml.j2"
         )
-        rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
+        return self._render_and_write_kubernetes_config(
             kubernetes_config_path=pull_secrets_yaml,
             application_name=application_name,
             secrets=[
@@ -225,8 +222,6 @@ class DeployToKubernetes(BaseKubernetes):
                 Secret("secret_name", self.config["image_pull_secret"]["secret_name"]),
             ],
         )
-        self._apply_kubernetes_config_file(rendered_kubernetes_config_path)
-        logger.info("Docker registry secret available")
 
     def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
         """Run a full deployment to Kubernetes, given configuration.
@@ -242,7 +237,9 @@ class DeployToKubernetes(BaseKubernetes):
         logger.info("Kubeconfig loaded")
 
         if self.config["image_pull_secret"]["create"]:
-            self._create_image_pull_secret(application_name)
+            file_path = self._create_image_pull_secret(application_name)
+            self._apply_kubernetes_config_file(file_path)
+            logger.info("Docker registry secret available")
 
         secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
             ApplicationName().get(self.config)
