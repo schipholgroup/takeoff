@@ -54,14 +54,11 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
-      - run: env
-      - run: docker version
-      - run: echo $REGISTRY_USER && echo $REGISTRY_PASSWORD
       - run: env | grep -v ^PATH > .env
       - run: docker build -t takeoff:latest -f Dockerfile .
       - run:
           command: |
-            echo "f9e1f49e-59d0-44f6-83f1-d41903bb5d9d" | docker login --username $REGISTRY_USER --password-stdin
+            echo $REGISTRY_PASSWORD | docker login --username $REGISTRY_USER --password-stdin
             version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
             docker tag takeoff:latest schipholhub/takeoff:${version}
             docker push schipholhub/takeoff:${version}
