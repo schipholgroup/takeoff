@@ -6,7 +6,9 @@ from unittest import mock
 import pytest
 
 from takeoff.application_version import ApplicationVersion
+from takeoff.azure.credentials.container_registry import DockerCredentials
 from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
+from takeoff.util import run_shell_command
 from tests.azure import takeoff_config
 
 env_variables = {'AZURE_TENANTID': 'David',
@@ -67,8 +69,7 @@ class TestDeployToKubernetes(object):
     @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._get_docker_registry_secret", return_value="somebase64encodedstring")
     def test_create_docker_registry_secret(self, _, victim):
         with mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._write_kubernetes_config") as m_write:
-            with mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._apply_kubernetes_config_file") as m_apply:
-                victim._create_image_pull_secret("myapp")
+            victim._create_image_pull_secret("myapp")
 
         expected_result = """kind: Namespace
 apiVersion: v1
@@ -110,6 +111,23 @@ spec:
         - name: acr-auth"""
 
         assert result == expected_result
+
+    @mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry.credentials",
+                return_value=DockerCredentials("myuser", "secretpassword", "registry.io"))
+    def test_get_docker_registry_secret(self, _, victim):
+        result = victim._get_docker_registry_secret()
+        assert result == "eydhdXRocyc6IHsncmVnaXN0cnkuaW8nOiB7J3VzZXJuYW1lJzogJ215dXNlcicsICdwYXNzd29yZCc6ICdzZWNyZXRwYXNzd29yZCcsICdhdXRoJzogJ2JYbDFjMlZ5T25ObFkzSmxkSEJoYzNOM2IzSmsnfX19"
+
+    @pytest.mark.skip(reason="kubectl can't work without a valid kube context :(")
+    @mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry.credentials",
+                return_value=DockerCredentials("myuser", "secretpassword", "registry.io"))
+    def test_validate_yaml(self, _, victim):
+        path = victim._create_image_pull_secret("myapp")
+
+        cmd = ["kubectl", "apply", "--dry-run", "--validate", "-f", path]
+        code, lines = run_shell_command(cmd)
+        print(lines)
+        assert code == 0
 
 
 @dataclass(frozen=True)
