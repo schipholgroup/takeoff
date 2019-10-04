@@ -134,19 +134,25 @@ class DeployToKubernetes(BaseKubernetes):
         and are inserted into a secret called 'acr-auth'
         """
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
-        val = b64_encode(str({
-            "auths": {
-                docker_credentials.registry: {
-                    "username": docker_credentials.username,
-                    "password": docker_credentials.password,
-                    "auth": b64_encode(f"{docker_credentials.username}:{docker_credentials.password}"),
+        val = b64_encode(
+            str(
+                {
+                    "auths": {
+                        docker_credentials.registry: {
+                            "username": docker_credentials.username,
+                            "password": docker_credentials.password,
+                            "auth": b64_encode(
+                                f"{docker_credentials.username}:{docker_credentials.password}"
+                            ),
+                        }
+                    }
                 }
-            }
-        }))
+            )
+        )
         return val
 
     def _render_kubernetes_config(
-            self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
+        self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
     ) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
@@ -162,7 +168,7 @@ class DeployToKubernetes(BaseKubernetes):
         return rendered_kubernetes_config_path.name
 
     def _render_and_write_kubernetes_config(
-            self, kubernetes_config_path: str, application_name: str, secrets: List[Secret]
+        self, kubernetes_config_path: str, application_name: str, secrets: List[Secret]
     ) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
