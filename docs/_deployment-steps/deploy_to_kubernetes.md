@@ -34,7 +34,7 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | field | description | value
 | ----- | ----------- 
 | `kubernetes_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) Kubernetes deployment config | Mandatory value, must be a valid path in the repository |
-| `image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True, with `secret_name=registry_auth` and `namespace=default` |
+| `image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True, with `secret_name=registry-auth` and `namespace=default` |
 | `image_pull_secret.create` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True
 | `image_pull_secret.secret_name` | The name of secret | Defaults to `secret_name`
 | `image_pull_secret.namespace` | The namespace where the secret should be created in | Default to `default` 
@@ -118,7 +118,7 @@ steps:
 ```
 
 Extended configuration example, where we have explicitly disabled the creation of kubernetes secrets by Takeoff. In this case,
-we also want to restart the resources, even if their Kubernetes yaml config is unchanged. It will also create image pull secrets in namespace `default` with name `registry_auth`.
+we also want to restart the resources, even if their Kubernetes yaml config is unchanged. It will also create image pull secrets in namespace `default` with name `registry-auth`.
 
 ```yaml
 steps:
