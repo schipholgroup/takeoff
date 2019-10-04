@@ -123,7 +123,7 @@ spec:
     def test_validate_yaml(self, _, victim):
         path = victim._create_image_pull_secret("myapp")
 
-        cmd = ["kubectl", "create", "--dry-run", "--validate", "-f", path]
+        cmd = ["kubectl", "apply", "--dry-run", "--validate", "-f", path]
         code, lines = run_shell_command(cmd)
         print(lines)
         assert code == 0
