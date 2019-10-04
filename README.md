@@ -37,7 +37,7 @@ we could ever hope to be. Takeoff is specifically aimed at your CI process when 
 work nicely together to deliver an awesome product.
 
 ## Getting started
-To get started quickly, have look [here](https://schiphol-hub.github.io/takeoff/getting-started) to read more on how to setup Takeoff in your project.
+To get started quickly, have look [here](https://schipholgroup.github.io/takeoff/getting-started) to read more on how to setup Takeoff in your project.
 
 ## Contributing
-To get started with contributing to Takeoff read the [developers guide](https://github.com/Schiphol-Hub/takeoff/blob/master/CONTRIBUTING.md).
+To get started with contributing to Takeoff read the [developers guide](https://github.com/schipholgroup/takeoff/blob/master/CONTRIBUTING.md).

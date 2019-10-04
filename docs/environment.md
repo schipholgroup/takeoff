@@ -100,3 +100,5 @@ def deploy_env_logic(config: dict) -> ApplicationVersion:
         logger.info("Not deploying feature branches")
         exit(0)
 ```
+
+For more information and examples see the [Takeoff plugins](takeoff-plugins) page.
