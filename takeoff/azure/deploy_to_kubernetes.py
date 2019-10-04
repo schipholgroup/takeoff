@@ -16,6 +16,7 @@ from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserC
 from takeoff.azure.credentials.container_registry import DockerRegistry
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_kubernetes_name
+from takeoff.context import Context, ContextKey
 from takeoff.credentials.Secret import Secret
 from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
@@ -151,6 +152,7 @@ class DeployToKubernetes(BaseKubernetes):
     def _render_kubernetes_config(
         self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
     ) -> str:
+        print(secrets)
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
             {"docker_tag": self.env.artifact_tag, "application_name": application_name, **secrets},
@@ -176,8 +178,13 @@ class DeployToKubernetes(BaseKubernetes):
         Returns:
             The path to the temporary file where the rendered kubernetes configuration is stored.
         """
+        vault_values = {_.jinja_safe_key: _.val for _ in secrets}
+        context_values = {
+            _.jinja_safe_key: _.val for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_SECRETS, {})
+        }
+
         kubernetes_config = self._render_kubernetes_config(
-            kubernetes_config_path, application_name, {_.key.replace("-", "_"): _.val for _ in secrets}
+            kubernetes_config_path, application_name, {**vault_values, **context_values}
         )
         return self._write_kubernetes_config(kubernetes_config)
 
