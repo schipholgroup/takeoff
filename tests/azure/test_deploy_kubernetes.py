@@ -116,7 +116,7 @@ spec:
                 return_value=DockerCredentials("myuser", "secretpassword", "registry.io"))
     def test_get_docker_registry_secret(self, _, victim):
         result = victim._get_docker_registry_secret()
-        assert result == "eydhdXRocyc6IHsncmVnaXN0cnkuaW8nOiB7J3VzZXJuYW1lJzogJ215dXNlcicsICdwYXNzd29yZCc6ICdzZWNyZXRwYXNzd29yZCcsICdhdXRoJzogJ2JYbDFjMlZ5T25ObFkzSmxkSEJoYzNOM2IzSmsnfX19"
+        assert result == "eyJhdXRocyI6IHsicmVnaXN0cnkuaW8iOiB7InVzZXJuYW1lIjogIm15dXNlciIsICJwYXNzd29yZCI6ICJzZWNyZXRwYXNzd29yZCIsICJhdXRoIjogImJYbDFjMlZ5T25ObFkzSmxkSEJoYzNOM2IzSmsifX19"
 
     @pytest.mark.skip(reason="kubectl can't work without a valid kube context :(")
     @mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry.credentials",
