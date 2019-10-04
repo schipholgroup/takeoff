@@ -142,8 +142,8 @@ class TestConfigureEventHub(object):
 
         victim.create_eventhub_producer_policies(policies)
 
-        assert Context().get(ContextKey.EVENTHUB_PRODUCER_SECRETS) == [Secret('entity1-connection-string', 'potato-connection'),
-                                                                       Secret('entity2-connection-string', 'potato-connection')]
+        assert Context().get(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS) == [Secret('entity1-connection-string', 'potato-connection'),
+                                                                              Secret('entity2-connection-string', 'potato-connection')]
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_create_producer_policy_without_databricks(self, victim):

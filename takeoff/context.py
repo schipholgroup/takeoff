@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 @unique
 class ContextKey(Enum):
-    EVENTHUB_PRODUCER_SECRETS = auto()
+    EVENTHUB_PRODUCER_POLICY_SECRETS = auto()
 
 
 class Singleton(type):
@@ -18,7 +18,7 @@ class Singleton(type):
 
 class Context(metaclass=Singleton):
     def __init__(self):
-        self.context = {}
+        self.__data = {}
 
     def create_or_update(self, key, value) -> "Context":
         """Creates a new key with value. If the key exists the value is updated
@@ -30,7 +30,7 @@ class Context(metaclass=Singleton):
         Returns:
             Updated Context
         """
-        self.context.update({key: value})
+        self.__data.update({key: value})
         return self
 
     def delete(self, key) -> "Context":
@@ -42,7 +42,7 @@ class Context(metaclass=Singleton):
         Returns:
             Context without given key
         """
-        del self.context[key]
+        del self.__data[key]
         return self
 
     def clear(self) -> "Context":
@@ -51,7 +51,7 @@ class Context(metaclass=Singleton):
         Returns:
             Empty Context
         """
-        self.context = {}
+        self.__data = {}
         return self
 
     def get(self, key) -> Any:
@@ -75,7 +75,7 @@ class Context(metaclass=Singleton):
         Returns:
             The value if the key exists, _else otherwise
         """
-        return self.context.get(key, _else)
+        return self.__data.get(key, _else)
 
     def exists(self, key) -> bool:
         """Convenience method
@@ -86,4 +86,4 @@ class Context(metaclass=Singleton):
         Returns:
             True if the key exists, false otherwise
         """
-        return key in self.context
+        return key in self.__data

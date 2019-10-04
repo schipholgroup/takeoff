@@ -152,7 +152,6 @@ class DeployToKubernetes(BaseKubernetes):
     def _render_kubernetes_config(
         self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
     ) -> str:
-        print(secrets)
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
             {"docker_tag": self.env.artifact_tag, "application_name": application_name, **secrets},
@@ -180,7 +179,8 @@ class DeployToKubernetes(BaseKubernetes):
         """
         vault_values = {_.jinja_safe_key: _.val for _ in secrets}
         context_values = {
-            _.jinja_safe_key: _.val for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_SECRETS, {})
+            _.jinja_safe_key: _.val
+            for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, {})
         }
 
         kubernetes_config = self._render_kubernetes_config(

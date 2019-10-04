@@ -148,7 +148,7 @@ class ConfigureEventHub(Step):
             self._create_producer_policy(policy, resource_group, eventhub_namespace, application_name)
             for policy in producer_policies
         ]
-        Context().create_or_update(ContextKey.EVENTHUB_PRODUCER_SECRETS, secrets)
+        Context().create_or_update(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, secrets)
 
     def _create_producer_policy(
         self,
