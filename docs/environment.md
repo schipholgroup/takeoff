@@ -29,18 +29,8 @@ Concretely this means that many feature branches may be running simultaneously, 
 
 For this all to work, Schiphol Takeoff makes some assumptions about naming conventions. For example, in the case of Microsoft Azure, each of these environments basically mean a separate resource group. These resource groups are identical in the fact that they contain the same services, but otherwise might be different in terms of scaling and naming of services. Based on naming conventions Schiphol Takeoff determines during CI which service in which resource group it should deploy to.
 
-
-## Customization using plugins
-
-Now, we know that not everyone has the same environments, or might want a different versioning tactic: maybe 
-
-- _release_ versions should go to __acceptance__;
-- and _SNAPSHOT_ should go to __testing__;
-- feature branches should not be deployed
-     
-This is where Schiphol Takeoff plugins come in to play. Using python, we allow you to write your own custom logic regarding what should go where and when. Regarding the where part: we also allow you to introduce your own naming conventions and logic by the form of a python plugin. Writing your own plugin is quite easy, but to understand what plugins can mean for you a basic understanding of HOW Schiphol Takeoff works is necessary. 
-
-One of the most important classes in Schiphol Takeoff is `ApplicationVersion`. It is a [dataclass]() with the following signature:
+## `ApplicationVersion`
+One of the most important classes in Schiphol Takeoff is `ApplicationVersion`. It is a [dataclass](https://docs.python.org/3/library/dataclasses.html) with the following signature:
 
 ```python
 @dataclass(frozen=True)
@@ -76,29 +66,3 @@ def deploy_env_logic(config: dict) -> ApplicationVersion:
 
 Without knowing too much about specifics of the code one can see that git tags go to __production__, master branches go to __acceptance__ and other features branches go to __development__.
 
-Now on to writing plugins for your own logic. Create a new folder in your repository prefixed with `takeoff_`, for example `takeoff_plugins` and in it an `__init__.py` file. This file will contain any custom funcion for Schiphol Takeoff which will scan and load these on runtime. To create you own logic for deployment simply override the default function. For the example stated above the new function looks like:
-
-```python
-import logging
-
-from takeoff.application_version import ApplicationVersion
-from takeoff.credentials.branch_name import BranchName
-from takeoff.util import get_tag
-
-logger = logging.getLogger(__name__)
-
-
-def deploy_env_logic(config: dict) -> ApplicationVersion:
-    branch = BranchName().get(config)
-    tag = get_tag()
-
-    if tag:
-        return ApplicationVersion("acp", str(tag), branch)
-    elif branch == "master":
-        return ApplicationVersion("tst", "SNAPSHOT", branch)
-    else:
-        logger.info("Not deploying feature branches")
-        exit(0)
-```
-
-For more information and examples see the [Takeoff plugins](takeoff-plugins) page.
