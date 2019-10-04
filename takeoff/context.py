@@ -1,5 +1,5 @@
 from enum import Enum, auto, unique
-from typing import Any
+from typing import Any, Dict
 
 
 @unique
@@ -8,7 +8,7 @@ class ContextKey(Enum):
 
 
 class Singleton(type):
-    _instances = {}
+    _instances: Dict[Any, Any] = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
