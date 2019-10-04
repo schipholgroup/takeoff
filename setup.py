@@ -45,6 +45,7 @@ setup(
     long_description=long_description,
     author_email="SDH-Support@schiphol.nl",
     packages=find_packages(exclude=("tests*",)),
+    include_package_data=True,
     install_requires=setup_dependencies,
     setup_requires=setup_dependencies,
     tests_require=test_dependencies,

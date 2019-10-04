@@ -1,6 +1,7 @@
-FROM schipholhub/takeoff-base:1.0.2
+FROM schipholhub/takeoff-base:1.1.0
 
 COPY setup.py /root
+COPY MANIFEST.in /root
 COPY README.md /root
 COPY scripts /root/scripts
 COPY takeoff /root/takeoff

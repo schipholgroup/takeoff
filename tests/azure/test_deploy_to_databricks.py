@@ -19,9 +19,9 @@ jobs = [
     JobConfig("tim-postfix-SNAPSHOT", 7),
 ]
 
-streaming_job_config = "tests/azure/test_job_config.json.j2"
-batch_job_config = "tests/azure/test_job_config_scheduled.json.j2"
-dynamic_schedule_job_config = "tests/azure/test_job_config_schedule_dynamically.json.j2"
+streaming_job_config = "tests/azure/files/test_job_config.json.j2"
+batch_job_config = "tests/azure/files/test_job_config_scheduled.json.j2"
+dynamic_schedule_job_config = "tests/azure/files/test_job_config_schedule_dynamically.json.j2"
 
 BASE_CONF = {'task': 'deploy_to_databricks', 'jobs': [{"main_name": "Dave"}]}
 TEST_ENV_VARS = {'AZURE_TENANTID': 'David',
@@ -53,7 +53,7 @@ def victim():
          mock.patch("takeoff.azure.deploy_to_databricks.Databricks", return_value=MockDatabricksClient()), \
          mock.patch("takeoff.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client), \
          mock.patch("takeoff.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client):
-        conf = {**takeoff_config(), **BASE_CONF, **{"common": {"databricks_library_path": "/path"}}}
+        conf = {**takeoff_config(), **BASE_CONF}
         return DeployToDatabricks(ApplicationVersion('ACP', 'bar', 'foo'), conf)
 
 
@@ -160,7 +160,7 @@ class TestDeployToDatabricks(object):
     def test_yaml_to_databricks_json(self, _, __, victim):
         conf = {
             "main_name": "foo.class",
-            "config_file": "tests/azure/test_databricks.json.j2",
+            "config_file": "tests/azure/files/test_databricks.json.j2",
             "lang": "scala",
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
@@ -175,7 +175,7 @@ class TestDeployToDatabricks(object):
                 "cluster_log_conf": {"dbfs": {"destination": "dbfs:/mnt/sdh/logs/job_name"}},
             },
             "some_int": 5,
-            "libraries": [{"jar": "/path/app_name/app_name-bar.jar"}],
+            "libraries": [{"jar": "dbfs:/mnt/libraries/app_name/app_name-bar.jar"}],
             "spark_jar_task": {"main_class_name": "foo.class", "parameters": ["--key", "val", "--key2", "val2"]},
         }
 
@@ -321,7 +321,7 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -329,7 +329,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles"
             },
             "spark_python_task": {
-                "python_file": "/path/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -367,7 +367,7 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -375,7 +375,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles"
             },
             "spark_python_task": {
-                "python_file": "/path/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -413,11 +413,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "/path/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -449,11 +449,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "/path/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -486,7 +486,7 @@ class TestDeployToDatabricks(object):
             "some_int": 5,
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -494,7 +494,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles"
             },
             "spark_python_task": {
-                "python_file": "/path/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -517,11 +517,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "/path/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }

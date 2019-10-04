@@ -5,13 +5,15 @@ import os
 import pkgutil
 import subprocess
 from dataclasses import dataclass
-from typing import Callable, List, Pattern, Union
+from typing import Callable, List, Pattern, Union, Tuple
 
 from git import Repo
 from jinja2 import Template
 from yaml import load
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_TAKEOFF_PLUGIN_PREFIX = "takeoff_"
 
 
 @dataclass(frozen=True)
@@ -22,6 +24,15 @@ class AzureSp(object):
 
 
 def render_string_with_jinja(path: str, params: dict) -> str:
+    """Read a file contents and render the jinja template
+
+    Args:
+        path: path to the file to render
+        params: the values to fill into the jinja template
+
+    Returns:
+        str: rendered jinja template as a string
+    """
     with open(path) as file_:
         template = Template(file_.read())
     rendered = template.render(**params)
@@ -29,6 +40,18 @@ def render_string_with_jinja(path: str, params: dict) -> str:
 
 
 def render_file_with_jinja(path: str, params: dict, parse_function: Callable) -> dict:
+    """Render a file with jinja, with a provided callable.
+
+    The callable is used to parse the file into a python object, once the jinja template has been rendered
+
+    Args:
+        path: path to the file to render
+        params: the values to fill into the jinja template
+        parse_function: the function to use to parse the file into a python object
+
+    Returns:
+        dict: parsed values from the file
+    """
     rendered = render_string_with_jinja(path, params)
     return parse_function(rendered)
 
@@ -44,7 +67,15 @@ def get_short_hash(n: int = 7) -> str:
     return repo.git.rev_parse(sha, short=n)
 
 
-def b64_encode(s: str):
+def b64_encode(s: str) -> str:
+    """Apply base64 encoding to a given string
+
+    Args:
+        s: string to encode
+
+    Returns:
+        str: base64 encoded string
+    """
     return base64.b64encode(s.encode()).decode()
 
 
@@ -115,7 +146,7 @@ def get_jar_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"
 
 
-def run_shell_command(command: List[str]) -> int:
+def run_shell_command(command: List[str]) -> Tuple[int, List]:
     """Runs a shell command using `subprocess.Popen`
 
     In addition to running any bash command, the output of process is streamed directly to the stdout.
@@ -124,19 +155,23 @@ def run_shell_command(command: List[str]) -> int:
         The result of the bash command. 0 for success, >=1 for failure.
     """
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
+    output_lines = []
     while True:
         output = process.stdout.readline()
         if output == "" and process.poll() is not None:
             break
         if output:
             print(output.strip())
-    return process.poll()
+            output_lines.append(output)
+    return process.poll(), output_lines
 
 
 def load_takeoff_plugins():
     """https://packaging.python.org/guides/creating-and-discovering-plugins/"""
-    return {
+    plugins = {
         name: importlib.import_module(name)
         for finder, name, ispkg in pkgutil.iter_modules()
-        if name.startswith("takeoff_")
+        if name.startswith(DEFAULT_TAKEOFF_PLUGIN_PREFIX)
     }
+    logging.info(f"Found Takeoff plugins {plugins}")
+    return plugins
