@@ -129,12 +129,9 @@ class DeployToKubernetes(BaseKubernetes):
 
     def _get_docker_registry_secret(self) -> str:
         """Create a secret containing credentials for logging into the defined docker registry
-
-        The credentials are fetched from your keyvault provider,
-        and are inserted into a secret called 'acr-auth'
         """
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
-        val = b64_encode(
+        return b64_encode(
             str(
                 {
                     "auths": {
@@ -149,7 +146,6 @@ class DeployToKubernetes(BaseKubernetes):
                 }
             )
         )
-        return val
 
     def _render_kubernetes_config(
         self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
