@@ -93,7 +93,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             vol.Optional("secret_name", default="registry-auth"): str,
             vol.Optional("namespace", default="default"): str,
         },
-        vol.Optional("custom_values"): {},
+        vol.Optional("custom_values", default={}): {},
         vol.Optional("restart_unchanged_resources", default=False): bool,
         "azure": {
             vol.Required(
@@ -246,7 +246,7 @@ class DeployToKubernetes(BaseKubernetes):
         )
 
     def _get_custom_values(self) -> Dict[str, str]:
-        if "custom_values" in self.config:
+        if self.config["custom_values"]:
             if self.env.environment in self.config["custom_values"]:
                 return self.config["custom_values"][self.env.environment]
             else:
@@ -254,7 +254,6 @@ class DeployToKubernetes(BaseKubernetes):
                     "No matching environment was found for custom values. Check your Takeoff config"
                     f"and your environment names. Looking for environment: {self.env.environment}"
                 )
-
         return {}
 
     def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):

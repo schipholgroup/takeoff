@@ -139,7 +139,8 @@ steps:
 
 Extended configuration example, where we have explicitly disabled the creation of kubernetes secrets by Takeoff. In this case,
 we also want to restart the resources, even if their Kubernetes yaml config is unchanged. It will also create image pull secrets in namespace `default` with name `registry-auth`.
-We also pass in a custom url value per environment in this example. 
+We also pass in a custom url value per environment in this example. In this case, we're using the default environment naming that Takeoff itself uses too. Please take a look at
+the [environment](../environment.md) docs for more information on how to define your own environment names.
 
 ```yaml
 steps:
