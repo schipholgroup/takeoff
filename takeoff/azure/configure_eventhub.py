@@ -169,11 +169,12 @@ class ConfigureEventHub(Step):
         common_azure_parameters = {
             "resource_group_name": resource_group,
             "namespace_name": eventhub_namespace,
-            "event_hub_name": policy.eventhub_entity_name + self.env.environment_formatted,
+            "event_hub_name": get_eventhub_entity_name(policy.eventhub_entity_name, self.env),
             "authorization_rule_name": f"{application_name}-send-policy",
         }
 
         try:
+            logger.info(f"Creating producer policy with values {pprint.pformat(common_azure_parameters)}")
             self.eventhub_client.event_hubs.create_or_update_authorization_rule(
                 **common_azure_parameters, rights=[AccessRights.send]
             )
@@ -181,7 +182,7 @@ class ConfigureEventHub(Step):
                 **common_azure_parameters
             ).primary_connection_string
         except Exception as e:
-            logger.info("Could not create connection String. Make sure the EventHub exists.")
+            logger.error("Could not create connection String. Make sure the EventHub exists.")
             raise e
 
         secret = Secret(f"{policy.eventhub_entity_name}-connection-string", connection_string)
