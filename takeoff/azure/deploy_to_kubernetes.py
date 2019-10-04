@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from tempfile import NamedTemporaryFile
@@ -132,7 +133,7 @@ class DeployToKubernetes(BaseKubernetes):
         """
         docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
         return b64_encode(
-            str(
+            json.dumps(
                 {
                     "auths": {
                         docker_credentials.registry: {
