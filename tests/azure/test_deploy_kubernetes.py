@@ -82,7 +82,7 @@ type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: somebase64encodedstring
 metadata:
-  name: registry_auth
+  name: registry-auth
   namespace: default"""
         m_write.assert_called_once_with(expected_result)
 

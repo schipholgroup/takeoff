@@ -86,10 +86,10 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Required("kubernetes_config_path"): str,
         vol.Optional(
             "image_pull_secret",
-            default={"create": True, "secret_name": "registry_auth", "namespace": "default"},
+            default={"create": True, "secret_name": "registry-auth", "namespace": "default"},
         ): {
             vol.Optional("create", default=True): bool,
-            vol.Optional("secret_name", default="registry_auth"): str,
+            vol.Optional("secret_name", default="registry-auth"): str,
             vol.Optional("namespace", default="default"): str,
         },
         vol.Optional("restart_unchanged_resources", default=False): bool,
