@@ -179,7 +179,7 @@ class DeployToKubernetes(BaseKubernetes):
         """
         vault_values = {_.jinja_safe_key: _.val for _ in secrets}
         context_values = {
-            _.jinja_safe_key: _.val
+            _.jinja_safe_key: b64_encode(_.val)
             for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, {})
         }
 

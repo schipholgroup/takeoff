@@ -129,3 +129,27 @@ steps:
     
   restart_unchanged_resources: true
 ```
+
+### Eventhub producer policy secrets
+Eventhub producer policy secrets from [`configure_eventhub`](deployment-step/configure-eventhub) are available during this task. This make is possible for the configuration below:
+```yaml
+steps:
+  - task: configure_eventhub
+    create_producer_policies:
+      - eventhub_entity_naming: entity1
+      - eventhub_entity_naming: entity2
+  - task: deploy_to_kubernetes
+    kubernetes_config_path: my_kubernetes_config.yml.j2
+```
+with `my_kubernetes_config.yml.j2`
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: armada-connections
+data:
+  entity1-secret: {{ entity1_connection_string }}
+  entity2-secret: {{ entity2_connection_string }}
+```
+
+The jinja variables `entity1_connection_string` and `entity2_connection_string` are named by your `eventhub_entity_naming` in `create_producer_policies`, posfixed with `connection_string`.
