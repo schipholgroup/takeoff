@@ -93,6 +93,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             vol.Optional("secret_name", default="registry-auth"): str,
             vol.Optional("namespace", default="default"): str,
         },
+        vol.Optional("custom_values"): {},
         vol.Optional("restart_unchanged_resources", default=False): bool,
         "azure": {
             vol.Required(
