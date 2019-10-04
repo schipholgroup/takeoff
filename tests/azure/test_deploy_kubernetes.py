@@ -125,6 +125,7 @@ spec:
 
         cmd = ["kubectl", "create", "--dry-run", "--validate", "-f", path]
         code, lines = run_shell_command(cmd)
+        print(lines)
         assert code == 0
 
 
