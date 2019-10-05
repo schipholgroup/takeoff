@@ -46,6 +46,3 @@ def add_docker_file(file, postfix, custom_image_name):
     click.echo(pprint.pformat(new))
 
 
-build_docker_image.add_command(add)
-build_docker_image.add_command(show)
-build_docker_image.add_command(add_docker_file)
