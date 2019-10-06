@@ -178,13 +178,20 @@ class DeployToKubernetes(BaseKubernetes):
             The path to the temporary file where the rendered kubernetes configuration is stored.
         """
         vault_values = {_.jinja_safe_key: _.val for _ in secrets}
-        context_values = {
+        producer_secrets = {
             _.jinja_safe_key: b64_encode(_.val)
             for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, {})
         }
+        consumer_secrets = {
+            _.jinja_safe_key: b64_encode(_.val)
+            for _ in Context().get_or_else(ContextKey.EVENTHUB_CONSUMER_GROUP_SECRETS, {})
+        }
 
         kubernetes_config = self._render_kubernetes_config(
-            kubernetes_config_path, application_name, {**vault_values, **context_values}
+            kubernetes_config_path, application_name,
+            {**vault_values,
+             **producer_secrets,
+             **consumer_secrets}
         )
         return self._write_kubernetes_config(kubernetes_config)
 
