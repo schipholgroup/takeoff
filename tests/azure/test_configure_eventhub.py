@@ -122,14 +122,14 @@ class TestConfigureEventHub(object):
 
         victim.eventhub_client.event_hubs.create_or_update_authorization_rule.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
             rights=[AccessRights.send]
         )
         victim.eventhub_client.event_hubs.list_keys.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
         )
@@ -158,14 +158,14 @@ class TestConfigureEventHub(object):
 
         victim.eventhub_client.event_hubs.create_or_update_authorization_rule.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
             rights=[AccessRights.send]
         )
         victim.eventhub_client.event_hubs.list_keys.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
         )
