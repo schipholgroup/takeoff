@@ -152,11 +152,11 @@ class ConfigureEventHub(Step):
         Context().create_or_update(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, secrets)
 
     def _create_producer_policy(
-            self,
-            policy: EventHubProducerPolicy,
-            resource_group: str,
-            eventhub_namespace: str,
-            application_name: str,
+        self,
+        policy: EventHubProducerPolicy,
+        resource_group: str,
+        eventhub_namespace: str,
+        application_name: str,
     ) -> Secret:
         """Creates given producer policy on EventHub. Optionally constructs Databricks secret
         containing the connection string for the policy.
@@ -279,7 +279,10 @@ class ConfigureEventHub(Step):
         try:
             logger.info(f"Creating consumer group {group}")
             self.eventhub_client.consumer_groups.create_or_update(
-                group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name, group.consumer_group
+                group.eventhub.resource_group,
+                group.eventhub.namespace,
+                group.eventhub.name,
+                group.consumer_group,
             )
             connection_string = self._create_connection_string(group.eventhub)
         except Exception as e:
@@ -307,7 +310,11 @@ class ConfigureEventHub(Step):
 
         if not self._authorization_rules_exists(eventhub_entity, policy_name):
             self.eventhub_client.event_hubs.create_or_update_authorization_rule(
-                eventhub_entity.resource_group, eventhub_entity.namespace, eventhub_entity.name, policy_name, [AccessRights.listen]
+                eventhub_entity.resource_group,
+                eventhub_entity.namespace,
+                eventhub_entity.name,
+                policy_name,
+                [AccessRights.listen],
             )
 
         connection_string = self.eventhub_client.event_hubs.list_keys(
@@ -348,6 +355,5 @@ class ConfigureEventHub(Step):
             consumer_groups: A list of EventHubConsumerGroup containing the name of the consumer
             group to create.
         """
-        secrets = [self._create_consumer_group(group=group)
-                   for group in consumer_groups]
+        secrets = [self._create_consumer_group(group=group) for group in consumer_groups]
         Context().create_or_update(ContextKey.EVENTHUB_CONSUMER_GROUP_SECRETS, secrets)
