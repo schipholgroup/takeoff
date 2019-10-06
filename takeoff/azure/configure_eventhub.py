@@ -152,11 +152,11 @@ class ConfigureEventHub(Step):
         Context().create_or_update(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, secrets)
 
     def _create_producer_policy(
-        self,
-        policy: EventHubProducerPolicy,
-        resource_group: str,
-        eventhub_namespace: str,
-        application_name: str,
+            self,
+            policy: EventHubProducerPolicy,
+            resource_group: str,
+            eventhub_namespace: str,
+            application_name: str,
     ) -> Secret:
         """Creates given producer policy on EventHub. Optionally constructs Databricks secret
         containing the connection string for the policy.
@@ -269,52 +269,52 @@ class ConfigureEventHub(Step):
         databricks_secrets._create_scope(application_name)
         databricks_secrets._add_secrets(application_name, secrets)
 
-    def _create_consumer_group(self, group: EventHubConsumerGroup):
+    def _create_consumer_group(self, group: EventHubConsumerGroup) -> Secret:
         """Creates given consumer groups on EventHub. Optionally constructs Databricks secret
         containing the connection string for the consumer group.
 
         Args:
             group: Object containing names of EventHub namespace and entity
         """
-        self.eventhub_client.consumer_groups.create_or_update(
-            group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name, group.consumer_group
-        )
+        try:
+            logger.info(f"Creating consumer group {group}")
+            self.eventhub_client.consumer_groups.create_or_update(
+                group.eventhub.resource_group, group.eventhub.namespace, group.eventhub.name, group.consumer_group
+            )
+            connection_string = self._create_connection_string(group.eventhub)
+        except Exception as e:
+            logger.error("Could not create connection String. Make sure the EventHub exists.")
+            raise e
+
+        secret = Secret(f"{group.eventhub}-connection-string", connection_string.connection_string)
+
         if group.create_databricks_secret:
             application_name = ApplicationName().get(self.config)
-            entities = self._get_unique_eventhubs([group])
-            connection_strings = self._create_connection_strings(eventhub_entities=entities)
-            secrets = [
-                Secret(f"{_.eventhub_entity}-connection-string", _.connection_string)
-                for _ in connection_strings
-            ]
+            self.create_databricks_secrets([secret], application_name)
 
-            self.create_databricks_secrets(secrets, application_name)
+        return secret
 
-    def _create_connection_strings(self, eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
+    def _create_connection_string(self, eventhub_entity: EventHub) -> ConnectingString:
         """Creates connections strings for all given EventHub entities.
 
         Args:
-            eventhub_entities: List of objects containing EventHub metadata
+            eventhub_entity: Objects containing EventHub metadata
 
         Returns:
-            List of connection strings, one for each requested consumer group.
+            Connection strings
         """
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
-        for hub in eventhub_entities:
-            if not self._authorization_rules_exists(hub, policy_name):
-                self.eventhub_client.event_hubs.create_or_update_authorization_rule(
-                    hub.resource_group, hub.namespace, hub.name, policy_name, [AccessRights.listen]
-                )
+        if not self._authorization_rules_exists(eventhub_entity, policy_name):
+            self.eventhub_client.event_hubs.create_or_update_authorization_rule(
+                eventhub_entity.resource_group, eventhub_entity.namespace, eventhub_entity.name, policy_name, [AccessRights.listen]
+            )
 
-        connection_strings = [
-            self.eventhub_client.event_hubs.list_keys(
-                hub.resource_group, hub.namespace, hub.name, policy_name
-            ).primary_connection_string
-            for hub in eventhub_entities
-        ]
+        connection_string = self.eventhub_client.event_hubs.list_keys(
+            eventhub_entity.resource_group, eventhub_entity.namespace, eventhub_entity.name, policy_name
+        ).primary_connection_string
 
-        return [ConnectingString(hub.name, conn) for hub, conn in zip(eventhub_entities, connection_strings)]
+        return ConnectingString(eventhub_entity.name, connection_string)
 
     @staticmethod
     def _get_unique_eventhubs(eventhubs: List[EventHubConsumerGroup]) -> Set[EventHub]:
@@ -326,9 +326,7 @@ class ConfigureEventHub(Step):
         Returns:
             Unique set of objects containing Evenhub metadata
         """
-        return set(
-            EventHub(_.eventhub.resource_group, _.eventhub.namespace, _.eventhub.name) for _ in eventhubs
-        )
+        return set(_.eventhub for _ in eventhubs)
 
     def _get_eventhub_client(self) -> EventHubManagementClient:
         """Constructs an EventHub Management client
@@ -350,6 +348,6 @@ class ConfigureEventHub(Step):
             consumer_groups: A list of EventHubConsumerGroup containing the name of the consumer
             group to create.
         """
-        for group in consumer_groups:
-            if self._eventhub_exists(group) and not self._group_exists(group):
-                self._create_consumer_group(group=group)
+        secrets = [self._create_consumer_group(group=group)
+                   for group in consumer_groups]
+        Context().create_or_update(ContextKey.EVENTHUB_CONSUMER_GROUP_SECRETS, secrets)

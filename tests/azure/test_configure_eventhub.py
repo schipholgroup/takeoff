@@ -122,14 +122,14 @@ class TestConfigureEventHub(object):
 
         victim.eventhub_client.event_hubs.create_or_update_authorization_rule.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
             rights=[AccessRights.send]
         )
         victim.eventhub_client.event_hubs.list_keys.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
         )
@@ -158,14 +158,14 @@ class TestConfigureEventHub(object):
 
         victim.eventhub_client.event_hubs.create_or_update_authorization_rule.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
             rights=[AccessRights.send]
         )
         victim.eventhub_client.event_hubs.list_keys.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
         )
@@ -180,20 +180,9 @@ class TestConfigureEventHub(object):
         assert not victim._authorization_rules_exists(group, 'idontexist')
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
-    def test_create_connection_strings(self, victim):
-        entities = [
-            EventHub('my-group', 'my-namespace', 'my-entity'),
-            EventHub('your-group', 'your-namespace', 'your-entity')
-        ]
-
-        expected_result = [
-            ConnectingString('my-entity', 'potato-connection'),
-            ConnectingString('your-entity', 'potato-connection')
-        ]
-
-        result = victim._create_connection_strings(entities)
-
-        assert result == expected_result
+    def test_create_connection_string(self, victim):
+        result = victim._create_connection_string(EventHub('my-group', 'my-namespace', 'my-entity'))
+        assert result == ConnectingString('my-entity', 'potato-connection')
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._create_producer_policy")
