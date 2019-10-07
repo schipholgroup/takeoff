@@ -13,10 +13,8 @@ from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserC
 from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_eventhub_name, get_eventhub_entity_name
-from takeoff.credentials.secret import Secret
 from takeoff.context import Context, ContextKey
-from takeoff.credentials.Secret import Secret
-from takeoff.credentials.application_name import ApplicationName
+from takeoff.credentials.secret import Secret
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 
@@ -189,7 +187,7 @@ class ConfigureEventHub(Step):
 
         secret = Secret(f"{policy.eventhub_entity_name}-connection-string", connection_string)
         if policy.create_databricks_secret:
-            self.create_databricks_secrets([secret], application_name)
+            self.create_databricks_secrets([secret])
         return secret
 
     def _eventhub_exists(self, group: EventHubConsumerGroup) -> bool:
@@ -288,7 +286,7 @@ class ConfigureEventHub(Step):
                 for _ in connection_strings
             ]
 
-            self.create_databricks_secrets(secrets, self.application_name)
+            self.create_databricks_secrets(secrets)
 
     def _create_connection_strings(self, eventhub_entities: Set[EventHub]) -> List[ConnectingString]:
         """Creates connections strings for all given EventHub entities.

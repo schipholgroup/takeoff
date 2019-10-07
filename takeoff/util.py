@@ -11,8 +11,6 @@ from git import Repo
 from jinja2 import Template
 from yaml import load
 
-from takeoff.conf import DEFAULT_TAKEOFF_PLUGIN_PREFIX
-
 logger = logging.getLogger(__name__)
 
 DEFAULT_TAKEOFF_PLUGIN_PREFIX = "takeoff_"
