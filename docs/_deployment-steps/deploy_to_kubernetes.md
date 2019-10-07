@@ -131,7 +131,7 @@ steps:
 ```
 
 ### Eventhub producer policy secrets
-Eventhub producer policy secrets from [`configure_eventhub`](deployment-step/configure-eventhub) are available during this task. This make it possible for the configuration below:
+Eventhub producer policy secrets from [`configure_eventhub`](deployment-step/configure-eventhub) are available during this task. This makes it possible for the configuration below to inject the secrets into `my_kubernetes_config.yml.j2`:
 ```yaml
 steps:
   - task: configure_eventhub
@@ -151,7 +151,5 @@ data:
   entity1-secret: {{ entity1_connection_string }}
   entity2-secret: {{ entity2_connection_string }}
 ```
-
-to inject the secrets into `my_kubernetes_config.yml.j2`.
 
 The jinja variables `entity1_connection_string` and `entity2_connection_string` are named by your `eventhub_entity_naming` in `create_producer_policies`, posfixed with `connection_string`.
