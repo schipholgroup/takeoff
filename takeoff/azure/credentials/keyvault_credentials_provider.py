@@ -86,7 +86,7 @@ class KeyVaultCredentialsMixin(object):
             raise ValueError(f"Could not find required key {secret_key}")
         return secrets[secret_key].val
 
-    def get_keyvault_secrets(self, prefix: Optional[str] = ""):
+    def get_keyvault_secrets(self, prefix: Optional[str] = "") -> List[Secret]:
         """
         Args:
             prefix (str, optional): A prefix to filter keyvault keys on. Default is the application name

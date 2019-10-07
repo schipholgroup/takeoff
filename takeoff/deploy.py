@@ -33,7 +33,7 @@ def find_env_function() -> Callable:
     """Finds the `deploy_env_logic` function.
 
     Returns:
-        Either the default function or a plugin function if it is found.
+        Either the default function or the first plugin function if it is found.
     """
     for plugin in load_takeoff_plugins().values():
         if hasattr(plugin, "deploy_env_logic"):

@@ -64,12 +64,8 @@ def victim():
          mock.patch("takeoff.azure.deploy_to_databricks.Databricks", return_value=MockDatabricksClient()), \
          mock.patch("takeoff.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client), \
          mock.patch("takeoff.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client):
-        conf = {
-            **takeoff_config(),
-            **BASE_CONF,
-            **{"common": {"databricks_library_path": "/path"}},
-        }
-        return DeployToDatabricks(ApplicationVersion("ACP", "bar", "foo"), conf)
+        conf = {**takeoff_config(), **BASE_CONF}
+        return DeployToDatabricks(ApplicationVersion('ACP', 'bar', 'foo'), conf)
 
 
 class TestDeployToDatabricks(object):
@@ -223,11 +219,8 @@ class TestDeployToDatabricks(object):
                 },
             },
             "some_int": 5,
-            "libraries": [{"jar": "/path/my_app/my_app-bar.jar"}],
-            "spark_jar_task": {
-                "main_class_name": "foo.class",
-                "parameters": ["--key", "val", "--key2", "val2"],
-            },
+            "libraries": [{"jar": "dbfs:/mnt/libraries/app_name/app_name-bar.jar"}],
+            "spark_jar_task": {"main_class_name": "foo.class", "parameters": ["--key", "val", "--key2", "val2"]},
         }
 
     def test_correct_schedule_as_parameter_in_databricks_json(self, victim):
@@ -347,17 +340,17 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/my_app/my_app-bar-py3-none-any.whl"},
-                {"jar": "some.jar"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "schedule": {
                 "quartz_cron_expression": "0 15 22 ? * *",
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "/path/my_app/my_app-main-bar.py",
-                "parameters": ["--key", "val", "--key2", "val2"],
-            },
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
         }
 
     def test_correct_schedule_as_parameter_in_job_config_with_env_schedule(
@@ -391,17 +384,17 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/my_app/my_app-bar-py3-none-any.whl"},
-                {"jar": "some.jar"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "schedule": {
                 "quartz_cron_expression": "0 15 22 ? * *",
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "/path/my_app/my_app-main-bar.py",
-                "parameters": ["--key", "val", "--key2", "val2"],
-            },
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
         }
 
     def test_correct_schedule_as_parameter_in_job_config_with_env_schedule_for_other_env(
@@ -435,13 +428,13 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/my_app/my_app-bar-py3-none-any.whl"},
-                {"jar": "some.jar"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "/path/my_app/my_app-main-bar.py",
-                "parameters": ["--key", "val", "--key2", "val2"],
-            },
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
         }
 
     def test_no_schedule_as_parameter_in_job_config_without_env_schedule(self, victim):
@@ -467,13 +460,13 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/my_app/my_app-bar-py3-none-any.whl"},
-                {"jar": "some.jar"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "/path/my_app/my_app-main-bar.py",
-                "parameters": ["--key", "val", "--key2", "val2"],
-            },
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
         }
 
     def test_correct_schedule_from_template_in_job_config(self, victim):
@@ -500,17 +493,17 @@ class TestDeployToDatabricks(object):
             "some_int": 5,
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/my_app/my_app-bar-py3-none-any.whl"},
-                {"jar": "some.jar"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "schedule": {
                 "quartz_cron_expression": "0 15 22 ? * *",
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "/path/my_app/my_app-main-bar.py",
-                "parameters": ["--key", "val", "--key2", "val2"],
-            },
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
         }
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
@@ -531,13 +524,13 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "/path/version/version-bar-py3-none-any.whl"},
-                {"jar": "some.jar"},
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "/path/version/version-main-bar.py",
-                "parameters": ["--key", "val", "--key2", "val2"],
-            },
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
         }
         with mock.patch(
                 "takeoff.azure.deploy_to_databricks.DeployToDatabricks.create_config",

@@ -177,7 +177,7 @@ class ConfigureEventHub(Step):
             ).primary_connection_string
         except Exception as e:
             logger.info("Could not create connection String. Make sure the EventHub exists.")
-            raise
+            raise e
 
         if policy.create_databricks_secret:
             secret = Secret(f"{policy.eventhub_entity_name}-connection-string", connection_string)

@@ -6,7 +6,6 @@ azure:
   common:
     shared_registry: "some-registry"
     artifacts_shared_blob_container_name: libraries
-    databricks_library_path: "dbfs:/mnt/libraries"
 
   keyvault_keys:
     active_directory_user:
@@ -31,6 +30,8 @@ environment_keys:
   application_name: CI_PROJECT_NAME
   branch_name: CI_COMMIT_REF_SLUG
 
+common:
+  databricks_fs_libraries_mount_path: "dbfs:/mnt/libraries"
 
 ci_environment_keys_dev:
   service_principal:

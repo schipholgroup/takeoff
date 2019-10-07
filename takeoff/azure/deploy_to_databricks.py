@@ -38,6 +38,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             ],
             vol.Length(min=1),
         ),
+        "common": {vol.Optional("databricks_fs_libraries_mount_path"): str},
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -103,7 +104,7 @@ class DeployToDatabricks(Step):
             schedule=self._get_schedule(job_config),
         )
 
-        root_library_folder = self.config["common"]["databricks_library_path"]
+        root_library_folder = self.config["common"]["databricks_fs_libraries_mount_path"]
         storage_base_path = f"{root_library_folder}/{self.application_name}"
         artifact_path = f"{storage_base_path}/{self.application_name}-{self.env.artifact_tag}"
 

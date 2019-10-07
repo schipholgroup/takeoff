@@ -15,6 +15,8 @@ from takeoff.conf import DEFAULT_TAKEOFF_PLUGIN_PREFIX
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_TAKEOFF_PLUGIN_PREFIX = "takeoff_"
+
 
 @dataclass(frozen=True)
 class AzureSp(object):
