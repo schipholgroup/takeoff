@@ -8,6 +8,7 @@ import pytest
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
 from takeoff.credentials.container_registry import DockerCredentials
+from takeoff.context import Context
 from takeoff.util import run_shell_command
 from tests.azure import takeoff_config
 
@@ -70,6 +71,7 @@ class TestDeployToKubernetes(object):
     @mock.patch.dict(os.environ, env_variables)
     @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._get_docker_registry_secret", return_value="somebase64encodedstring")
     def test_create_docker_registry_secret(self, _, victim):
+        Context().clear()
         with mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._write_kubernetes_config") as m_write:
             victim._create_image_pull_secret("myapp")
 

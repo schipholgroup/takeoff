@@ -12,6 +12,8 @@ from takeoff.azure.configure_eventhub import (
     EventHubConsumerGroup,
     ConfigureEventHub,
     EventHubProducerPolicy, ConnectingString)
+from takeoff.context import Context, ContextKey
+from takeoff.credentials.secret import Secret
 from tests.azure import takeoff_config
 
 BASE_CONF = {'task': 'configure_eventhub',
@@ -122,19 +124,28 @@ class TestConfigureEventHub(object):
 
         victim.eventhub_client.event_hubs.create_or_update_authorization_rule.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
             rights=[AccessRights.send]
         )
         victim.eventhub_client.event_hubs.list_keys.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
         )
 
         databricks_call.assert_called_once()
+
+    @mock.patch.dict(os.environ, TEST_ENV_VARS)
+    def test_create_eventhub_producer_policies_secrets(self, victim):
+        policies = [EventHubProducerPolicy('entity1', False), EventHubProducerPolicy('entity2', False)]
+
+        victim.create_eventhub_producer_policies(policies)
+
+        assert Context().get(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS) == [Secret('entity1-connection-string', 'potato-connection'),
+                                                                              Secret('entity2-connection-string', 'potato-connection')]
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_create_producer_policy_without_databricks(self, victim):
@@ -149,14 +160,14 @@ class TestConfigureEventHub(object):
 
         victim.eventhub_client.event_hubs.create_or_update_authorization_rule.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
             rights=[AccessRights.send]
         )
         victim.eventhub_client.event_hubs.list_keys.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
         )

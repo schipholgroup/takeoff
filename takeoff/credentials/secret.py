@@ -8,7 +8,11 @@ class Secret:
 
     @property
     def env_key(self):
-        return self.key.upper().replace("-", "_")
+        return self.jinja_safe_key.upper()
+
+    @property
+    def jinja_safe_key(self):
+        return self.key.replace("-", "_")
 
     def __hash__(self):
         return hash(self.key)
