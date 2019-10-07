@@ -219,7 +219,7 @@ class TestDeployToDatabricks(object):
                 },
             },
             "some_int": 5,
-            "libraries": [{"jar": "dbfs:/mnt/libraries/app_name/app_name-bar.jar"}],
+            "libraries": [{"jar": "dbfs:/mnt/libraries/my_app/my_app-bar.jar"}],
             "spark_jar_task": {"main_class_name": "foo.class", "parameters": ["--key", "val", "--key2", "val2"]},
         }
 
@@ -340,7 +340,7 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -348,7 +348,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -384,7 +384,7 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -392,7 +392,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -428,11 +428,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -460,11 +460,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -493,7 +493,7 @@ class TestDeployToDatabricks(object):
             "some_int": 5,
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -501,7 +501,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }

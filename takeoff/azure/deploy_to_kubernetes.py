@@ -129,12 +129,12 @@ class DeployToKubernetes(BaseKubernetes):
         # load some Kubernetes config
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
-        self.deploy_to_kubernetes(self.config["kubernetes_config_path"], application_name)
+        self.deploy_to_kubernetes(self.config["kubernetes_config_path"], self.application_name)
 
     def _get_docker_registry_secret(self) -> str:
         """Create a secret containing credentials for logging into the defined docker registry
         """
-        docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
+        docker_credentials = DockerRegistry(self.config, self.env).credentials()
         return b64_encode(
             json.dumps(
                 {
@@ -248,7 +248,7 @@ class DeployToKubernetes(BaseKubernetes):
             logger.info("Docker registry secret available")
 
         secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
-            ApplicationName().get(self.config)
+            self.application_name
         )
 
         rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(

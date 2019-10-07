@@ -6,10 +6,9 @@ from unittest import mock
 import pytest
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.container_registry import DockerCredentials
 from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
+from takeoff.credentials.container_registry import DockerCredentials
 from takeoff.util import run_shell_command
-from takeoff.credentials.secret import Secret
 from tests.azure import takeoff_config
 
 env_variables = {'AZURE_TENANTID': 'David',
