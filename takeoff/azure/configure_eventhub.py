@@ -6,6 +6,7 @@ from typing import List, Set
 import voluptuous as vol
 from azure.mgmt.eventhub import EventHubManagementClient
 from azure.mgmt.relay.models import AccessRights
+from msrestazure.azure_exceptions import CloudError
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromValue
@@ -285,8 +286,8 @@ class ConfigureEventHub(Step):
                 group.consumer_group,
             )
             connection_string = self._create_connection_string(group.eventhub)
-        except Exception as e:
-            logger.error("Could not create connection String. Make sure the EventHub exists.")
+        except CloudError as e:
+            logger.error("Something went wrong during creating consumer group")
             raise e
 
         secret = Secret(f"{group.eventhub}-connection-string", connection_string.connection_string)
@@ -301,10 +302,10 @@ class ConfigureEventHub(Step):
         """Creates connections strings for all given EventHub entities.
 
         Args:
-            eventhub_entity: Objects containing EventHub metadata
+            eventhub_entity: Object containing EventHub metadata
 
         Returns:
-            Connection strings
+            Connection string
         """
         policy_name = f"{ApplicationName().get(self.config)}-policy"
 
@@ -325,7 +326,7 @@ class ConfigureEventHub(Step):
 
     @staticmethod
     def _get_unique_eventhubs(eventhubs: List[EventHubConsumerGroup]) -> Set[EventHub]:
-        """Deduplicated EventHub consumer groups from the Takeoff config
+        """Deduplicated EventHubs from the Takeoff config
 
         Args:
             eventhubs: List of consumer groups to create
