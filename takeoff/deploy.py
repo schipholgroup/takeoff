@@ -55,6 +55,7 @@ def main():
         add_takeoff_plugin_paths(paths + ["."])
 
     env = get_environment(config)
+    logger.info(f"Running Takeoff with application version: {env}")
 
     for task_config in deployment["steps"]:
         task = task_config["task"]
