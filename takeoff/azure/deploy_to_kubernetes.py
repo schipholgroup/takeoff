@@ -94,6 +94,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             vol.Optional("secret_name", default="registry-auth"): str,
             vol.Optional("namespace", default="default"): str,
         },
+        vol.Optional("custom_values", default={}): {},
         vol.Optional("restart_unchanged_resources", default=False): bool,
         "azure": {
             vol.Required(
@@ -150,11 +151,21 @@ class DeployToKubernetes(BaseKubernetes):
         )
 
     def _render_kubernetes_config(
-        self, kubernetes_config_path: str, application_name: str, secrets: Dict[str, str]
+        self,
+        kubernetes_config_path: str,
+        application_name: str,
+        secrets: Dict[str, str],
+        custom_values: Dict[str, str],
     ) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
-            {"docker_tag": self.env.artifact_tag, "application_name": application_name, **secrets},
+            {
+                "docker_tag": self.env.artifact_tag,
+                "application_name": application_name,
+                "env": self.env.environment,
+                **secrets,
+                **custom_values,
+            },
         )
         return kubernetes_config
 
@@ -166,7 +177,11 @@ class DeployToKubernetes(BaseKubernetes):
         return rendered_kubernetes_config_path.name
 
     def _render_and_write_kubernetes_config(
-        self, kubernetes_config_path: str, application_name: str, secrets: List[Secret]
+        self,
+        kubernetes_config_path: str,
+        application_name: str,
+        secrets: List[Secret],
+        custom_values: Dict[str, str],
     ) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
@@ -184,7 +199,7 @@ class DeployToKubernetes(BaseKubernetes):
         }
 
         kubernetes_config = self._render_kubernetes_config(
-            kubernetes_config_path, application_name, {**vault_values, **context_values}
+            kubernetes_config_path, application_name, {**vault_values, **context_values}, custom_values
         )
         return self._write_kubernetes_config(kubernetes_config)
 
@@ -231,7 +246,19 @@ class DeployToKubernetes(BaseKubernetes):
                 Secret("namespace", self.config["image_pull_secret"]["namespace"]),
                 Secret("secret_name", self.config["image_pull_secret"]["secret_name"]),
             ],
+            custom_values={},
         )
+
+    def _get_custom_values(self) -> Dict[str, str]:
+        if self.config["custom_values"]:
+            if self.env.environment in self.config["custom_values"]:
+                return self.config["custom_values"][self.env.environment]
+            else:
+                raise ValueError(
+                    "No matching environment was found for custom values. Check your Takeoff config"
+                    f"and your environment names. Looking for environment: {self.env.environment}"
+                )
+        return {}
 
     def deploy_to_kubernetes(self, kubernetes_config_path: str, application_name: str):
         """Run a full deployment to Kubernetes, given configuration.
@@ -255,8 +282,10 @@ class DeployToKubernetes(BaseKubernetes):
             ApplicationName().get(self.config)
         )
 
+        custom_values = self._get_custom_values()
+
         rendered_kubernetes_config_path = self._render_and_write_kubernetes_config(
-            kubernetes_config_path, application_name, secrets
+            kubernetes_config_path, application_name, secrets, custom_values
         )
         logger.info("Kubernetes config rendered")
 

@@ -89,7 +89,7 @@ metadata:
         m_write.assert_called_once_with(expected_result)
 
     def test_render_kubernetes_config(self, victim):
-        result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony', {"secret_pull_policy": "Always"})
+        result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony', {"secret_pull_policy": "Always"}, {})
 
         # we need this stupid formatting to make the test pass...
         expected_result = """apiVersion: extensions/v1beta1
@@ -131,6 +131,39 @@ spec:
         print(lines)
         assert code == 0
 
+    @mock.patch.dict(os.environ, env_variables)
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_get_custom_values(self, _):
+        custom_conf = {'custom_values': {'dev': {'my_custom_value': 'hello'}}, **BASE_CONF}
+        conf = {**takeoff_config(), **custom_conf}
+        conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
+
+        res = DeployToKubernetes(ApplicationVersion("dev", "v", "branch"), conf)
+
+        result = res._get_custom_values()
+        expected_result = {"my_custom_value": "hello"}
+
+        assert result == expected_result
+
+    @mock.patch.dict(os.environ, env_variables)
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_get_custom_values_missing_config(self, _, victim):
+        result = victim._get_custom_values()
+        expected_result = {}
+
+        assert result == expected_result
+
+    @mock.patch.dict(os.environ, env_variables)
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_get_custom_values_invalid_env(self, _):
+        custom_conf = {'custom_values': {'invalid_env': {'my_custom_value': 'hello'}}, **BASE_CONF}
+        conf = {**takeoff_config(), **custom_conf}
+        conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
+
+        res = DeployToKubernetes(ApplicationVersion("dev", "v", "branch"), conf)
+
+        with pytest.raises(ValueError):
+            res._get_custom_values()
 
 @dataclass(frozen=True)
 class MockValue:
