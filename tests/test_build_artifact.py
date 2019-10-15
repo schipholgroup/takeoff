@@ -38,7 +38,7 @@ class TestBuildArtifact(unittest.TestCase):
     @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
     @mock.patch.object(victim, "_write_version")
     @mock.patch.object(victim, "_remove_old_artifacts")
-    def test_build_python_wheel(self, w, r):
+    def test_build_python_wheel(self, m1, m2):
         conf = {**takeoff_config(), **BASE_CONF}
         with mock.patch("takeoff.build_artifact.run_shell_command", return_value=(0, ['output_lines'])) as m:
             victim(FAKE_ENV, conf).build_python_wheel()
@@ -47,7 +47,7 @@ class TestBuildArtifact(unittest.TestCase):
     @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
     @mock.patch.object(victim, "_write_version")
     @mock.patch.object(victim, "_remove_old_artifacts")
-    def test_build_python_wheel_fail(self, w, r):
+    def test_build_python_wheel_fail(self, m1, m2):
         conf = {**takeoff_config(), **BASE_CONF}
         with pytest.raises(ChildProcessError):
             with mock.patch("takeoff.build_artifact.run_shell_command", return_value=(1, ['output_lines'])) as m:
@@ -57,7 +57,7 @@ class TestBuildArtifact(unittest.TestCase):
     @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
     @mock.patch.object(victim, "_write_version")
     @mock.patch.object(victim, "_remove_old_artifacts")
-    def test_build_python_wheel(self, w, r):
+    def test_build_python_wheel(self, m1, m2):
         conf = {**takeoff_config(), **BASE_CONF}
         with mock.patch("takeoff.build_artifact.run_shell_command", return_value=(0, ['output_lines'])) as m:
             victim(FAKE_ENV, conf).build_sbt_assembly_jar()
@@ -66,7 +66,7 @@ class TestBuildArtifact(unittest.TestCase):
     @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
     @mock.patch.object(victim, "_write_version")
     @mock.patch.object(victim, "_remove_old_artifacts")
-    def test_build_python_wheel_fail(self, w, r):
+    def test_build_python_wheel_fail(self, m1, m2):
         conf = {**takeoff_config(), **BASE_CONF}
         with pytest.raises(ChildProcessError):
             with mock.patch("takeoff.build_artifact.run_shell_command", return_value=(1, ['output_lines'])) as m:

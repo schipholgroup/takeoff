@@ -81,7 +81,7 @@ class TestCreateApplicationInsights(object):
     @mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony")
     @mock.patch("takeoff.azure.create_application_insights.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.azure.create_application_insights.CreateApplicationInsights._find_existing_instance", return_value=None)
-    def test_application_insights_with_databricks_secret(self, _, __, ___):
+    def test_application_insights_with_databricks_secret(self, m1, m2, m3):
         conf = {**takeoff_config(), **BASE_CONF, 'create_databricks_secret': True}
         target = CreateApplicationInsights(ApplicationVersion("dev", "0.0.0", "my-branch"), conf)
 

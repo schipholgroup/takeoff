@@ -53,7 +53,7 @@ class DockerImageBuilder(Step):
 
      Depends on:
      - Credentials for a docker registry (username, password, registry) must be
-       available in your cloud vault.
+       available in your cloud vault or as environment variables
      - The docker-cli must be available
      """
 
