@@ -47,3 +47,29 @@ class TestPatternMatching(object):
         filename = "my_stupid_file"
         with pytest.raises(FileNotFoundError):
             victim.get_full_yaml_filename(filename)
+
+
+def test_is_base64_valid_string():
+    assert victim.is_base64("c29tZXRoaW5n")
+
+
+def test_is_base_64_invalid_string():
+    assert not victim.is_base64("something")
+
+
+def test_is_base64_valid_bytes():
+    assert victim.is_base64(b'c29tZXRoaW5n')
+
+
+def test_is_base64_invalid_bytes():
+    assert not victim.is_base64(b'c29tZXRoaW5')
+
+
+def test_ensure_base64_non_encoded():
+    result = victim.ensure_base64("something")
+    assert result == "c29tZXRoaW5n"
+
+
+def test_ensure_base64_encoded():
+    result = victim.ensure_base64("c29tZXRoaW5n")
+    assert result == "c29tZXRoaW5n"
