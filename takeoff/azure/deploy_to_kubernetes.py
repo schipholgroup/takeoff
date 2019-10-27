@@ -206,7 +206,10 @@ class DeployToKubernetes(BaseKubernetes):
         }
 
         kubernetes_config = self._render_kubernetes_config(
-            kubernetes_config_path, application_name, {**vault_values, **producer_secrets, **consumer_secrets}, custom_values
+            kubernetes_config_path,
+            application_name,
+            {**vault_values, **producer_secrets, **consumer_secrets},
+            custom_values,
         )
         return self._write_kubernetes_config(kubernetes_config)
 

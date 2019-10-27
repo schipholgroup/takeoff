@@ -292,7 +292,7 @@ class ConfigureEventHub(Step):
         secret = Secret(f"{group.eventhub}-connection-string", connection_string.connection_string)
 
         if group.create_databricks_secret:
-            self.create_databricks_secrets([secret], self.application_name)
+            self.create_databricks_secrets([secret])
 
         return secret
 
