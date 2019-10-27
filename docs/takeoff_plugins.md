@@ -13,11 +13,11 @@ Now, we know that not everyone has the same environments, or might want a differ
 - and _SNAPSHOT_ should go to __testing__;
 - feature branches should not be deployed
      
-This is where Schiphol Takeoff plugins come in to play. Using python, we allow you to write your own custom logic regarding what should go where and when. Regarding the where part: we also allow you to introduce your own naming conventions and logic by the form of a python plugin. Writing your own plugin is quite easy, but to understand what plugins can mean for you a basic understanding of HOW Schiphol Takeoff works is necessary. 
+This is where Schiphol Takeoff plugins come in to play. Using Python, we allow you to write your own custom logic regarding what should go where and when. Regarding the where part: we also allow you to introduce your own naming conventions and logic by the form of a python plugin. Writing your own plugin is quite easy, but to understand what plugins can mean for you a basic understanding of _how_ Schiphol Takeoff works is necessary. 
 
 ## Customization using plugins
 
-Now on to writing plugins for your own logic. Create a new folder in your repository prefixed with `takeoff_`, for example `takeoff_plugins` and in it an `__init__.py` file. This file will contain any custom funcion for Schiphol Takeoff which will scan and load these on runtime. To create you own logic for deployment simply override the default function. For the example stated above the new function looks like:
+Create a new folder in your repository prefixed with `takeoff_`, for example `takeoff_plugins` and in it an `__init__.py` file. This file will contain any custom funcion for Schiphol Takeoff which will scan and load these on runtime. To create you own logic for deployment simply override the default function. For the example stated above the new function looks like:
 
 ```python
 import logging
@@ -76,4 +76,4 @@ Other functions you can overwrite are the ones that use naming conventions. Thes
   
 In all of the examples:
 - `config: dict` is the full configuration of the __current__ [deployment step](deployment-steps). Including the full contents of `.takeoff/config.yml`. It does not contain any information about other steps. 
-- `env: ApplicationVersion` is an instance of the dataclass mentioned in [deployment environments](deployment-environments)
+- `env: ApplicationVersion` is an instance of the class mentioned in [deployment environments](deployment-environments)

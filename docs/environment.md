@@ -9,7 +9,7 @@ permalink: deployment-environments
 
 # How Takeoff works with DTAP environments
 
-Schiphol Takeoff deploys your application to any environment on your cloud. Your CI provider pulls the Schiphol Takeoff image from dockerhub [link]. Schiphol Takeoff then determines the state of your git branch and will decide where the deployment should go. 
+Schiphol Takeoff deploys your application to any environment on your cloud. Your CI provider pulls the Schiphol Takeoff image from [dockerhub](https://hub.docker.com/r/schipholhub/takeoff). Takeoff determines the state of your git repository (i.e. what branch your commit is on) and will decide where the deployment should go. 
 
 ![ci-envs](/assets/images/ci-envs.png)
 
@@ -30,7 +30,7 @@ Concretely this means that many feature branches may be running simultaneously, 
 For this all to work, Schiphol Takeoff makes some assumptions about naming conventions. For example, in the case of Microsoft Azure, each of these environments basically mean a separate resource group. These resource groups are identical in the fact that they contain the same services, but otherwise might be different in terms of scaling and naming of services. Based on naming conventions Schiphol Takeoff determines during CI which service in which resource group it should deploy to.
 
 ## `ApplicationVersion`
-One of the most important classes in Schiphol Takeoff is `ApplicationVersion`. It is a [dataclass](https://docs.python.org/3/library/dataclasses.html) with the following signature:
+One of the most important classes in Schiphol Takeoff is `ApplicationVersion`. It has the following signature:
 
 ```python
 @dataclass(frozen=True)
@@ -40,11 +40,11 @@ class ApplicationVersion(object):
     branch: str
 ```
 
-- `environment` is the environment Schiphol Takeoff should deploy to. This value is used to resolve any naming rules set in [`.takeoff/config.yml`](takeoff-config);
+- `environment` is the environment Schiphol Takeoff should deploy to. This value is used to resolve any naming rules set in [`.takeoff/config.yml`](takeoff-config). Examples of this value could be `dev`, `PRD`, `acceptance`;
 - `version` is the version of the application and also the version each artifact or service should get;
 - `branch` is the current git branch.
 
-Here is the code in Takeoff that determines to which environment a deployment should go:
+Here is an example of how Takeoff determines to which environment a deployment should go:
 
 ```python
 from takeoff.application_version import ApplicationVersion
