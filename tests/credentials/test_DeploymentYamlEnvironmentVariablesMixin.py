@@ -2,7 +2,7 @@ import yaml
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.credentials.DeploymentYamlEnvironmentVariablesMixin import DeploymentYamlEnvironmentVariablesMixin as victim
-from takeoff.credentials.Secret import Secret
+from takeoff.credentials.secret import Secret
 
 
 class TestDeploymentYamlEnvironmentVariablesMixin(object):

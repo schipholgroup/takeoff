@@ -12,6 +12,8 @@ from takeoff.azure.configure_eventhub import (
     EventHubConsumerGroup,
     ConfigureEventHub,
     EventHubProducerPolicy, ConnectingString)
+from takeoff.context import Context, ContextKey
+from takeoff.credentials.secret import Secret
 from tests.azure import takeoff_config
 
 BASE_CONF = {'task': 'configure_eventhub',
@@ -29,8 +31,9 @@ class MockEventHubClientResponse():
     name: str
     primary_connection_string: str = None
 
-@pytest.fixture(scope="session")
+
 @mock.patch.dict(os.environ, TEST_ENV_VARS)
+@pytest.fixture(scope="session")
 def victim():
     m_client = mock.MagicMock()
     m_client.consumer_groups.list_by_event_hub.return_value = {MockEventHubClientResponse("group1"), MockEventHubClientResponse("group2")}
@@ -39,15 +42,16 @@ def victim():
     m_client.event_hubs.list_authorization_rules.return_value = {MockEventHubClientResponse("rule1"), MockEventHubClientResponse("rule2")}
     m_client.event_hubs.list_keys.return_value = MockEventHubClientResponse('potatoes1', 'potato-connection')
 
-    with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
-         mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._get_eventhub_client", return_value=m_client):
-
+    with mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony"), \
+         mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._get_eventhub_client", return_value=m_client), \
+         mock.patch("takeoff.azure.configure_eventhub.KeyVaultClient.vault_and_client", return_value=(None, None)):
         conf = {**takeoff_config(), **BASE_CONF}
         conf['azure'].update({"eventhub_naming": "eventhub{env}"})
         return ConfigureEventHub(ApplicationVersion('DEV', 'local', 'foo'), conf)
 
 
 class TestConfigureEventHub(object):
+    @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._get_eventhub_client", return_value=None)
     def test_validate_minimal_schema(self, _, __):
@@ -120,19 +124,28 @@ class TestConfigureEventHub(object):
 
         victim.eventhub_client.event_hubs.create_or_update_authorization_rule.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
             rights=[AccessRights.send]
         )
         victim.eventhub_client.event_hubs.list_keys.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
         )
 
         databricks_call.assert_called_once()
+
+    @mock.patch.dict(os.environ, TEST_ENV_VARS)
+    def test_create_eventhub_producer_policies_secrets(self, victim):
+        policies = [EventHubProducerPolicy('entity1', False), EventHubProducerPolicy('entity2', False)]
+
+        victim.create_eventhub_producer_policies(policies)
+
+        assert Context().get(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS) == [Secret('entity1-connection-string', 'potato-connection'),
+                                                                              Secret('entity2-connection-string', 'potato-connection')]
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     def test_create_producer_policy_without_databricks(self, victim):
@@ -147,14 +160,14 @@ class TestConfigureEventHub(object):
 
         victim.eventhub_client.event_hubs.create_or_update_authorization_rule.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
             rights=[AccessRights.send]
         )
         victim.eventhub_client.event_hubs.list_keys.assert_called_with(
             authorization_rule_name='my-name-send-policy',
-            event_hub_name='my-entitydev',
+            event_hub_name='my-entity',
             namespace_name='my-namespace',
             resource_group_name='my-group',
         )
@@ -184,7 +197,6 @@ class TestConfigureEventHub(object):
 
         assert result == expected_result
 
-    @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._create_producer_policy")
     def test_create_eventhub_producer_policies(self, producer_policy_fun, victim):
         policies = [
@@ -198,7 +210,6 @@ class TestConfigureEventHub(object):
                  mock.call(policies[1], 'rgdev', 'eventhubdev', 'my_little_pony')]
 
         producer_policy_fun.assert_has_calls(calls)
-
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._create_consumer_group")

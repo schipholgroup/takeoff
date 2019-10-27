@@ -1,6 +1,6 @@
 from databricks_cli.sdk import ApiClient
 
-from takeoff.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
+from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
 from takeoff.util import current_filename
 
 

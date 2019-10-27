@@ -12,7 +12,7 @@ from databricks_cli.runs.api import RunsApi
 from takeoff import util
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.databricks import Databricks
-from takeoff.credentials.application_name import ApplicationName
+from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 from takeoff.util import has_prefix_match, get_whl_name, get_main_py_name
@@ -53,6 +53,7 @@ class JobConfig(object):
 class DeployToDatabricks(Step):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
         self.databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
         self.jobs_api = JobsApi(self.databricks_client)
         self.runs_api = RunsApi(self.databricks_client)
@@ -81,22 +82,20 @@ class DeployToDatabricks(Step):
         configuration. If the job is batch this will not start it manually, assuming the schedule
         has been set correctly.
         """
-        application_name = ApplicationName().get(self.config)
-
         for job in self.config["jobs"]:
             app_name = self._construct_name(job["name"])
             job_name = f"{app_name}-{self.env.artifact_tag}"
-            job_config = self.create_config(job_name, job, application_name)
+            job_config = self.create_config(job_name, job)
             is_streaming = self._job_is_streaming(job_config)
 
             logger.info("Removing old job")
-            self.remove_job(app_name, self.env.artifact_tag, is_streaming=is_streaming)
+            self.remove_job(self.env.artifact_tag, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
             self._submit_job(job_config, is_streaming)
 
-    def create_config(self, job_name: str, job_config: dict, application_name: str):
+    def create_config(self, job_name: str, job_config: dict):
         common_arguments = dict(
             config_file=job_config["config_file"],
             application_name=job_name,
@@ -106,13 +105,12 @@ class DeployToDatabricks(Step):
         )
 
         root_library_folder = self.config["common"]["databricks_fs_libraries_mount_path"]
-        storage_base_path = f"{root_library_folder}/{application_name}"
-        artifact_path = f"{storage_base_path}/{application_name}-{self.env.artifact_tag}"
+        storage_base_path = f"{root_library_folder}/{self.application_name}"
+        artifact_path = f"{storage_base_path}/{self.application_name}-{self.env.artifact_tag}"
 
-        build_definition_name = ApplicationName().get(self.config)
         if job_config["lang"] == "python":
-            wheel_name = get_whl_name(build_definition_name, self.env.artifact_tag, ".whl")
-            py_main_name = get_main_py_name(build_definition_name, self.env.artifact_tag, ".py")
+            wheel_name = get_whl_name(self.application_name, self.env.artifact_tag, ".whl")
+            py_main_name = get_main_py_name(self.application_name, self.env.artifact_tag, ".py")
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
                 whl_file=f"{root_library_folder}/{wheel_name}",
@@ -136,7 +134,7 @@ class DeployToDatabricks(Step):
 
     def _construct_name(self, name: str) -> str:
         postfix = f"-{name}" if name else ""
-        return f"{ApplicationName().get(self.config)}{postfix}"
+        return f"{self.application_name}{postfix}"
 
     @staticmethod
     def _construct_arguments(args: List[dict]) -> list:
@@ -151,7 +149,7 @@ class DeployToDatabricks(Step):
     def _construct_job_config(config_file: str, **kwargs) -> dict:
         return util.render_file_with_jinja(config_file, kwargs, json.loads)
 
-    def remove_job(self, application_name: str, branch: str, is_streaming: bool):
+    def remove_job(self, branch: str, is_streaming: bool):
         """
         Removes the existing job and cancels any running job_run if the application is streaming.
         If the application is batch, it'll let the batch job finish but it will remove the job,
@@ -161,7 +159,7 @@ class DeployToDatabricks(Step):
         job_configs = [
             JobConfig(_["settings"]["name"], _["job_id"]) for _ in self.jobs_api.list_jobs()["jobs"]
         ]
-        job_ids = self._application_job_id(application_name, branch, job_configs)
+        job_ids = self._application_job_id(self.application_name, branch, job_configs)
 
         if not job_ids:
             logger.info(f"Could not find jobs in list of {pprint.pformat(job_configs)}")

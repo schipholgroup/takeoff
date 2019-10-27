@@ -47,7 +47,7 @@ def test_create_eventhub_consumer_groups(_, mock_load_yaml, mock_get_version, __
         if s == '.takeoff/deployment.yml':
             return {'steps': [{'task': 'configure_eventhub',
                                'create_consumer_groups': [{'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName1'},
-                                          {'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName2'}]
+                                                          {'eventhub_entity': 'sdhdevciss', 'consumer_group': 'consumer_groupName2'}]
                                }]}
         elif s == '.takeoff/config.yml':
             return {}
@@ -142,11 +142,12 @@ class MockedClass(Step):
         return vol.Schema({}, extra=vol.ALLOW_EXTRA)
 
 
+@mock.patch.dict(os.environ, environment_variables)
 @mock.patch.dict('takeoff.steps.steps', {'mocked': MockedClass})
 @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
 def test_run_task(_):
     from takeoff.deploy import run_task
-    res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo'})
+    res = run_task(env, 'mocked', {'task': 'mocked', 'some_param': 'foo', **conf_ext})
 
     assert res == 'yeah, science!'
 

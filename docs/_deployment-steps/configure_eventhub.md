@@ -40,6 +40,9 @@ Add the following task to `deployment.yaml`:
 | `create_producer_policies.producer_policy` | The name of producer policy to be created
 | `create_producer_policies.create_databricks_secret` | Whether a Databricks secret should be created for the producer policy | One of `true`, `false`
 
+## Producer secrets
+The producer connection string secrets are also available during the [`deploy_to_kubernetes`][deployment-step/deploy-to-kubernetes] step. This makes it possible to inject them as templated secret to a kubernetes yaml. See the [`deploy_to_kubernetes`][deployment-step/deploy-to-kubernetes] page for more information.
+
 ## Takeoff config
 Credentials for a Azure Active Directory user (username, password) must be available in your cloud vault. In addition Databricks credentials and your subscription ID must be available in the KeyVault.
 
