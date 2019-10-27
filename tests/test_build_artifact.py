@@ -1,3 +1,4 @@
+import os
 import unittest
 
 import mock
@@ -12,60 +13,60 @@ FAKE_ENV = ApplicationVersion('env', 'v', 'branch')
 
 
 class TestBuildArtifact(unittest.TestCase):
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    def test_validate_minimal_schema(self, _):
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
+    def test_validate_minimal_schema(self):
         conf = {**takeoff_config(), **BASE_CONF}
 
         victim(FAKE_ENV, conf)
 
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    def test_build_python(self, _):
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
+    def test_build_python(self):
         conf = {**takeoff_config(), **BASE_CONF}
 
         with mock.patch.object(victim, "build_python_wheel") as m:
             victim(FAKE_ENV, conf).run()
         m.assert_called_once()
 
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    def test_build_sbt(self, _):
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
+    def test_build_sbt(self):
         conf = {**takeoff_config(), **BASE_CONF, "build_tool": "sbt"}
 
         with mock.patch.object(victim, "build_sbt_assembly_jar") as m:
             victim(FAKE_ENV, conf).run()
         m.assert_called_once()
 
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
     @mock.patch.object(victim, "_write_version")
     @mock.patch.object(victim, "_remove_old_artifacts")
-    def test_build_python_wheel(self, _, w, r):
+    def test_build_python_wheel(self, m1, m2):
         conf = {**takeoff_config(), **BASE_CONF}
         with mock.patch("takeoff.build_artifact.run_shell_command", return_value=(0, ['output_lines'])) as m:
             victim(FAKE_ENV, conf).build_python_wheel()
         m.assert_called_once_with(["python", "setup.py", "bdist_wheel"])
 
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
     @mock.patch.object(victim, "_write_version")
     @mock.patch.object(victim, "_remove_old_artifacts")
-    def test_build_python_wheel_fail(self, _, w, r):
+    def test_build_python_wheel_fail(self, m1, m2):
         conf = {**takeoff_config(), **BASE_CONF}
         with pytest.raises(ChildProcessError):
             with mock.patch("takeoff.build_artifact.run_shell_command", return_value=(1, ['output_lines'])) as m:
                 victim(FAKE_ENV, conf).build_python_wheel()
             m.assert_called_once_with(["python", "setup.py", "bdist_wheel"])
 
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
     @mock.patch.object(victim, "_write_version")
     @mock.patch.object(victim, "_remove_old_artifacts")
-    def test_build_python_wheel(self, _, w, r):
+    def test_build_python_wheel(self, m1, m2):
         conf = {**takeoff_config(), **BASE_CONF}
         with mock.patch("takeoff.build_artifact.run_shell_command", return_value=(0, ['output_lines'])) as m:
             victim(FAKE_ENV, conf).build_sbt_assembly_jar()
         m.assert_called_once_with(["sbt", "clean", "assembly"])
 
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
     @mock.patch.object(victim, "_write_version")
     @mock.patch.object(victim, "_remove_old_artifacts")
-    def test_build_python_wheel_fail(self, _, w, r):
+    def test_build_python_wheel_fail(self, m1, m2):
         conf = {**takeoff_config(), **BASE_CONF}
         with pytest.raises(ChildProcessError):
             with mock.patch("takeoff.build_artifact.run_shell_command", return_value=(1, ['output_lines'])) as m:
@@ -77,8 +78,8 @@ class TestBuildArtifact(unittest.TestCase):
             victim._remove_old_artifacts("some/path")
         m.rmtree.assert_called_once_with("some/path", ignore_errors=True)
 
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    def test_write_version(self, _):
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "Elon"})
+    def test_write_version(self):
         mopen = mock.mock_open()
         conf = {**takeoff_config(), **BASE_CONF}
         with mock.patch("builtins.open", mopen):

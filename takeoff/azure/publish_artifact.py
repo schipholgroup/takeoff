@@ -7,8 +7,8 @@ from twine.commands.upload import upload
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.artifact_store import ArtifactStore
+from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.storage_account import BlobStore
-from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 from takeoff.util import get_tag, get_whl_name, get_main_py_name, get_jar_name, run_shell_command
@@ -77,6 +77,7 @@ class PublishArtifact(Step):
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
 
     def run(self):
         if self.config["language"] == "python":
@@ -154,13 +155,12 @@ class PublishArtifact(Step):
         """
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
-        build_definition_name = ApplicationName().get(self.config)
         if file_extension == ".py":
-            filename = get_main_py_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_main_py_name(self.application_name, self.env.artifact_tag, file_extension)
         elif file_extension == ".whl":
-            filename = get_whl_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_whl_name(self.application_name, self.env.artifact_tag, file_extension)
         elif file_extension == ".jar":
-            filename = get_jar_name(build_definition_name, self.env.artifact_tag, file_extension)
+            filename = get_jar_name(self.application_name, self.env.artifact_tag, file_extension)
         else:
             raise ValueError(f"Unsupported filetype extension: {file_extension}")
 

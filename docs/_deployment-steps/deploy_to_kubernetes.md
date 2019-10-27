@@ -40,6 +40,7 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | `image_pull_secret.namespace` | The namespace where the secret should be created in | Default to `default` 
 | `restart_unchanged_resources` | Whether or not to restart unchanged Kubernetes resources. Takeoff will attempt to restart all unchanged resources, which may result in error messages in the 
  logs, as not all resources are 'restartable' | Boolean, defaults to False. | 
+| `custom_values` | Any custom values you'd like to pass in to be rendered into your Jinja-templates Kubernetes configuration. Should be specified per environment | No custom values are passed by default. Should be a set of key-value pairs per environment |
 
 
 An example of `kubernetes_config_path.yml.j2` 
@@ -82,6 +83,22 @@ spec:
   selector:
     app: my_app
   type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: {{ url }}
+    http:
+      paths:
+      - path: /foo
+        backend:
+          serviceName: service1
+          servicePort: 4200
 ```
 
 An explanation for the Jinja templated values. These values get resolved automatically during deployment.
@@ -91,8 +108,11 @@ An explanation for the Jinja templated values. These values get resolved automat
 | ----- | ----------- 
 | `docker_tag` | The docker tag to apply. In a D/T/A/P setup, this will allow you to point to the image that was built in a previous step in your Takeoff config without explicitly specifying this
 
-Any other templated variable, such as `{{secret_pull_policy}}` is a reference to a cloud vault key. The task will pull all secrets from the cloud vault prefixed with you application name and resolve them in the template.
+Other templated variables can be filled in two ways:
+- Via your cloud keyvault, such as `{{secret_pull_policy}}` is a reference to a cloud vault key. The task will pull all secrets from the cloud vault prefixed with you application name and resolve them in the template.
 For the example above, if your application name is `myapp`, then a secret in your cloud vault must be `myapp-secret-pull-policy` or `myapp-secret_pull_policy`. The prefix gets removed by Takeoff and key `secret_pull_policy` with it's value will be passed into the template. Hyphens `-` get normalized to underscores `_`.
+- Via the `custom_values` configuration option specified in `deployment.yml`. Here, you are expected to set any custom key-value pairs, per environment. An example is shown below. In the above Kubernetes
+configuration, the `{{url}}` key is filled by a custom value passed in via `deployment.yml`.
 
 ## Takeoff config
 Make sure `.takeoff/config.yml` contains the following keys:
@@ -119,6 +139,8 @@ steps:
 
 Extended configuration example, where we have explicitly disabled the creation of kubernetes secrets by Takeoff. In this case,
 we also want to restart the resources, even if their Kubernetes yaml config is unchanged. It will also create image pull secrets in namespace `default` with name `registry-auth`.
+We also pass in a custom url value per environment in this example. In this case, we're using the default environment naming that Takeoff itself uses too. Please take a look at
+the [environment](../environment.md) docs for more information on how to define your own environment names.
 
 ```yaml
 steps:
@@ -126,8 +148,14 @@ steps:
   kubernetes_config_path: my_kubernetes_config.yml.j2
   image_pull_secret: 
     create: True
-    
   restart_unchanged_resources: true
+  custom_values:
+    dev:
+      url: 'dev-url-here-being-buggy'
+    acp:
+      url: 'acp-url-here-being-awesome'
+    prd:
+      url: 'prd-url-here-being-glorious'
 ```
 
 ### Takeoff Context

@@ -1,7 +1,7 @@
 from typing import List
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.credentials.Secret import Secret
+from takeoff.credentials.secret import Secret
 
 
 class DeploymentYamlEnvironmentVariablesMixin(object):

@@ -1,6 +1,6 @@
 from msrestazure.azure_active_directory import ServicePrincipalCredentials as SpCredentials
 
-from takeoff.credentials.EnvironmentCredentialsMixin import EnvironmentCredentialsMixin
+from takeoff.credentials.environment_credentials_provider import EnvironmentCredentialsMixin
 from takeoff.util import current_filename
 
 

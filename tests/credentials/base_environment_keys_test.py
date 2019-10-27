@@ -8,12 +8,16 @@ OS_KEYS = {'AZ_SP_CLIENT_ID_ENV': 'd0aaa0de-c1ef-456f-a025-c5d6341193bb',
            'AZ_SP_CLIENT_SECRET_ENV': '3ceb401f-6462-48da-b42f-b1d1745c2590',
            'CI_PROJECT_NAME': 'test-project',
            'CI_BRANCH_NAME': 'master',
+           'DOCKER_USERNAME': "dockeruser",
+           'DOCKER_PASSWORD': "dockerpass",
+           'DOCKER_REGISTRY': "mylittlepony",
            }
 
 CONFIG = {
     "azure": {
         "keyvault_naming": "myvault{env}"
     },
+    "credentials": "environment_variables",
     "environment_keys": {
         "application_name": "CI_PROJECT_NAME",
         "branch_name": "CI_BRANCH_NAME"
@@ -22,6 +26,11 @@ CONFIG = {
         "service_principal":
             {"client_id": "AZ_SP_CLIENT_ID_ENV",
              "secret": "AZ_SP_CLIENT_SECRET_ENV"},
+        "container_registry":
+            {"username": "DOCKER_USERNAME",
+             "password": "DOCKER_PASSWORD",
+             "registry": "DOCKER_REGISTRY"
+             }
     }}
 
 

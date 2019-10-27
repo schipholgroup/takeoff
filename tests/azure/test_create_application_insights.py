@@ -7,7 +7,7 @@ from voluptuous import MultipleInvalid
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_application_insights import CreateApplicationInsights
-from takeoff.credentials.Secret import Secret
+from takeoff.credentials.secret import Secret
 from tests.azure import takeoff_config
 
 BASE_CONF = {'task': 'create_application_insights',
@@ -38,8 +38,9 @@ def victim():
 
 
 class TestCreateApplicationInsights(object):
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    def test_validate_minimal_schema(self, _):
+    @mock.patch("takeoff.step.ApplicationName.get", return_value="myapp")
+    @mock.patch("takeoff.azure.create_application_insights.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_minimal_schema(self, _, __):
         conf = {**takeoff_config(), **BASE_CONF}
 
         CreateApplicationInsights(ApplicationVersion("dev", "v", "branch"), conf)
@@ -77,9 +78,10 @@ class TestCreateApplicationInsights(object):
         m_app_insights_component.assert_called_once_with(application_type='other', kind='other', location='west europe')
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony")
+    @mock.patch("takeoff.azure.create_application_insights.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.azure.create_application_insights.CreateApplicationInsights._find_existing_instance", return_value=None)
-    def test_application_insights_with_databricks_secret(self, _, __):
+    def test_application_insights_with_databricks_secret(self, m1, m2, m3):
         conf = {**takeoff_config(), **BASE_CONF, 'create_databricks_secret': True}
         target = CreateApplicationInsights(ApplicationVersion("dev", "0.0.0", "my-branch"), conf)
 

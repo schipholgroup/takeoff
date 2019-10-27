@@ -9,7 +9,15 @@ logger = logging.getLogger(__name__)
 
 
 def deploy_env_logic(config: dict) -> ApplicationVersion:
-    branch = BranchName().get(config)
+    """Returns the version of this application based on provided Takeoff config.
+
+    Args:
+        config: Schiphol takeoff configuration
+
+    Returns:
+        Information about the version of the application and to which environment it should be deployed
+    """
+    branch = BranchName(config=config, app_version=None).get()
     tag = get_tag()
     git_hash = get_short_hash()
 
@@ -55,6 +63,7 @@ def main():
         add_takeoff_plugin_paths(paths + ["."])
 
     env = get_environment(config)
+    logger.info(f"Running Takeoff with application version: {env}")
 
     for task_config in deployment["steps"]:
         task = task_config["task"]

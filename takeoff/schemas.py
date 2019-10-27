@@ -51,7 +51,8 @@ CI_KEYS_SCHEMA = {
                     vol.Required("secret", default="AZURE_KEYVAULT_SP_PASSWORD_DEV"): str,
                 }
             )
-        }
+        },
+        extra=vol.ALLOW_EXTRA,
     ),
     vol.Optional("ci_environment_keys_tst"): vol.Schema(
         {
@@ -62,7 +63,8 @@ CI_KEYS_SCHEMA = {
                     vol.Required("secret", default="AZURE_KEYVAULT_SP_PASSWORD_TST"): str,
                 }
             )
-        }
+        },
+        extra=vol.ALLOW_EXTRA,
     ),
     vol.Optional("ci_environment_keys_acp"): vol.Schema(
         {
@@ -73,7 +75,8 @@ CI_KEYS_SCHEMA = {
                     vol.Required("secret", default="AZURE_KEYVAULT_SP_PASSWORD_ACP"): str,
                 }
             )
-        }
+        },
+        extra=vol.ALLOW_EXTRA,
     ),
     vol.Optional("ci_environment_keys_prd"): vol.Schema(
         {
@@ -84,7 +87,8 @@ CI_KEYS_SCHEMA = {
                     vol.Required("secret", default="AZURE_KEYVAULT_SP_PASSWORD_PRD"): str,
                 }
             )
-        }
+        },
+        extra=vol.ALLOW_EXTRA,
     ),
 }
 
