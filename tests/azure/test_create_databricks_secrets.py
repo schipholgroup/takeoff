@@ -6,7 +6,7 @@ import pytest
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretsFromVault, CreateDatabricksSecretFromValue, CreateDatabricksSecretsMixin
-from takeoff.credentials.Secret import Secret
+from takeoff.credentials.secret import Secret
 from tests.azure import takeoff_config
 
 
@@ -48,7 +48,8 @@ def setup_victim(add_secrets: bool):
     m_client.create_scope.return_value = True
     m_client.put_secret.return_value = True
 
-    with mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)), \
+    with mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony"), \
+         mock.patch("takeoff.azure.create_databricks_secrets.KeyVaultClient.vault_and_client", return_value=(None, None)), \
          mock.patch("takeoff.azure.create_databricks_secrets.Databricks", return_value=MockDatabricksClient()), \
          mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value=m_client):
         conf = {**takeoff_config(), **BASE_CONF, **{"common": {"databricks_library_path": "/path"}}, **secrets_conf}
@@ -66,10 +67,11 @@ def victim_without_secrets():
 
 
 class TestCreateDatabricksSecretsFromVault(object):
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony")
+    @mock.patch("takeoff.azure.create_databricks_secrets.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.azure.create_databricks_secrets.Databricks", return_value=MockDatabricksClient())
     @mock.patch("takeoff.azure.create_databricks_secrets.SecretApi", return_value={})
-    def test_validate_minimal_schema(self, _, __, ___):
+    def test_validate_minimal_schema(self, m1, m2, m3, m4):
         conf = {**takeoff_config(), **BASE_CONF}
         CreateDatabricksSecretsFromVault(ApplicationVersion('ACP', 'bar', 'foo'), conf)
 
@@ -79,34 +81,34 @@ class TestCreateDatabricksSecretsFromVault(object):
         assert victim._scope_exists(scopes, "foo")
         assert not victim._scope_exists(scopes, "foobar")
 
-    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
     def test_combine_secrets_without_deployment_secrets(self, _, victim_without_secrets):
-        combined_secrets = victim_without_secrets._combine_secrets("some-app-name")
+        combined_secrets = victim_without_secrets._combine_secrets()
         assert len(combined_secrets) == 2
 
-    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[])
     def test_combine_secrets_without_deployment_and_keyvault_secrets(self, _, victim_without_secrets):
-        combined_secrets = victim_without_secrets._combine_secrets("some-app-name")
+        combined_secrets = victim_without_secrets._combine_secrets()
         assert len(combined_secrets) == 0
 
-    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[])
     def test_combine_secrets_without_keyvault_secrets(self, _, victim):
-        combined_secrets = victim._combine_secrets("some-app-name")
+        combined_secrets = victim._combine_secrets()
         assert len(combined_secrets) == 3
 
-    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('key1', 'foo'), Secret('key2', 'bar')])
     def test_combine_secrets_with_deployment_and_keyvault_secrets(self, _, victim):
-        combined_secrets = victim._combine_secrets("some-app-name")
+        combined_secrets = victim._combine_secrets()
         assert len(combined_secrets) == 5
 
-    @mock.patch('takeoff.azure.credentials.KeyVaultCredentialsMixin.KeyVaultCredentialsMixin.get_keyvault_secrets',
+    @mock.patch('takeoff.azure.create_databricks_secrets.KeyVaultCredentialsMixin.get_keyvault_secrets',
                 return_value=[Secret('FOO', 'foo'), Secret('BAR', 'bar')])
     def test_combine_secrets_with_duplicate_deployment_and_keyvault_secrets(self, _, victim):
-        combined_secrets = victim._combine_secrets("some-app-name")
+        combined_secrets = victim._combine_secrets()
         assert len(combined_secrets) == 3
 
     def test_create_scope(self, victim):

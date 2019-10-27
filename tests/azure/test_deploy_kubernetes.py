@@ -6,8 +6,8 @@ from unittest import mock
 import pytest
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.container_registry import DockerCredentials
 from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
+from takeoff.credentials.container_registry import DockerCredentials
 from takeoff.context import Context
 from takeoff.util import run_shell_command
 from tests.azure import takeoff_config
@@ -50,16 +50,18 @@ BASE_CONF = {'task': 'deploy_to_kubernetes', 'kubernetes_config_path': 'kubernet
 
 @pytest.fixture(scope="session")
 def victim():
-    with mock.patch.dict(os.environ, env_variables) and \
-         mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)):
+    with mock.patch.dict(os.environ, env_variables), \
+         mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony"), \
+         mock.patch("takeoff.azure.deploy_to_kubernetes.KeyVaultClient.vault_and_client", return_value=(None, None)):
         conf = {**takeoff_config(), **BASE_CONF}
         conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
         return DeployToKubernetes(ApplicationVersion("dev", "v", "branch"), conf)
 
 
 class TestDeployToKubernetes(object):
-    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
-    def test_validate_minimal_schema(self, _):
+    @mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony")
+    @mock.patch("takeoff.azure.deploy_to_kubernetes.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_minimal_schema(self, _, __):
         conf = {**takeoff_config(), **BASE_CONF}
         conf['azure'].update({"kubernetes_naming": "kubernetes{env}"})
 

@@ -7,13 +7,13 @@ import voluptuous as vol
 from databricks_cli.secrets.api import SecretApi
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from takeoff.azure.credentials.databricks import Databricks
+from takeoff.azure.credentials.keyvault import KeyVaultClient
+from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
 from takeoff.credentials.DeploymentYamlEnvironmentVariablesMixin import (
     DeploymentYamlEnvironmentVariablesMixin,
 )
-from takeoff.credentials.Secret import Secret
-from takeoff.credentials.application_name import ApplicationName
+from takeoff.credentials.secret import Secret
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step, SubStep
 
@@ -87,6 +87,7 @@ class CreateDatabricksSecretsFromVault(Step, CreateDatabricksSecretsMixin):
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
         self.databricks_client = Databricks(self.vault_name, self.vault_client).api_client(self.config)
         self.secret_api = SecretApi(self.databricks_client)
 
@@ -94,19 +95,17 @@ class CreateDatabricksSecretsFromVault(Step, CreateDatabricksSecretsMixin):
         self.create_databricks_secrets()
 
     def create_databricks_secrets(self):
-        application_name = ApplicationName().get(self.config)
+        secrets = self._combine_secrets()
 
-        secrets = self._combine_secrets(application_name)
-
-        self._create_scope(application_name)
-        self._add_secrets(application_name, secrets)
+        self._create_scope(self.application_name)
+        self._add_secrets(self.application_name, secrets)
 
         logging.info(f'------  {len(secrets)} secrets created in "{self.env.environment}"')
-        pprint(self.secret_api.list_secrets(application_name))
+        pprint(self.secret_api.list_secrets(self.application_name))
 
-    def _combine_secrets(self, application_name: str):
+    def _combine_secrets(self):
         vault_secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
-            application_name
+            self.application_name
         )
         deployment_secrets = DeploymentYamlEnvironmentVariablesMixin(
             self.env, self.config

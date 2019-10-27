@@ -11,14 +11,14 @@ from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes.client import CoreV1Api
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.KeyVaultCredentialsMixin import KeyVaultCredentialsMixin
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
-from takeoff.azure.credentials.container_registry import DockerRegistry
+from takeoff.azure.credentials.keyvault import KeyVaultClient
+from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_kubernetes_name
+from takeoff.credentials.container_registry import DockerRegistry
+from takeoff.credentials.secret import Secret
 from takeoff.context import Context, ContextKey
-from takeoff.credentials.Secret import Secret
-from takeoff.credentials.application_name import ApplicationName
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 from takeoff.util import render_string_with_jinja, b64_encode, run_shell_command
@@ -38,6 +38,7 @@ class BaseKubernetes(Step):
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
 
     @staticmethod
     def _write_kube_config(credential_results: CredentialResults):
@@ -85,6 +86,9 @@ IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
+        vol.Optional("credentials", default="environment_variables"): vol.All(
+            str, vol.In("environment_variables", "azure_keyvault")
+        ),
         vol.Required("kubernetes_config_path"): str,
         vol.Optional(
             "image_pull_secret",
@@ -117,6 +121,7 @@ class DeployToKubernetes(BaseKubernetes):
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
 
+        self.vault_name, self.vault_client = KeyVaultClient.vault_and_client(self.config, self.env)
         self.core_v1_api = CoreV1Api()
 
     def schema(self) -> vol.Schema:
@@ -124,16 +129,14 @@ class DeployToKubernetes(BaseKubernetes):
 
     def run(self):
         # load some Kubernetes config
-        application_name = ApplicationName().get(self.config)
-
         logging.info(f"Deploying to K8S. Environment: {self.env.environment}")
 
-        self.deploy_to_kubernetes(self.config["kubernetes_config_path"], application_name)
+        self.deploy_to_kubernetes(self.config["kubernetes_config_path"], self.application_name)
 
     def _get_docker_registry_secret(self) -> str:
         """Create a secret containing credentials for logging into the defined docker registry
         """
-        docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
+        docker_credentials = DockerRegistry(self.config, self.env).credentials()
         return b64_encode(
             json.dumps(
                 {
@@ -279,7 +282,7 @@ class DeployToKubernetes(BaseKubernetes):
             logger.info("Docker registry secret available")
 
         secrets = KeyVaultCredentialsMixin(self.vault_name, self.vault_client).get_keyvault_secrets(
-            ApplicationName().get(self.config)
+            self.application_name
         )
 
         custom_values = self._get_custom_values()
@@ -297,7 +300,7 @@ class DeployToKubernetes(BaseKubernetes):
 
     @property
     def kubernetes_namespace(self):
-        return ApplicationName().get(self.config)
+        return self.application_name
 
     @property
     def cluster_name(self):

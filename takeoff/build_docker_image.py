@@ -8,8 +8,7 @@ from typing import List, Union
 import voluptuous as vol
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.container_registry import DockerRegistry
-from takeoff.credentials.application_name import ApplicationName
+from takeoff.credentials.container_registry import DockerRegistry
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 from takeoff.util import run_shell_command
@@ -19,6 +18,9 @@ logger = logging.getLogger(__name__)
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "build_docker_image",
+        vol.Optional("credentials", default="environment_variables"): vol.All(
+            str, vol.In(["environment_variables", "azure_keyvault"])
+        ),
         vol.Optional(
             "dockerfiles", default=[{"file": "Dockerfile", "postfix": None, "custom_image_name": None}]
         ): [
@@ -49,16 +51,15 @@ class DockerFile(object):
 class DockerImageBuilder(Step):
     """Builds and pushes one or more docker images.
 
-    Depends on:
-
-    - Credentials for a docker registry (username, password, registry) must be
-      available in your cloud vault.
-    - The docker-cli must be available
-    """
+     Depends on:
+     - Credentials for a docker registry (username, password, registry) must be
+       available in your cloud vault or as environment variables
+     - The docker-cli must be available
+     """
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
-        self.docker_credentials = DockerRegistry(self.vault_name, self.vault_client).credentials(self.config)
+        self.docker_credentials = DockerRegistry(config, env).credentials()
 
     def populate_docker_config(self):
         """Creates ~/.docker/config.json and writes the credentials for the registry to the file"""
@@ -136,12 +137,10 @@ class DockerImageBuilder(Step):
             raise ChildProcessError("Could not push image for some reason!")
 
     def deploy(self, dockerfiles: List[DockerFile]):
-        application_name = ApplicationName().get(self.config)
         for df in dockerfiles:
             tag = self.env.artifact_tag
 
-            # only append a postfix if there is one provided
-            repository = f"{self.docker_credentials.registry}/{application_name}"
+            repository = f"{self.docker_credentials.registry}/{self.application_name}"
 
             if df.custom_image_name:
                 repository = df.custom_image_name
