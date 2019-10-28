@@ -51,6 +51,7 @@ class DockerFile(object):
     dockerfile: str
     postfix: Union[str, None]
     custom_image_name: Union[str, None]
+    tag_release_as_latest: bool
 
 
 class DockerImageBuilder(Step):
@@ -82,7 +83,7 @@ class DockerImageBuilder(Step):
 
     def _construct_docker_build_config(self):
         return [
-            DockerFile(df["file"], df["postfix"], df["custom_image_name"])
+            DockerFile(df["file"], df["postfix"], df["custom_image_name"], df["tag_release_as_latest"])
             for df in self.config["dockerfiles"]
         ]
 
@@ -155,6 +156,8 @@ class DockerImageBuilder(Step):
             self.build_image(df.dockerfile, image_tag)
             self.push_image(image_tag)
 
-            if self.config["tag_release_as_latest"] and self.env.on_release_tag:
+            print(f"checking tag, {df.tag_release_as_latest}, {self.env}, {self.env.on_release_tag}")
+            if df.tag_release_as_latest and self.env.on_release_tag:
+                print("on tag")
                 latest_tag = f"{repository}:latest"
                 self.push_image(latest_tag)
