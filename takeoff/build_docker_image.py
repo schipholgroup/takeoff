@@ -34,11 +34,16 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
                 vol.Optional(
                     "custom_image_name", default=None, description="A custom name for the image to be used."
                 ): vol.Any(None, str),
+                vol.Optional(
+                    "tag_release_as_latest", default=True, description="Tag a release also as 'latest' image."
+                ): vol.Any(None, bool),
             }
         ],
     },
     extra=vol.ALLOW_EXTRA,
 )
+
+DOCKER_CONFIG_PATH = "./docker_config.json"
 
 
 @dataclass(frozen=True)
@@ -62,18 +67,14 @@ class DockerImageBuilder(Step):
         self.docker_credentials = DockerRegistry(config, env).credentials()
 
     def populate_docker_config(self):
-        """Creates ~/.docker/config.json and writes the credentials for the registry to the file"""
+        """Creates docker config file and writes the credentials for the registry to the file"""
         creds = f"{self.docker_credentials.username}:{self.docker_credentials.password}".encode()
 
         docker_json = {
             "auths": {self.docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}
         }
 
-        home = os.environ["HOME"]
-        docker_dir = f"{home}/.docker"
-        if not os.path.exists(docker_dir):
-            os.mkdir(docker_dir)
-        with open(f"{docker_dir}/config.json", "w") as f:
+        with open(DOCKER_CONFIG_PATH, "w") as f:
             json.dump(docker_json, f)
 
     def schema(self) -> vol.Schema:
@@ -104,6 +105,8 @@ class DockerImageBuilder(Step):
             "build",
             "--build-arg",
             f"PIP_EXTRA_INDEX_URL={os.getenv('PIP_EXTRA_INDEX_URL')}",
+            "--config",
+            DOCKER_CONFIG_PATH,
             "-t",
             tag,
             "-f",
@@ -127,7 +130,7 @@ class DockerImageBuilder(Step):
         Args:
             tag: The docker tag to upload
         """
-        cmd = ["docker", "push", tag]
+        cmd = ["docker", "--config", DOCKER_CONFIG_PATH, "push", tag]
 
         logger.info(f"Uploading docker image {tag}")
 
@@ -151,3 +154,7 @@ class DockerImageBuilder(Step):
             image_tag = f"{repository}:{tag}"
             self.build_image(df.dockerfile, image_tag)
             self.push_image(image_tag)
+
+            if self.config["tag_release_as_latest"] and self.env.on_release_tag:
+                latest_tag = f"{repository}:latest"
+                self.push_image(latest_tag)
