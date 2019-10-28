@@ -1,3 +1,5 @@
 steps:
   - task: build_docker_image
     credentials: environment_variables
+    dockerfiles:
+      - prefix: schipholhub

@@ -1,5 +1,3 @@
-import base64
-import json
 import logging
 import os
 from dataclasses import dataclass
@@ -32,6 +30,14 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
                     description="Postfix for the image name, will be added `before` the tag",
                 ): vol.Any(None, str),
                 vol.Optional(
+                    "prefix",
+                    default=None,
+                    description=(
+                        "Prefix for the image name, will be added `between` the image name"
+                        "and repository (e.g. myreg.io/prefix/my-app:tag"
+                    ),
+                ): vol.Any(None, str),
+                vol.Optional(
                     "custom_image_name", default=None, description="A custom name for the image to be used."
                 ): vol.Any(None, str),
                 vol.Optional(
@@ -43,13 +49,12 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     extra=vol.ALLOW_EXTRA,
 )
 
-DOCKER_CONFIG_PATH = "./docker_config.json"
-
 
 @dataclass(frozen=True)
 class DockerFile(object):
     dockerfile: str
     postfix: Union[str, None]
+    prefix: Union[str, None]
     custom_image_name: Union[str, None]
     tag_release_as_latest: bool
 
@@ -67,32 +72,47 @@ class DockerImageBuilder(Step):
         super().__init__(env, config)
         self.docker_credentials = DockerRegistry(config, env).credentials()
 
-    def populate_docker_config(self):
-        """Creates ~/.docker/config.json and writes the credentials for the registry to the file"""
-        creds = f"{self.docker_credentials.username}:{self.docker_credentials.password}".encode()
+    def docker_login(self):
+        import docker
 
-        docker_json = {
-            "auths": {self.docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}
-        }
+        # creds = f"{self.docker_credentials.username}:{self.docker_credentials.password}".encode()
+        #
+        # docker_json = {
+        #     "auths": {self.docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}
+        # }
 
+        os.environ["HOME"] = "/src"
         home = os.environ["HOME"]
-        docker_dir = f"{home}/.docker"
-        if not os.path.exists(docker_dir):
-            os.makedirs(docker_dir, exist_ok=True)
-        with open(f"{docker_dir}/config.json", "w") as f:
-            json.dump(docker_json, f)
+        # docker_config = f"{home}/.dockercfg"
+        # os.makedirs(home, exist_ok=True)
+        # with open(docker_config, "w") as f:
+        #     json.dump(docker_json, f)
+
+        client = docker.from_env()
+        client.login(
+            username=self.docker_credentials.username,
+            password=self.docker_credentials.password,
+            registry=self.docker_credentials.registry,
+        )
+
+        run_shell_command(["pwd"])
+        run_shell_command(["ls", "-lah", home])
+        run_shell_command(["cat", f"{home}/.dockercfg"])
+        run_shell_command(["docker", "info"])
 
     def schema(self) -> vol.Schema:
         return SCHEMA
 
     def _construct_docker_build_config(self):
         return [
-            DockerFile(df["file"], df["postfix"], df["custom_image_name"], df["tag_release_as_latest"])
+            DockerFile(
+                df["file"], df["postfix"], df["prefix"], df["custom_image_name"], df["tag_release_as_latest"]
+            )
             for df in self.config["dockerfiles"]
         ]
 
     def run(self):
-        self.populate_docker_config()
+        self.docker_login()
         self.deploy(self._construct_docker_build_config())
 
     @staticmethod
@@ -124,8 +144,7 @@ class DockerImageBuilder(Step):
         if return_code != 0:
             raise ChildProcessError("Could not build the image for some reason!")
 
-    @staticmethod
-    def push_image(tag: str):
+    def push_image(self, tag: str):
         """Push the docker image
 
         This uses bash to run commands directly.
@@ -133,7 +152,23 @@ class DockerImageBuilder(Step):
         Args:
             tag: The docker tag to upload
         """
-        cmd = ["docker", "push", tag]
+
+        logger.info(self.docker_credentials)
+
+        cmd = [
+            "docker",
+            "login",
+            "-u",
+            f'"{self.docker_credentials.username}"',
+            "-p",
+            f'"{self.docker_credentials.password}"',
+            self.docker_credentials.registry,
+        ]
+
+        logger.info(" ".join(cmd))
+        # "docker",
+        # "push",
+        # tag,
 
         logger.info(f"Uploading docker image {tag}")
 
@@ -146,7 +181,13 @@ class DockerImageBuilder(Step):
         for df in dockerfiles:
             tag = self.env.artifact_tag
 
-            repository = f"{self.docker_credentials.registry}/{self.application_name}"
+            repository = "/".join(
+                [
+                    _
+                    for _ in (self.docker_credentials.registry, df.prefix, self.application_name)
+                    if _ is not None
+                ]
+            )
 
             if df.custom_image_name:
                 repository = df.custom_image_name
