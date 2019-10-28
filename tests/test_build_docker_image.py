@@ -5,7 +5,7 @@ import mock
 import pytest
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.build_docker_image import DockerImageBuilder, DockerFile, DOCKER_CONFIG_PATH
+from takeoff.build_docker_image import DockerImageBuilder, DockerFile
 from takeoff.credentials.container_registry import DockerCredentials
 from tests.azure import takeoff_config
 
@@ -48,7 +48,7 @@ def test_construct_docker_build_config(victim: DockerImageBuilder):
 
 
 def assert_docker_push(m_bash):
-    m_bash.assert_called_once_with(["docker", "--config", DOCKER_CONFIG_PATH, "push", "image/stag"])
+    m_bash.assert_called_once_with(["docker", "push", "image/stag"])
 
 
 def assert_docker_build(m_bash):
@@ -56,8 +56,6 @@ def assert_docker_build(m_bash):
                                     "build",
                                     "--build-arg",
                                     "PIP_EXTRA_INDEX_URL=url/to/artifact/store",
-                                    "--config",
-                                    DOCKER_CONFIG_PATH,
                                     "-t",
                                     "stag",
                                     "-f",
@@ -119,11 +117,11 @@ class TestDockerImageBuilder:
     def test_deploy_non_release(self, m_bash, victim: DockerImageBuilder):
         files = [DockerFile("Dockerfile", None, None, True), DockerFile("File2", "-foo", "mycustom/repo", False)]
         victim.deploy(files)
-        build_call_1 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "--config", DOCKER_CONFIG_PATH, "-t", "pony/myapp:2.1.0", "-f", "./Dockerfile", "."]
-        build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "--config", DOCKER_CONFIG_PATH, "-t", "mycustom/repo-foo:2.1.0", "-f", "./File2", "."]
+        build_call_1 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "pony/myapp:2.1.0", "-f", "./Dockerfile", "."]
+        build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "mycustom/repo-foo:2.1.0", "-f", "./File2", "."]
 
-        push_call_1 = ["docker", "--config", DOCKER_CONFIG_PATH, "push", "pony/myapp:2.1.0"]
-        push_call_2 = ["docker", "--config", DOCKER_CONFIG_PATH, "push", "mycustom/repo-foo:2.1.0"]
+        push_call_1 = ["docker", "push", "pony/myapp:2.1.0"]
+        push_call_2 = ["docker", "push", "mycustom/repo-foo:2.1.0"]
         calls = list(map(mock.call, [build_call_1, push_call_1, build_call_2, push_call_2]))
         m_bash.assert_has_calls(calls)
 
@@ -136,11 +134,11 @@ class TestDockerImageBuilder:
         files = [DockerFile("Dockerfile", None, None, True), DockerFile("File2", "-foo", "mycustom/repo", False)]
 
         victim_release.deploy(files)
-        build_call_1 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "--config", DOCKER_CONFIG_PATH, "-t", "pony/myapp:2.1.0", "-f", "./Dockerfile", "."]
-        build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "--config", DOCKER_CONFIG_PATH, "-t", "mycustom/repo-foo:2.1.0", "-f", "./File2", "."]
+        build_call_1 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "pony/myapp:2.1.0", "-f", "./Dockerfile", "."]
+        build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "mycustom/repo-foo:2.1.0", "-f", "./File2", "."]
 
-        push_call_1 = ["docker", "--config", DOCKER_CONFIG_PATH, "push", "pony/myapp:2.1.0"]
-        push_call_1_latest = ["docker", "--config", DOCKER_CONFIG_PATH, "push", "pony/myapp:latest"]
-        push_call_2 = ["docker", "--config", DOCKER_CONFIG_PATH, "push", "mycustom/repo-foo:2.1.0"]
+        push_call_1 = ["docker", "push", "pony/myapp:2.1.0"]
+        push_call_1_latest = ["docker", "push", "pony/myapp:latest"]
+        push_call_2 = ["docker", "push", "mycustom/repo-foo:2.1.0"]
         calls = list(map(mock.call, [build_call_1, push_call_1, push_call_1_latest, build_call_2, push_call_2]))
         m_bash.assert_has_calls(calls)

@@ -68,14 +68,18 @@ class DockerImageBuilder(Step):
         self.docker_credentials = DockerRegistry(config, env).credentials()
 
     def populate_docker_config(self):
-        """Creates docker config file and writes the credentials for the registry to the file"""
+        """Creates ~/.docker/config.json and writes the credentials for the registry to the file"""
         creds = f"{self.docker_credentials.username}:{self.docker_credentials.password}".encode()
 
         docker_json = {
             "auths": {self.docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}
         }
 
-        with open(DOCKER_CONFIG_PATH, "w") as f:
+        home = os.environ["HOME"]
+        docker_dir = f"{home}/.docker"
+        if not os.path.exists(docker_dir):
+            os.makedirs(docker_dir, exist_ok=True)
+        with open(f"{docker_dir}/config.json", "w") as f:
             json.dump(docker_json, f)
 
     def schema(self) -> vol.Schema:
@@ -106,8 +110,6 @@ class DockerImageBuilder(Step):
             "build",
             "--build-arg",
             f"PIP_EXTRA_INDEX_URL={os.getenv('PIP_EXTRA_INDEX_URL')}",
-            "--config",
-            DOCKER_CONFIG_PATH,
             "-t",
             tag,
             "-f",
@@ -131,7 +133,7 @@ class DockerImageBuilder(Step):
         Args:
             tag: The docker tag to upload
         """
-        cmd = ["docker", "--config", DOCKER_CONFIG_PATH, "push", tag]
+        cmd = ["docker", "push", tag]
 
         logger.info(f"Uploading docker image {tag}")
 
@@ -156,8 +158,6 @@ class DockerImageBuilder(Step):
             self.build_image(df.dockerfile, image_tag)
             self.push_image(image_tag)
 
-            print(f"checking tag, {df.tag_release_as_latest}, {self.env}, {self.env.on_release_tag}")
             if df.tag_release_as_latest and self.env.on_release_tag:
-                print("on tag")
                 latest_tag = f"{repository}:latest"
                 self.push_image(latest_tag)
