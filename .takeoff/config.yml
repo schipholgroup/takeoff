@@ -5,6 +5,12 @@ environment_keys:
   application_name: CIRCLE_PROJECT_REPONAME
   branch_name: CIRCLE_BRANCH
 
+ci_environment_keys_dev:
+  container_registry:
+    username: REGISTRY_USER
+    password: REGISTRY_PASSWORD
+    registry: REGISTRY_SERVER
+
 ci_environment_keys_acp:
   container_registry:
     username: REGISTRY_USER
