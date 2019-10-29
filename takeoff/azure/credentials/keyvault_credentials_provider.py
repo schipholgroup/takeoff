@@ -2,9 +2,10 @@ import re
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Union, Tuple
 
-from azure.keyvault import KeyVaultClient
+from azure.keyvault import KeyVaultClient as AzureKeyVaultClient
 from azure.keyvault.models import SecretBundle
 
+from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.credentials.credential_provider import BaseProvider
 from takeoff.credentials.secret import Secret
 from takeoff.util import get_matching_group, has_prefix_match, inverse_dictionary
@@ -24,7 +25,7 @@ class KeyVaultSecrets:
 class KeyVaultCredentialsMixin(object):
     """Collection of Azure KeyVault helper functions"""
 
-    def __init__(self, vault_name: str, vault_client: KeyVaultClient):
+    def __init__(self, vault_name: str, vault_client: AzureKeyVaultClient):
         self.vault_name = vault_name
         self.vault_client = vault_client
 
@@ -126,7 +127,9 @@ class KeyVaultCredentialsMixin(object):
             ]
         return [IdAndKey(_, _) for _ in keyvault_ids]
 
-    def _retrieve_secrets(self, client: KeyVaultClient, vault: str, prefix: Optional[str]) -> List[Secret]:
+    def _retrieve_secrets(
+        self, client: AzureKeyVaultClient, vault: str, prefix: Optional[str]
+    ) -> List[Secret]:
         secrets = list(client.get_secrets(vault))
         secrets_ids = self._extract_keyvault_ids_from(secrets)
         secrets_filtered = self._filter_keyvault_ids(secrets_ids, prefix)
