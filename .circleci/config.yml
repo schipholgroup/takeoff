@@ -49,7 +49,12 @@ jobs:
       - checkout
       - run: env | grep -v ^PATH > .env
       - run: docker build -t takeoff:latest -f Dockerfile .
-      - run: docker run --env-file .env -v `echo $PWD`:/src -v /var/run/docker.sock:/var/run/docker.sock takeoff:latest takeoff
+      - run:
+          command: |
+            echo $REGISTRY_PASSWORD | docker login --username $REGISTRY_USER --password-stdin
+            version=$(docker run --env-file .env -v `echo $PWD`:/src takeoff:latest get_version)
+            docker tag takeoff:latest schipholhub/takeoff:${version}
+            docker push schipholhub/takeoff:${version}
 
 workflows:
   version: 2.1
