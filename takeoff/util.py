@@ -7,8 +7,8 @@ import subprocess
 from dataclasses import dataclass
 from typing import Callable, List, Pattern, Union, Tuple
 
-from git import Repo
 import jinja2
+from git import Repo
 from yaml import load
 
 logger = logging.getLogger(__name__)

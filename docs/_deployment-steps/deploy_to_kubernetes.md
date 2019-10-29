@@ -158,14 +158,16 @@ steps:
       url: 'prd-url-here-being-glorious'
 ```
 
-### Eventhub producer policy secrets
-Eventhub producer policy secrets from [`configure_eventhub`](deployment-step/configure-eventhub) are available during this task. This makes it possible for the configuration below to inject the secrets into `my_kubernetes_config.yml.j2`:
+### Takeoff Context
+Eventhub producer policy secrets and consumer group secrets from [`configure_eventhub`](deployment-step/configure-eventhub) are available during this task. This makes it possible for the configuration below to inject the secrets into `my_kubernetes_config.yml.j2`:
 ```yaml
 steps:
   - task: configure_eventhub
     create_producer_policies:
       - eventhub_entity_naming: entity1
       - eventhub_entity_naming: entity2
+    create_consumer_groups:
+      - eventhub_entity_naming: entity3
   - task: deploy_to_kubernetes
     kubernetes_config_path: my_kubernetes_config.yml.j2
 ```
@@ -176,8 +178,9 @@ kind: Secret
 metadata:
   name: armada-connections
 data:
-  entity1-secret: {{ entity1_connection_string }}
-  entity2-secret: {{ entity2_connection_string }}
+  entity1-producer-secret: {{ entity1_connection_string }}
+  entity2-producer-secret: {{ entity2_connection_string }}
+  entity3-consumer-secret: {{ entity3_connection_string }}
 ```
 
 The jinja variables `entity1_connection_string` and `entity2_connection_string` are named by your `eventhub_entity_naming` in `create_producer_policies`, posfixed with `connection_string`.

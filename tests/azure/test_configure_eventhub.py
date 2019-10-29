@@ -182,20 +182,9 @@ class TestConfigureEventHub(object):
         assert not victim._authorization_rules_exists(group, 'idontexist')
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
-    def test_create_connection_strings(self, victim):
-        entities = [
-            EventHub('my-group', 'my-namespace', 'my-entity'),
-            EventHub('your-group', 'your-namespace', 'your-entity')
-        ]
-
-        expected_result = [
-            ConnectingString('my-entity', 'potato-connection'),
-            ConnectingString('your-entity', 'potato-connection')
-        ]
-
-        result = victim._create_connection_strings(entities)
-
-        assert result == expected_result
+    def test_create_connection_string(self, victim):
+        result = victim._create_connection_string(EventHub('my-group', 'my-namespace', 'my-entity'))
+        assert result == ConnectingString('my-entity', 'potato-connection')
 
     @mock.patch("takeoff.azure.configure_eventhub.ConfigureEventHub._create_producer_policy")
     def test_create_eventhub_producer_policies(self, producer_policy_fun, victim):

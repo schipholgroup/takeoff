@@ -7,8 +7,8 @@ import pytest
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
-from takeoff.credentials.container_registry import DockerCredentials
 from takeoff.context import Context
+from takeoff.credentials.container_registry import DockerCredentials
 from takeoff.util import run_shell_command
 from tests.azure import takeoff_config
 

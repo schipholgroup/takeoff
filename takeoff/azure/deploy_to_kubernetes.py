@@ -16,9 +16,9 @@ from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_kubernetes_name
+from takeoff.context import Context, ContextKey
 from takeoff.credentials.container_registry import DockerRegistry
 from takeoff.credentials.secret import Secret
-from takeoff.context import Context, ContextKey
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
 from takeoff.util import b64_encode, ensure_base64, render_string_with_jinja, run_shell_command
@@ -198,8 +198,14 @@ class DeployToKubernetes(BaseKubernetes):
         vault_values = {_.jinja_safe_key: ensure_base64(_.val) for _ in secrets}
 
         context_values = {
-            _.jinja_safe_key: ensure_base64(_.val)
-            for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, {})
+            **{
+                _.jinja_safe_key: ensure_base64(_.val)
+                for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, {})
+            },
+            **{
+                _.jinja_safe_key: ensure_base64(_.val)
+                for _ in Context().get_or_else(ContextKey.EVENTHUB_CONSUMER_GROUP_SECRETS, {})
+            },
         }
 
         kubernetes_config = self._render_kubernetes_config(
