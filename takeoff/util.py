@@ -7,11 +7,12 @@ import subprocess
 from dataclasses import dataclass
 from typing import Callable, List, Pattern, Union, Tuple
 
+import jinja2
 from git import Repo
-from jinja2 import Template
 from yaml import load
 
 logger = logging.getLogger(__name__)
+
 
 DEFAULT_TAKEOFF_PLUGIN_PREFIX = "takeoff_"
 
@@ -34,7 +35,7 @@ def render_string_with_jinja(path: str, params: dict) -> str:
         str: rendered jinja template as a string
     """
     with open(path) as file_:
-        template = Template(file_.read())
+        template = jinja2.Template(file_.read())
     rendered = template.render(**params)
     return rendered
 
@@ -77,6 +78,53 @@ def b64_encode(s: str) -> str:
         str: base64 encoded string
     """
     return base64.b64encode(s.encode()).decode()
+
+
+def b64_decode(s: str) -> str:
+    """Decode a given base64-encoded string
+
+    Args:
+        s: base64 encoded string to decode
+
+    Returns:
+        str: base64 decoded string
+    """
+    return base64.b64decode(s).decode()
+
+
+# register as a jinja2 filter to allow usage within jinja2 templates
+jinja2.filters.FILTERS["b64_encode"] = b64_encode
+jinja2.filters.FILTERS["b64_decode"] = b64_decode
+
+
+def is_base64(target: Union[str, bytes]) -> bool:
+    """Determines whether a given target (either bytes or string) is base64 encoded
+    Courtesy of
+    https://stackoverflow.com/questions/12315398/verify-is-a-string-is-encoded-in-base64-python
+
+    Args:
+        target: str/bytes to check for base64 encoding
+
+    Returns:
+        bool: true if target is base64 encoded
+    """
+    try:
+        if isinstance(target, str):
+            # If there's any unicode here, an exception will be thrown and the function will return false
+            target_bytes = bytes(target, "ascii")
+        elif isinstance(target, bytes):
+            target_bytes = target
+        else:
+            raise ValueError("Argument must be string or bytes")
+        return base64.b64encode(base64.b64decode(target_bytes)) == target_bytes
+    except Exception:
+        return False
+
+
+def ensure_base64(s: str) -> str:
+    if not is_base64(s):
+        return b64_encode(s)
+    return s
 
 
 def get_matching_group(find_in: str, pattern: Pattern[str], group: int):

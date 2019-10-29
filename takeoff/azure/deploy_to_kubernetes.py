@@ -21,7 +21,7 @@ from takeoff.credentials.container_registry import DockerRegistry
 from takeoff.credentials.secret import Secret
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import render_string_with_jinja, b64_encode, run_shell_command
+from takeoff.util import b64_encode, ensure_base64, render_string_with_jinja, run_shell_command
 
 logger = logging.getLogger(__name__)
 
@@ -195,21 +195,21 @@ class DeployToKubernetes(BaseKubernetes):
         Returns:
             The path to the temporary file where the rendered kubernetes configuration is stored.
         """
-        vault_values = {_.jinja_safe_key: _.val for _ in secrets}
-        producer_secrets = {
-            _.jinja_safe_key: b64_encode(_.val)
-            for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, {})
-        }
-        consumer_secrets = {
-            _.jinja_safe_key: b64_encode(_.val)
-            for _ in Context().get_or_else(ContextKey.EVENTHUB_CONSUMER_GROUP_SECRETS, {})
+        vault_values = {_.jinja_safe_key: ensure_base64(_.val) for _ in secrets}
+
+        context_values = {
+            **{
+                _.jinja_safe_key: ensure_base64(_.val)
+                for _ in Context().get_or_else(ContextKey.EVENTHUB_PRODUCER_POLICY_SECRETS, {})
+            },
+            **{
+                _.jinja_safe_key: ensure_base64(_.val)
+                for _ in Context().get_or_else(ContextKey.EVENTHUB_CONSUMER_GROUP_SECRETS, {})
+            },
         }
 
         kubernetes_config = self._render_kubernetes_config(
-            kubernetes_config_path,
-            application_name,
-            {**vault_values, **producer_secrets, **consumer_secrets},
-            custom_values,
+            kubernetes_config_path, application_name, {**vault_values, **context_values}, custom_values
         )
         return self._write_kubernetes_config(kubernetes_config)
 
@@ -251,12 +251,11 @@ class DeployToKubernetes(BaseKubernetes):
         return self._render_and_write_kubernetes_config(
             kubernetes_config_path=pull_secrets_yaml,
             application_name=application_name,
-            secrets=[
-                Secret("pull_secret", self._get_docker_registry_secret()),
-                Secret("namespace", self.config["image_pull_secret"]["namespace"]),
-                Secret("secret_name", self.config["image_pull_secret"]["secret_name"]),
-            ],
-            custom_values={},
+            secrets=[Secret("pull_secret", self._get_docker_registry_secret())],
+            custom_values={
+                "namespace": Secret("namespace", self.config["image_pull_secret"]["namespace"]).val,
+                "secret_name": Secret("secret_name", self.config["image_pull_secret"]["secret_name"]).val,
+            },
         )
 
     def _get_custom_values(self) -> Dict[str, str]:
