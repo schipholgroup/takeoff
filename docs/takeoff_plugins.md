@@ -13,7 +13,7 @@ Now, we know that not everyone has the same environments, or might want a differ
 - and _SNAPSHOT_ should go to __testing__;
 - feature branches should not be deployed
      
-This is where Schiphol Takeoff plugins come in to play. Using Python, we allow you to write your own custom logic regarding what should go where and when. Regarding the where part: we also allow you to introduce your own naming conventions and logic by the form of a python plugin. Writing your own plugin is quite easy, but to understand what plugins can mean for you a basic understanding of _how_ Schiphol Takeoff works is necessary. 
+This is where Schiphol Takeoff plugins come in to play. Using Python, we allow you to write your own custom logic regarding what should go where and when. Regarding the where part: we also allow you to introduce your own naming conventions and logic by the form of a Python plugin. Writing your own plugin is quite easy, but to understand what plugins can mean for you a basic understanding of _how_ Schiphol Takeoff works is necessary. 
 
 ## Customization using plugins
 

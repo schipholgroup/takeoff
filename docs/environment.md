@@ -29,6 +29,8 @@ Concretely this means that many feature branches may be running simultaneously, 
 
 For this all to work, Schiphol Takeoff makes some assumptions about naming conventions. For example, in the case of Microsoft Azure, each of these environments basically mean a separate resource group. These resource groups are identical in the fact that they contain the same services, but otherwise might be different in terms of scaling and naming of services. Based on naming conventions Schiphol Takeoff determines during CI which service in which resource group it should deploy to.
 
+_note_: The above holds for the defaults of Schiphol Takeoff, all of the above logic can be overridden by [plugins](takeoff-plugins).
+
 ## `ApplicationVersion`
 One of the most important classes in Schiphol Takeoff is `ApplicationVersion`. It has the following signature:
 
