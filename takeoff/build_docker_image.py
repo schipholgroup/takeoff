@@ -59,7 +59,7 @@ class DockerImageBuilder(Step):
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)
-        self.docker_credentials = DockerRegistry(config, env).credentials()
+        self.docker_credentials = DockerRegistry(self.config, self.env).credentials()
 
     def populate_docker_config(self):
         """Creates ~/.docker/config.json and writes the credentials for the registry to the file"""

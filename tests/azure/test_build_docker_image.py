@@ -9,9 +9,7 @@ from takeoff.build_docker_image import DockerImageBuilder, DockerFile
 from takeoff.credentials.container_registry import DockerCredentials
 from tests.azure import takeoff_config
 
-BASE_CONF = {"task": "build_docker_image",
-             "credentials": "environment_variables",
-             }
+BASE_CONF = {"task": "build_docker_image"}
 
 CREDS = DockerCredentials("My", "Little", "pony")
 ENV_VARIABLES = {"HOME": "my_home",

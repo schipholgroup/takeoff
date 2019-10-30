@@ -87,7 +87,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
         vol.Optional("credentials", default="environment_variables"): vol.All(
-            str, vol.In("environment_variables", "azure_keyvault")
+            str, vol.In(["environment_variables", "azure_keyvault"])
         ),
         vol.Required("kubernetes_config_path"): str,
         vol.Optional(
