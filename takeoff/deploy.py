@@ -17,7 +17,7 @@ def deploy_env_logic(config: dict) -> ApplicationVersion:
     Returns:
         Information about the version of the application and to which environment it should be deployed
     """
-    branch = BranchName(config=config, app_version=None).get()
+    branch = BranchName(config=config).get()
     tag = get_tag()
     git_hash = get_short_hash()
 
