@@ -89,11 +89,11 @@ class DockerImageBuilder(Step):
         #     json.dump(docker_json, f)
 
         client = docker.from_env()
-        client.login(
-            username=self.docker_credentials.username,
-            password=self.docker_credentials.password,
-            registry=self.docker_credentials.registry,
-        )
+        # client.login(
+        #     username=self.docker_credentials.username,
+        #     password=self.docker_credentials.password,
+        #     registry=self.docker_credentials.registry,
+        # )
 
         run_shell_command(["pwd"])
         run_shell_command(["ls", "-lah", home])
