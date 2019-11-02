@@ -1,7 +1,7 @@
 name: Schiphol Takeoff
 
 project:
-  version: 9.0.1 # TODO: this needs fixing
+  version: 2.0.2
   github: https://github.com/schipholgroup/takeoff
 
 markdown: kramdown
