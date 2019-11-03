@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def deploy_env_logic(config: dict) -> ApplicationVersion:
-    branch = BranchName(config, None).get()
+    branch = BranchName(config).get()
     tag = get_tag()
     hash = get_short_hash()
 
