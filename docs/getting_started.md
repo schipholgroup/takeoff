@@ -7,7 +7,7 @@ permalink: getting-started
 
 # Getting started
 
-The easiest way to use Takeoff for your project is to use the prebuilt Docker image available [here](DOCKERHUB LINK). Using this prebuilt image, you'll
+The easiest way to use Takeoff for your project is to use the prebuilt Docker image available [here](https://hub.docker.com/r/schipholhub/takeoff). Using this prebuilt image, you'll
 need to add 2 additional files to your project in order for Runway to function correctly.
 
 ## Takeoff Files
@@ -91,7 +91,7 @@ using Gitlab CI:
 `.gitlab-ci.yml`
 ```yaml
 runway:
-  image: <<<DOCKERHUBLINKHERE>>>/takeoff:<<<VERSION_HERE>>>
+  image: schipholhub/takeoff:2.0.2
   variables:
     DOCKER_HOST: tcp://localhost:2375
   stage: deploy
