@@ -40,7 +40,7 @@ jobs:
       - checkout
       - run: pip install -e .[test]
       - run: python setup.py test
-      - codecov/upload
+#      - codecov/upload
 
   takeoff:
     machine:
