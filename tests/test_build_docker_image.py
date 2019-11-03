@@ -100,14 +100,14 @@ class TestDockerImageBuilder:
         assert_docker_build(m_bash)
 
     @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
-    def test_push_image_success(self, m_bash):
-        DockerImageBuilder.push_image("image/stag")
+    def test_push_image_success(self, m_bash, victim):
+        victim.push_image("image/stag")
         assert_docker_push(m_bash)
 
     @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(1, ['output_lines']))
-    def test_push_image_failure(self, m_bash):
+    def test_push_image_failure(self, m_bash, victim):
         with pytest.raises(ChildProcessError):
-            DockerImageBuilder.push_image("image/stag")
+            victim.push_image("image/stag")
         assert_docker_push(m_bash)
 
     @mock.patch.dict(os.environ, {"PIP_EXTRA_INDEX_URL": "url/to/artifact/store",

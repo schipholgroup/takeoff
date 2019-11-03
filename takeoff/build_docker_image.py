@@ -73,32 +73,21 @@ class DockerImageBuilder(Step):
         self.docker_credentials = DockerRegistry(config, env).credentials()
 
     def docker_login(self):
-        import docker
+        login = [
+            "docker",
+            "login",
+            self.docker_credentials.registry,
+            "-u",
+            self.docker_credentials.username,
+            "-p",
+            self.docker_credentials.password,
+        ]
 
-        # creds = f"{self.docker_credentials.username}:{self.docker_credentials.password}".encode()
-        #
-        # docker_json = {
-        #     "auths": {self.docker_credentials.registry: {"auth": base64.b64encode(creds).decode()}}
-        # }
+        logger.info(f"Logging in to registry")
 
-        os.environ["HOME"] = "/src"
-        home = os.environ["HOME"]
-        # docker_config = f"{home}/.dockercfg"
-        # os.makedirs(home, exist_ok=True)
-        # with open(docker_config, "w") as f:
-        #     json.dump(docker_json, f)
-
-        client = docker.from_env()
-        # client.login(
-        #     username=self.docker_credentials.username,
-        #     password=self.docker_credentials.password,
-        #     registry=self.docker_credentials.registry,
-        # )
-
-        run_shell_command(["pwd"])
-        run_shell_command(["ls", "-lah", home])
-        run_shell_command(["cat", f"{home}/.dockercfg"])
-        run_shell_command(["docker", "info"])
+        return_code, _ = run_shell_command(login)
+        if return_code != 0:
+            raise ChildProcessError("Could not build the image for some reason!")
 
     def schema(self) -> vol.Schema:
         return SCHEMA
@@ -152,27 +141,11 @@ class DockerImageBuilder(Step):
         Args:
             tag: The docker tag to upload
         """
-
-        logger.info(self.docker_credentials)
-
-        cmd = [
-            "docker",
-            "login",
-            "-u",
-            f'"{self.docker_credentials.username}"',
-            "-p",
-            f'"{self.docker_credentials.password}"',
-            # self.docker_credentials.registry,
-        ]
-
-        logger.info(" ".join(cmd))
-        # "docker",
-        # "push",
-        # tag,
+        push = ["docker", "push", tag]
 
         logger.info(f"Uploading docker image {tag}")
 
-        return_code, _ = run_shell_command(cmd)
+        return_code, _ = run_shell_command(push)
 
         if return_code != 0:
             raise ChildProcessError("Could not push image for some reason!")
