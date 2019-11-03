@@ -162,7 +162,7 @@ class DockerImageBuilder(Step):
             f'"{self.docker_credentials.username}"',
             "-p",
             f'"{self.docker_credentials.password}"',
-            self.docker_credentials.registry,
+            # self.docker_credentials.registry,
         ]
 
         logger.info(" ".join(cmd))
