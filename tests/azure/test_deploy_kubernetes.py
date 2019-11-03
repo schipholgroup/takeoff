@@ -7,8 +7,8 @@ import pytest
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
-from takeoff.credentials.container_registry import DockerCredentials
 from takeoff.context import Context
+from takeoff.credentials.container_registry import DockerCredentials
 from takeoff.util import run_shell_command
 from tests.azure import takeoff_config
 
@@ -69,7 +69,7 @@ class TestDeployToKubernetes(object):
         assert res.config['kubernetes_config_path'] == "kubernetes_config/k8s.yml.j2"
 
     @mock.patch.dict(os.environ, env_variables)
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._get_docker_registry_secret", return_value="somebase64encodedstring")
+    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._get_docker_registry_secret", return_value="nonbase64encodedstring")
     def test_create_docker_registry_secret(self, _, victim):
         Context().clear()
         with mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._write_kubernetes_config") as m_write:
@@ -84,7 +84,7 @@ kind: Secret
 apiVersion: v1
 type: kubernetes.io/dockerconfigjson
 data:
-  .dockerconfigjson: somebase64encodedstring
+  .dockerconfigjson: bm9uYmFzZTY0ZW5jb2RlZHN0cmluZw==
 metadata:
   name: registry-auth
   namespace: default"""

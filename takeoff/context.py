@@ -5,6 +5,7 @@ from typing import Any, Dict
 @unique
 class ContextKey(Enum):
     EVENTHUB_PRODUCER_POLICY_SECRETS = auto()
+    EVENTHUB_CONSUMER_GROUP_SECRETS = auto()
 
 
 class Singleton(type):

@@ -158,14 +158,16 @@ steps:
       url: 'prd-url-here-being-glorious'
 ```
 
-### Eventhub producer policy secrets
-Eventhub producer policy secrets from [`configure_eventhub`](deployment-step/configure-eventhub) are available during this task. This makes it possible for the configuration below to inject the secrets into `my_kubernetes_config.yml.j2`:
+### Takeoff Context
+Eventhub producer policy secrets and consumer group secrets from [`configure_eventhub`](deployment-step/configure-eventhub) are available during this task. This makes it possible for the configuration below to inject the secrets into `my_kubernetes_config.yml.j2`:
 ```yaml
 steps:
   - task: configure_eventhub
     create_producer_policies:
       - eventhub_entity_naming: entity1
       - eventhub_entity_naming: entity2
+    create_consumer_groups:
+      - eventhub_entity_naming: entity3
   - task: deploy_to_kubernetes
     kubernetes_config_path: my_kubernetes_config.yml.j2
 ```
@@ -176,8 +178,22 @@ kind: Secret
 metadata:
   name: armada-connections
 data:
-  entity1-secret: {{ entity1_connection_string }}
-  entity2-secret: {{ entity2_connection_string }}
+  entity1-producer-secret: {{ entity1_connection_string }}
+  entity2-producer-secret: {{ entity2_connection_string }}
+  entity3-consumer-secret: {{ entity3_connection_string }}
 ```
 
 The jinja variables `entity1_connection_string` and `entity2_connection_string` are named by your `eventhub_entity_naming` in `create_producer_policies`, posfixed with `connection_string`.
+
+## Base64 encoding of secrets
+Kubernetes requires the values of secrets to be base64 encoded. Takeoff enables this, and by default takes the following approach:
+- Any values that are inserted into your Kubernetes template that originate from the *Keyvault* are assumed to be confidential. As such, Takeoff will ensure that these values
+are base64 encoded, as they should only be used in Kubernetes secrets.
+- Any values that are inserted into your Kubernetes template via the *custom values* support (i.e. that are supplied in Takeoff's deployment.yml) are assumed to __not__ be confidential. These
+values will therefore be inserted into the template in plain text.
+
+We believe these two assumptions are reasonable, and recommend you do not deviate from this. If, for some reason, you want/need to deviate from this, you can by using the following two filters in your Jinja template:
+- `b64_encode`: apply base64 encoding. Example usage: `{{ non_encoded_value |  b64_encode }}`
+- `b64_decode`: apply base64 decoding. Example usage: `{{ encoded_value |  b64_decode }}`
+
+TL;DR: secrets are base64 encoded by default, custom_values are not. You can deviate from this using the jinja2 filters if you like.
