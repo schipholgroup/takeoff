@@ -19,6 +19,7 @@ Add the following task to `deployment.yaml`
 | field | description | values
 | ----- | ----------- |
 | `task` | `"build_docker_image"`
+| `credentials` | Select the credentials provider | `
 | `dockerfiles` [optional]| List of more specific Docker file configurations. Consisting of:
 | `dockerfiles[].file` [optional] | Alternative Docker file name
 | `dockerfiles[].postfix` [optional] | Postfix for the image name, will be added before the tag
