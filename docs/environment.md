@@ -1,9 +1,9 @@
 ---
 layout: page
-title: Deployment environments
+title: Environments
 date: 2019-09-14
 updated: 2019-09-14
-rank: 1
+rank: 2
 permalink: deployment-environments
 ---
 

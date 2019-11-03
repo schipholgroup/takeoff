@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Takeoff plugins
-rank: 3
+title: Plugins
+rank: 5
 permalink: takeoff-plugins
 ---
 

@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Deployment Steps
-rank: 2
+title: Deployment steps
+rank: 3
 permalink: deployment-steps
 ---
 
