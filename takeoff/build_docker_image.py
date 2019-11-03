@@ -87,7 +87,7 @@ class DockerImageBuilder(Step):
 
         return_code, _ = run_shell_command(login)
         if return_code != 0:
-            raise ChildProcessError("Could not build the image for some reason!")
+            raise ChildProcessError("Could not login for some reason!")
 
     def schema(self) -> vol.Schema:
         return SCHEMA
