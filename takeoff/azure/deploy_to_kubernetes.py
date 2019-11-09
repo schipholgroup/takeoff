@@ -49,7 +49,7 @@ class BaseKubernetes(Step):
         """
         kubeconfig = credential_results.kubeconfigs[0].value.decode(encoding="UTF-8")
 
-        kubeconfig_dir = os.path.join(os.environ['HOME'], ".kube")
+        kubeconfig_dir = os.path.join(os.environ["HOME"], ".kube")
 
         # assumption here that there is no existing kubeconfig (which makes sense, given this script should
         # be run in a docker container ;-) )
@@ -154,11 +154,11 @@ class DeployToKubernetes(BaseKubernetes):
         )
 
     def _render_kubernetes_config(
-            self,
-            kubernetes_config_path: str,
-            application_name: str,
-            secrets: Dict[str, str],
-            custom_values: Dict[str, str],
+        self,
+        kubernetes_config_path: str,
+        application_name: str,
+        secrets: Dict[str, str],
+        custom_values: Dict[str, str],
     ) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
@@ -180,11 +180,11 @@ class DeployToKubernetes(BaseKubernetes):
         return rendered_kubernetes_config_path.name
 
     def _render_and_write_kubernetes_config(
-            self,
-            kubernetes_config_path: str,
-            application_name: str,
-            secrets: List[Secret],
-            custom_values: Dict[str, str],
+        self,
+        kubernetes_config_path: str,
+        application_name: str,
+        secrets: List[Secret],
+        custom_values: Dict[str, str],
     ) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
