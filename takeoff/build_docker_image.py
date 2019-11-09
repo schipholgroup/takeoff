@@ -32,8 +32,19 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
                     description="Postfix for the image name, will be added `before` the tag",
                 ): vol.Any(None, str),
                 vol.Optional(
+                    "prefix",
+                    default=None,
+                    description=(
+                        "Prefix for the image name, will be added `between` the image name"
+                        "and repository (e.g. myreg.io/prefix/my-app:tag"
+                    ),
+                ): vol.Any(None, str),
+                vol.Optional(
                     "custom_image_name", default=None, description="A custom name for the image to be used."
                 ): vol.Any(None, str),
+                vol.Optional(
+                    "tag_release_as_latest", default=True, description="Tag a release also as 'latest' image."
+                ): vol.Any(None, bool),
             }
         ],
     },
@@ -45,7 +56,9 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
 class DockerFile(object):
     dockerfile: str
     postfix: Union[str, None]
+    prefix: Union[str, None]
     custom_image_name: Union[str, None]
+    tag_release_as_latest: bool
 
 
 class DockerImageBuilder(Step):
@@ -81,7 +94,9 @@ class DockerImageBuilder(Step):
 
     def _construct_docker_build_config(self):
         return [
-            DockerFile(df["file"], df["postfix"], df["custom_image_name"])
+            DockerFile(
+                df["file"], df["postfix"], df["prefix"], df["custom_image_name"], df["tag_release_as_latest"]
+            )
             for df in self.config["dockerfiles"]
         ]
 
@@ -140,7 +155,13 @@ class DockerImageBuilder(Step):
         for df in dockerfiles:
             tag = self.env.artifact_tag
 
-            repository = f"{self.docker_credentials.registry}/{self.application_name}"
+            repository = "/".join(
+                [
+                    _
+                    for _ in (self.docker_credentials.registry, df.prefix, self.application_name)
+                    if _ is not None
+                ]
+            )
 
             if df.custom_image_name:
                 repository = df.custom_image_name
@@ -151,3 +172,7 @@ class DockerImageBuilder(Step):
             image_tag = f"{repository}:{tag}"
             self.build_image(df.dockerfile, image_tag)
             self.push_image(image_tag)
+
+            if df.tag_release_as_latest and self.env.on_release_tag:
+                latest_tag = f"{repository}:latest"
+                self.push_image(latest_tag)
