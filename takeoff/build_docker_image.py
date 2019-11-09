@@ -3,6 +3,7 @@ import os
 from dataclasses import dataclass
 from typing import List, Union
 
+import pprint
 import voluptuous as vol
 
 from takeoff.application_version import ApplicationVersion
@@ -85,7 +86,7 @@ class DockerImageBuilder(Step):
 
         logger.info(f"Logging in to registry")
 
-        return_code, _ = run_shell_command(login)
+        return_code, lines = run_shell_command(login)
         if return_code != 0:
             raise ChildProcessError("Could not login for some reason!")
 
@@ -133,7 +134,8 @@ class DockerImageBuilder(Step):
         if return_code != 0:
             raise ChildProcessError("Could not build the image for some reason!")
 
-    def push_image(self, tag: str):
+    @staticmethod
+    def push_image(tag: str):
         """Push the docker image
 
         This uses bash to run commands directly.
@@ -145,7 +147,7 @@ class DockerImageBuilder(Step):
 
         logger.info(f"Uploading docker image {tag}")
 
-        return_code, _ = run_shell_command(push)
+        return_code, lines = run_shell_command(push)
 
         if return_code != 0:
             raise ChildProcessError("Could not push image for some reason!")
