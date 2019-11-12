@@ -55,6 +55,16 @@ def add_takeoff_plugin_paths(dirs: List[str]):
 
 
 def main():
+    logger.info(  # noqa: W605
+        """
+  ______      __              ________
+ /_  __/___ _/ /_____  ____  / __/ __/
+  / / / __ `/ //_/ _ \/ __ \/ /_/ /_
+ / / / /_/ / ,< /  __/ /_/ / __/ __/
+/_/  \__,_/_/|_|\___/\____/_/ /_/
+
+    """
+    )
     deployment = load_yaml(get_full_yaml_filename("deployment"))
     config = load_yaml(get_full_yaml_filename("config"))
     if "plugins" in config:
