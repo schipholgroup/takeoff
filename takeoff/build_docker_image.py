@@ -22,12 +22,16 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             str, vol.In(["environment_variables", "azure_keyvault"])
         ),
         vol.Optional(
-            "dockerfiles", default=[{"file": "Dockerfile",
-                                     "postfix": None,
-                                     "prefix": None,
-                                     "custom_image_name": None,
-                                     "tag_release_as_latest": True
-                                     }]
+            "dockerfiles",
+            default=[
+                {
+                    "file": "Dockerfile",
+                    "postfix": None,
+                    "prefix": None,
+                    "custom_image_name": None,
+                    "tag_release_as_latest": True,
+                }
+            ],
         ): [
             {
                 vol.Optional("file", default="Dockerfile", description="Alternative docker file name"): str,
