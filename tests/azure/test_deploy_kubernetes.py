@@ -69,7 +69,8 @@ class TestDeployToKubernetes(object):
         assert res.config['kubernetes_config_path'] == "kubernetes_config/k8s.yml.j2"
 
     @mock.patch.dict(os.environ, env_variables)
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._get_docker_registry_secret", return_value="nonbase64encodedstring")
+    @mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._get_docker_registry_secret",
+                return_value="nonbase64encodedstring")
     def test_create_docker_registry_secret(self, _, victim):
         Context().clear()
         with mock.patch("takeoff.azure.deploy_to_kubernetes.DeployToKubernetes._write_kubernetes_config") as m_write:
@@ -91,7 +92,8 @@ metadata:
         m_write.assert_called_once_with(expected_result)
 
     def test_render_kubernetes_config(self, victim):
-        result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony', {"secret_pull_policy": "Always"}, {})
+        result = victim._render_kubernetes_config('tests/azure/files/valid_k8s.yml.j2', 'my-little-pony',
+                                                  {"secret_pull_policy": "Always"}, {})
 
         # we need this stupid formatting to make the test pass...
         expected_result = """apiVersion: extensions/v1beta1
@@ -167,6 +169,7 @@ spec:
         with pytest.raises(ValueError):
             res._get_custom_values()
 
+
 @dataclass(frozen=True)
 class MockValue:
     value: bytes
@@ -185,6 +188,6 @@ class TestBaseKubernetes():
             with mock.patch("builtins.open", mopen):
                 victim._write_kube_config(MockCredentialResults([MockValue("foo".encode(encoding="UTF-8"))]))
 
-        m_mkdir.assert_called_once_with("myhome/.kube")
-        mopen.assert_called_once_with("myhome/.kube/config", "w")
+        m_mkdir.assert_called_once_with(os.path.join("myhome", ".kube"))
+        mopen.assert_called_once_with(os.path.join("myhome", ".kube", "config"), "w")
         mopen().write.assert_called_once_with("foo")

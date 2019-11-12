@@ -22,7 +22,9 @@ Add the following task to `deployment.yaml`
 | `dockerfiles` [optional]| List of more specific Docker file configurations. Consisting of:
 | `dockerfiles[].file` [optional] | Alternative Docker file name
 | `dockerfiles[].postfix` [optional] | Postfix for the image name, will be added before the tag
+| `dockerfiles[].prefix` [optional] | Prefix for the image name, will be added `between` the image name and repository (e.g. myreg.io/prefix/my-app:tag"
 | `dockerfiles[].custom_image_name` [optional] | A custom name for the image to be used
+| `dockerfiles[].tag_release_as_latest` [optional] | Tag a release also as 'latest' image. | Defaults to `true`
 
 ## Takeoff config
 Credentials for a Docker registry (username, password, registry) must be available in your cloud vault. Also, the [Docker cli](https://docs.docker.com/engine/reference/commandline/cli/) must be available. 
@@ -49,7 +51,7 @@ steps:
   - task: build_docker_image
 ```
 
-Full configuration example. This builds and pushed two Docker images to `acr.azurecr.io/myimage-one:1.2.0` (from `Dockerfile_one`) and `acr.azurecr.io/myapp:1.2.0` (from `Dockerfile_two`) respectively
+Full configuration example. This builds and pushed two Docker images to `acr.azurecr.io/myproject/myimage-one:1.2.0` (from `Dockerfile_one`) and `acr.azurecr.io/myapp:1.2.0` (from `Dockerfile_two`) respectively
 
 ```
 steps:
@@ -57,6 +59,7 @@ steps:
     dockerfile:
       - file: Dockerfile_one
         postfix: "-one"
+        prefix: "myproject"
         custom_image_name: myimage
       - file: Dockerfile_two
 ```

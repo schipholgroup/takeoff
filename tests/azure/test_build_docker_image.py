@@ -25,6 +25,14 @@ def victim() -> DockerImageBuilder:
         return DockerImageBuilder(ApplicationVersion('DEV', '2.1.0', 'MASTER'), conf)
 
 
+@pytest.fixture(autouse=True)
+def victim_release() -> DockerImageBuilder:
+    with mock.patch("takeoff.build_docker_image.DockerRegistry.credentials", return_value=CREDS), \
+         mock.patch("takeoff.step.ApplicationName.get", return_value="myapp"):
+        conf = {**takeoff_config(), **BASE_CONF}
+        return DockerImageBuilder(ApplicationVersion('PRD', '2.1.0', '2.1.0'), conf)
+
+
 def assert_docker_json(mopen, mjson):
     mopen.assert_called_once_with("my_home/.docker/config.json", "w")
     auth = base64.b64encode("My:Little".encode()).decode()
@@ -34,7 +42,7 @@ def assert_docker_json(mopen, mjson):
 
 def test_construct_docker_build_config(victim: DockerImageBuilder):
     res = victim._construct_docker_build_config()
-    assert res == [DockerFile("Dockerfile", None, None)]
+    assert res == [DockerFile("Dockerfile", None, None, None, True)]
 
 
 def assert_docker_push(m_bash):
@@ -61,7 +69,7 @@ class TestDockerImageBuilder:
         conf = {**takeoff_config(), **BASE_CONF}
 
         res = DockerImageBuilder(ApplicationVersion("dev", "v", "branch"), conf)
-        assert res.config['dockerfiles'] == [{"file": "Dockerfile", "postfix": None, "custom_image_name": None}]
+        assert res.config['dockerfiles'] == [{"file": "Dockerfile", "postfix": None, "prefix": None, "custom_image_name": None, 'tag_release_as_latest': True}]
 
     @mock.patch.dict(os.environ, ENV_VARIABLES)
     @mock.patch("takeoff.build_docker_image.DockerRegistry.credentials", return_value=CREDS)
@@ -115,27 +123,45 @@ class TestDockerImageBuilder:
         assert_docker_build(m_bash)
 
     @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
-    def test_push_image_success(self, m_bash):
-        DockerImageBuilder.push_image("image/stag")
+    def test_push_image_success(self, m_bash, victim):
+        victim.push_image("image/stag")
         assert_docker_push(m_bash)
 
     @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(1, ['output_lines']))
-    def test_push_image_failure(self, m_bash):
+    def test_push_image_failure(self, m_bash, victim):
         with pytest.raises(ChildProcessError):
-            DockerImageBuilder.push_image("image/stag")
+            victim.push_image("image/stag")
         assert_docker_push(m_bash)
 
     @mock.patch.dict(os.environ, {"PIP_EXTRA_INDEX_URL": "url/to/artifact/store",
                                   "CI_PROJECT_NAME": "myapp",
-                                  "CI_COMMIT_REF_SLUG": "ignored"})
+                                  "CI_COMMIT_REF_SLUG": "2.1.0"})
     @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
-    def test_deploy(self, m_bash, victim: DockerImageBuilder):
-        files = [DockerFile("Dockerfile", None, None), DockerFile("File2", "-foo", "mycustom/repo")]
+    def test_deploy_non_release(self, m_bash, victim: DockerImageBuilder):
+        files = [DockerFile("Dockerfile", None, 'name', None, True), DockerFile("File2", "-foo", None, "mycustom/repo", False)]
         victim.deploy(files)
+        build_call_1 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "pony/name/myapp:2.1.0", "-f", "./Dockerfile", "."]
+        build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "mycustom/repo-foo:2.1.0", "-f", "./File2", "."]
+
+        push_call_1 = ["docker", "push", "pony/name/myapp:2.1.0"]
+        push_call_2 = ["docker", "push", "mycustom/repo-foo:2.1.0"]
+        calls = list(map(mock.call, [build_call_1, push_call_1, build_call_2, push_call_2]))
+        m_bash.assert_has_calls(calls)
+
+    @mock.patch.dict(os.environ, {"PIP_EXTRA_INDEX_URL": "url/to/artifact/store",
+                                  "CI_PROJECT_NAME": "myapp",
+                                  "CI_COMMIT_REF_SLUG": "2.1.0"})
+    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
+    @mock.patch("takeoff.application_version.get_tag", return_value="2.1.0")
+    def test_deploy_release(self, m_tag, m_bash, victim_release: DockerImageBuilder):
+        files = [DockerFile("Dockerfile", None, None, None, True), DockerFile("File2", "-foo", None, "mycustom/repo", False)]
+
+        victim_release.deploy(files)
         build_call_1 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "pony/myapp:2.1.0", "-f", "./Dockerfile", "."]
         build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "mycustom/repo-foo:2.1.0", "-f", "./File2", "."]
 
         push_call_1 = ["docker", "push", "pony/myapp:2.1.0"]
+        push_call_1_latest = ["docker", "push", "pony/myapp:latest"]
         push_call_2 = ["docker", "push", "mycustom/repo-foo:2.1.0"]
-        calls = list(map(mock.call, [build_call_1, push_call_1, build_call_2, push_call_2]))
+        calls = list(map(mock.call, [build_call_1, push_call_1, push_call_1_latest, build_call_2, push_call_2]))
         m_bash.assert_has_calls(calls)
