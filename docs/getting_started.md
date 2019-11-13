@@ -8,7 +8,7 @@ permalink: getting-started
 # Getting started
 
 The easiest way to use Takeoff for your project is to use the prebuilt Docker image available [here](https://hub.docker.com/r/schipholhub/takeoff). Using this prebuilt image, you'll
-need to add 2 additional files to your project in order for Runway to function correctly.
+need to add 2 additional files to your project in order for Takeoff to function correctly.
 
 ## Takeoff Files
 Takeoff needs two files in the `.takeoff` directory:
@@ -90,13 +90,13 @@ your CI provider also needs to support docker-in-docker. As an example, this is 
 using Gitlab CI:
 `.gitlab-ci.yml`
 ```yaml
-runway:
+takeoff:
   image: schipholhub/takeoff:2.0.2
   variables:
     DOCKER_HOST: tcp://localhost:2375
   stage: deploy
   script:
-    - runway
+    - takeoff
 ```
 
 You will also need to ensure that the environment variables you've told Takeoff are available (see `config.yml` above). For most 
