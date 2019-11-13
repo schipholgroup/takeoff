@@ -9,7 +9,7 @@ category: Databricks
 
 # Create Databricks secrets
 
-Takeoff can create []ataBricks secrets](https://docs.databricks.com/user-guide/secrets/index.html) automatically. In order to do so you must have create secrets in the Azure KeyVault prefixed with your application name (i.e. github repo).
+Takeoff can create [DataBricks secrets](https://docs.databricks.com/user-guide/secrets/index.html) automatically. In order to do so you must have create secrets in the Azure KeyVault prefixed with your application name (i.e. github repo).
 
 For example if your repository is called `flight-predictions` that needs an API key to an external API, the Azure KeyVault secret name must be `flight-predictions-api-key`. 
 
