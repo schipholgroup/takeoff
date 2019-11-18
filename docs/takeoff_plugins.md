@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def deploy_env_logic(config: dict) -> ApplicationVersion:
-    branch = BranchName().get(config)
+    branch = BranchName(config).get()
     tag = get_tag()
 
     if tag:
