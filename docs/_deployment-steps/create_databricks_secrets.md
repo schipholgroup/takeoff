@@ -27,9 +27,10 @@ Make sure `takeoff_config.yaml` contains the following `azure_keyvault_keys`:
 
   ```yaml
   azure:
-    databricks:
-      host: "azure-databricks-host"
-      token: "azure-databricks-token"
+    keyvault_keys:
+      databricks:
+        host: "azure-databricks-host"
+        token: "azure-databricks-token"
   ```
  
 and these `takeoff_common` keys:
