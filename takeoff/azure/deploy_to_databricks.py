@@ -102,7 +102,7 @@ class DeployToDatabricks(Step):
             log_destination=job_name,
             parameters=self._construct_arguments(job_config["arguments"]),
             schedule=self._get_schedule(job_config),
-            environment=self.env.environment.lower(),
+            environment=self.env.environment_formatted,
         )
 
         root_library_folder = self.config["common"]["databricks_fs_libraries_mount_path"]
