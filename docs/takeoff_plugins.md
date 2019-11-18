@@ -17,7 +17,7 @@ This is where Schiphol Takeoff plugins come in to play. Using Python, we allow y
 
 ## Customization using plugins
 
-Create a new folder in your repository prefixed with `takeoff_`, for example `takeoff_plugins` and in it an `__init__.py` file. This file will contain any custom funcion for Schiphol Takeoff which will scan and load these on runtime. To create you own logic for deployment simply override the default function. For the example stated above the new function looks like:
+Create a new folder in your repository prefixed with `takeoff_`, for example `takeoff_plugins` and in it an `__init__.py` file. This file will contain any custom function for Schiphol Takeoff which will scan and load these on runtime. To create you own logic for deployment simply override the default function. For the example stated above the new function looks like:
 
 ```python
 import logging
