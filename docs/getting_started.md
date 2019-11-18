@@ -61,19 +61,19 @@ environment_keys:
   branch_name: CI_COMMIT_REF_SLUG
 
 ci_environment_keys_dev:
-  azure_service_principal:
+  service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_DEV"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_DEV"
 
 ci_environment_keys_acp:
-  azure_service_principal:
+  service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_ACP"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_ACP"
 
 ci_environment_keys_prd:
-  azure_service_principal:
+  service_principal:
     tenant: "AZURE_TENANTID"
     client_id: "AZURE_KEYVAULT_SP_USERNAME_PRD"
     secret: "AZURE_KEYVAULT_SP_PASSWORD_PRD"
