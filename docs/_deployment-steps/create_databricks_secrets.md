@@ -19,16 +19,18 @@ During deployment Takeoff creates a Databricks secrets scope matching your repos
 Add the following task to ``deployment.yaml``:
 
 ```yaml
-- task: createDatabricksSecrets
+- task: create_databricks_secrets_from_vault
 ```
 
 ## Takeoff config
 Make sure `takeoff_config.yaml` contains the following `azure_keyvault_keys`:
 
   ```yaml
-  azure_databricks:
-    host: "azure-databricks-host"
-    token: "azure-databricks-token"
+  azure:
+    keyvault_keys:
+      databricks:
+        host: "azure-databricks-host"
+        token: "azure-databricks-token"
   ```
  
 and these `takeoff_common` keys:
