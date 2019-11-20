@@ -159,7 +159,7 @@ class DeployToDatabricks(Step):
         job_configs = [
             JobConfig(_["settings"]["name"], _["job_id"]) for _ in self.jobs_api.list_jobs()["jobs"]
         ]
-        job_ids = self._application_job_id(self._construct_name(job_config['name']), branch, job_configs)
+        job_ids = self._application_job_id(self._construct_name(job_config["name"]), branch, job_configs)
 
         if not job_ids:
             logger.info(f"Could not find jobs in list of {pprint.pformat(job_configs)}")
