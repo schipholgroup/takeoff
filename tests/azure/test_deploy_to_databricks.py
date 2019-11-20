@@ -557,11 +557,16 @@ class TestDeployToDatabricks(object):
                 "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
                 return_value=["id1", "id2"],
         ):
-            victim.remove_job("my-branch", False)
+            victim.remove_job("my-branch", {'name': ""}, False)
 
         calls = [mock.call("id1"), mock.call("id2")]
 
         victim.jobs_api.delete_job.assert_has_calls(calls)
+
+    def test_remove_job_batch_with_name(self):
+        res = DeployToDatabricks._application_job_id("tim-postfix", "master", jobs)
+
+        assert len(res) == 2
 
     def test_remove_job_streaming(self, victim):
         with mock.patch(
@@ -571,7 +576,7 @@ class TestDeployToDatabricks(object):
             with mock.patch(
                     "takeoff.azure.deploy_to_databricks.DeployToDatabricks._kill_it_with_fire"
             ) as kill_mock:
-                victim.remove_job("my-branch", True)
+                victim.remove_job("my-branch", {'name': ""}, True)
 
         calls = [mock.call("id1"), mock.call("id2")]
 
@@ -583,7 +588,7 @@ class TestDeployToDatabricks(object):
                 "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
                 return_value=[],
         ):
-            victim.remove_job("my-branch", False)
+            victim.remove_job("my-branch", {'name': ""}, False)
 
         victim.jobs_api.delete_job.assert_not_called()
 
