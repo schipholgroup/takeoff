@@ -1,5 +1,8 @@
+import logging
 from enum import Enum, auto, unique
 from typing import Any, Dict
+
+logger = logging.getLogger(__name__)
 
 
 @unique
@@ -31,6 +34,7 @@ class Context(metaclass=Singleton):
         Returns:
             Updated Context
         """
+        logger.info(f"key {key} now available in TakeoffContext")
         self.__data.update({key: value})
         return self
 
