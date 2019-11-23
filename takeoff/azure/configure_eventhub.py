@@ -289,7 +289,7 @@ class ConfigureEventHub(Step):
             logger.error("Something went wrong during creating consumer group")
             raise e
 
-        secret = Secret(f"{group.eventhub}-connection-string", connection_string.connection_string)
+        secret = Secret(f"{group.eventhub.name}-connection-string", connection_string.connection_string)
 
         if group.create_databricks_secret:
             self.create_databricks_secrets([secret])
