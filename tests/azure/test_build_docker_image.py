@@ -22,7 +22,7 @@ def victim() -> DockerImageBuilder:
     with mock.patch("takeoff.build_docker_image.DockerRegistry.credentials", return_value=CREDS), \
          mock.patch("takeoff.step.ApplicationName.get", return_value="myapp"):
         conf = {**takeoff_config(), **BASE_CONF}
-        return DockerImageBuilder(ApplicationVersion('DEV', '2.1.0', 'MASTER'), conf)
+        return DockerImageBuilder(ApplicationVersion('DEV', 'SNAPSHOT', 'master'), conf)
 
 
 @pytest.fixture(autouse=True)
@@ -30,7 +30,7 @@ def victim_release() -> DockerImageBuilder:
     with mock.patch("takeoff.build_docker_image.DockerRegistry.credentials", return_value=CREDS), \
          mock.patch("takeoff.step.ApplicationName.get", return_value="myapp"):
         conf = {**takeoff_config(), **BASE_CONF}
-        return DockerImageBuilder(ApplicationVersion('PRD', '2.1.0', '2.1.0'), conf)
+        return DockerImageBuilder(ApplicationVersion('PRD', '2.1.0', 'master'), conf)
 
 
 def assert_docker_json(mopen, mjson):
@@ -135,16 +135,17 @@ class TestDockerImageBuilder:
 
     @mock.patch.dict(os.environ, {"PIP_EXTRA_INDEX_URL": "url/to/artifact/store",
                                   "CI_PROJECT_NAME": "myapp",
-                                  "CI_COMMIT_REF_SLUG": "2.1.0"})
+                                  "CI_COMMIT_REF_SLUG": "SNAPSHOT"})
     @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
-    def test_deploy_non_release(self, m_bash, victim: DockerImageBuilder):
+    @mock.patch("takeoff.application_version.get_tag", return_value=None)
+    def test_deploy_non_release(self, m_tag, m_bash, victim: DockerImageBuilder):
         files = [DockerFile("Dockerfile", None, 'name', None, True), DockerFile("File2", "-foo", None, "mycustom/repo", False)]
         victim.deploy(files)
-        build_call_1 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "pony/name/myapp:2.1.0", "-f", "./Dockerfile", "."]
-        build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "mycustom/repo-foo:2.1.0", "-f", "./File2", "."]
+        build_call_1 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "pony/name/myapp:SNAPSHOT", "-f", "./Dockerfile", "."]
+        build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "mycustom/repo-foo:SNAPSHOT", "-f", "./File2", "."]
 
-        push_call_1 = ["docker", "push", "pony/name/myapp:2.1.0"]
-        push_call_2 = ["docker", "push", "mycustom/repo-foo:2.1.0"]
+        push_call_1 = ["docker", "push", "pony/name/myapp:SNAPSHOT"]
+        push_call_2 = ["docker", "push", "mycustom/repo-foo:SNAPSHOT"]
         calls = list(map(mock.call, [build_call_1, push_call_1, build_call_2, push_call_2]))
         m_bash.assert_has_calls(calls)
 
