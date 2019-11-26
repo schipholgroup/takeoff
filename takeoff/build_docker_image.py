@@ -143,6 +143,25 @@ class DockerImageBuilder(Step):
             raise ChildProcessError("Could not build the image for some reason!")
 
     @staticmethod
+    def tag_image(old_tag: str, new_tag: str):
+        """Tag a docker tag with a new tag
+
+        This uses bash to run commands directly.
+
+        Args:
+            old_tag: The existing docker tag
+            new_tag: The new docker tag
+        """
+        cmd = ["docker", "tag", old_tag, new_tag]
+
+        logger.info(f"Tagging {old_tag} as {new_tag}")
+
+        return_code, _ = run_shell_command(cmd)
+
+        if return_code != 0:
+            raise ChildProcessError("Could not tag image for some reason!")
+
+    @staticmethod
     def push_image(tag: str):
         """Push the docker image
 
@@ -184,4 +203,7 @@ class DockerImageBuilder(Step):
 
             if df.tag_release_as_latest and self.env.on_release_tag:
                 latest_tag = f"{repository}:latest"
+                # ensure that the latest tag is available for pushing
+                self.tag_image(image_tag, latest_tag)
+
                 self.push_image(latest_tag)

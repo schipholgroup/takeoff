@@ -44,6 +44,9 @@ def test_construct_docker_build_config(victim: DockerImageBuilder):
     res = victim._construct_docker_build_config()
     assert res == [DockerFile("Dockerfile", None, None, None, True)]
 
+def assert_docker_tag(m_bash):
+    m_bash.assert_called_once_with(["docker", "tag", "old_tag", "new_tag"])
+
 
 def assert_docker_push(m_bash):
     m_bash.assert_called_once_with(["docker", "push", "image/stag"])
@@ -111,6 +114,19 @@ class TestDockerImageBuilder:
 
     @mock.patch.dict(os.environ, ENV_VARIABLES)
     @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
+    def test_tag_image_success(self, m_bash):
+        DockerImageBuilder.tag_image("old_tag", "new_tag")
+        assert_docker_tag(m_bash)
+
+    @mock.patch.dict(os.environ, ENV_VARIABLES)
+    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(1, ['output_lines']))
+    def test_tag_image_failure(self, m_bash):
+        with pytest.raises(ChildProcessError):
+            DockerImageBuilder.tag_image("old_tag", "new_tag")
+        assert_docker_tag(m_bash)
+
+    @mock.patch.dict(os.environ, ENV_VARIABLES)
+    @mock.patch("takeoff.build_docker_image.run_shell_command", return_value=(0, ['output_lines']))
     def test_build_image_success(self, m_bash):
         DockerImageBuilder.build_image("Thefile", "stag")
         assert_docker_build(m_bash)
@@ -162,7 +178,8 @@ class TestDockerImageBuilder:
         build_call_2 = ["docker", "build", "--build-arg", "PIP_EXTRA_INDEX_URL=url/to/artifact/store", "-t", "mycustom/repo-foo:2.1.0", "-f", "./File2", "."]
 
         push_call_1 = ["docker", "push", "pony/myapp:2.1.0"]
+        tag_call_latest = ["docker", "tag", "pony/myapp:2.1.0", "pony/myapp:latest"]
         push_call_1_latest = ["docker", "push", "pony/myapp:latest"]
         push_call_2 = ["docker", "push", "mycustom/repo-foo:2.1.0"]
-        calls = list(map(mock.call, [build_call_1, push_call_1, push_call_1_latest, build_call_2, push_call_2]))
+        calls = list(map(mock.call, [build_call_1, push_call_1, tag_call_latest, push_call_1_latest, build_call_2, push_call_2]))
         m_bash.assert_has_calls(calls)
