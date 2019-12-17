@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class Secret:
     key: str
     val: str
+    version: str = "1"
 
     @property
     def env_key(self):

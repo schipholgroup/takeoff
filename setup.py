@@ -23,7 +23,8 @@ setup_dependencies = [
     "pyyaml==5.1.2",
     "requests>=2.20.0",
     "twine==1.14.0",
-    "voluptuous==0.11.7"
+    "voluptuous==0.11.7",
+    "google-cloud-kms==1.2.1"
 ]
 
 test_dependencies = [

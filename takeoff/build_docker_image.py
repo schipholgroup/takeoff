@@ -19,7 +19,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "build_docker_image",
         vol.Optional("credentials", default="environment_variables"): vol.All(
-            str, vol.In(["environment_variables", "azure_keyvault"])
+            str, vol.In(["environment_variables", "azure_keyvault", "google_cloud_kms"])
         ),
         vol.Optional(
             "dockerfiles",
@@ -97,6 +97,8 @@ class DockerImageBuilder(Step):
             os.mkdir(docker_dir)
         with open(f"{docker_dir}/config.json", "w") as f:
             json.dump(docker_json, f)
+
+        print(docker_json)
 
     def schema(self) -> vol.Schema:
         return SCHEMA
@@ -180,6 +182,7 @@ class DockerImageBuilder(Step):
             raise ChildProcessError("Could not push image for some reason!")
 
     def deploy(self, dockerfiles: List[DockerFile]):
+        print(self.docker_credentials)
         for df in dockerfiles:
             tag = self.env.artifact_tag
 

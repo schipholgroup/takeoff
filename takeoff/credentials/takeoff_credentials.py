@@ -1,5 +1,6 @@
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.keyvault_credentials_provider import AzureKeyVaultProvider
+# from takeoff.google_cloud.credentials.cloud_kms_provider import GoogleCloudKMSProvider
 from takeoff.credentials.credential_provider import BaseProvider
 from takeoff.credentials.environment_credentials_provider import CIEnvironmentCredentials
 
@@ -19,6 +20,8 @@ class TakeoffCredentials:
         creds = self.config["credentials"]
         if creds == "azure_keyvault":
             return AzureKeyVaultProvider(self.config, self.env)
+        # elif creds == "google_cloud_kms":
+        #     return GoogleCloudKMSProvider(self.config, self.env)
         elif creds == "environment_variables":
             return CIEnvironmentCredentials(self.config, self.env)
         raise ValueError("Other credential type not supported")
