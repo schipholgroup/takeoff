@@ -46,12 +46,12 @@ Make sure `.takeoff/config.yaml` contains the following keys:
 
 ```yaml
 azure:
-    keyvault_keys:
-        storage_account:
-          account_name: "azure-shared-blob-username"
-          account_key: "azure-shared-blob-password"
-    common:
-        artifacts_shared_storage_account_container_name: libraries
+  keyvault_keys:
+    storage_account:
+      account_name: "azure-shared-blob-username"
+      account_key: "azure-shared-blob-password"
+  common:
+      artifacts_shared_storage_account_container_name: libraries
 ```
 
 <p class='note warning'>
@@ -65,6 +65,7 @@ Make sure `takeoff_config.yaml` contains the following `azure_keyvault_keys`:
 ```yaml
 azure:
   keyvault_keys:
+    artifact_store:
       repository_url: "artifact-store-upload-url"
       username: "artifact-store-username"
       password: "artifact-store-password"
