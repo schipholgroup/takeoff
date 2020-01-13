@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List
 from unittest import mock
 
@@ -184,10 +185,10 @@ class TestBaseKubernetes():
     @mock.patch.dict(os.environ, {"HOME": "myhome"})
     def test_write_kube_config(self, victim: BaseKubernetes):
         mopen = mock.mock_open()
-        with mock.patch("os.mkdir") as m_mkdir:
+        with mock.patch("pathlib.Path.mkdir") as m_mkdir:
             with mock.patch("builtins.open", mopen):
                 victim._write_kube_config(MockCredentialResults([MockValue("foo".encode(encoding="UTF-8"))]))
 
-        m_mkdir.assert_called_once_with(os.path.join("myhome", ".kube"))
-        mopen.assert_called_once_with(os.path.join("myhome", ".kube", "config"), "w")
+        m_mkdir.assert_called_once_with()
+        mopen.assert_called_once_with(Path("myhome", ".kube", "config"), "w")
         mopen().write.assert_called_once_with("foo")

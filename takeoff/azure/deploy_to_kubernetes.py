@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import List, Dict
 
@@ -49,12 +50,12 @@ class BaseKubernetes(Step):
         """
         kubeconfig = credential_results.kubeconfigs[0].value.decode(encoding="UTF-8")
 
-        kubeconfig_dir = os.path.join(os.environ["HOME"], ".kube")
+        kubeconfig_dir = Path(os.environ["HOME"]) / ".kube"
 
-        if not os.path.isdir(kubeconfig_dir):
-            os.mkdir(kubeconfig_dir)
+        if not kubeconfig_dir.is_dir():
+            kubeconfig_dir.mkdir()
 
-        with open(os.path.join(kubeconfig_dir, "config"), "w") as f:
+        with open(kubeconfig_dir / "config", "w") as f:
             f.write(kubeconfig)
 
         logger.info("Kubeconfig successfully written")
