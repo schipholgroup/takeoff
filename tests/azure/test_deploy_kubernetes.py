@@ -189,6 +189,6 @@ class TestBaseKubernetes():
             with mock.patch("builtins.open", mopen):
                 victim._write_kube_config(MockCredentialResults([MockValue("foo".encode(encoding="UTF-8"))]))
 
-        m_mkdir.assert_called_once_with()
+        m_mkdir.assert_called_once_with(exist_ok=True)
         mopen.assert_called_once_with(Path("myhome", ".kube", "config"), "w")
         mopen().write.assert_called_once_with("foo")

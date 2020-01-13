@@ -52,8 +52,7 @@ class BaseKubernetes(Step):
 
         kubeconfig_dir = Path(os.environ["HOME"]) / ".kube"
 
-        if not kubeconfig_dir.is_dir():
-            kubeconfig_dir.mkdir()
+        kubeconfig_dir.mkdir(exist_ok=True)
 
         with open(kubeconfig_dir / "config", "w") as f:
             f.write(kubeconfig)
