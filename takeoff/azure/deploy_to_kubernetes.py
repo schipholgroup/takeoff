@@ -51,9 +51,9 @@ class BaseKubernetes(Step):
 
         kubeconfig_dir = os.path.join(os.environ["HOME"], ".kube")
 
-        # assumption here that there is no existing kubeconfig (which makes sense, given this script should
-        # be run in a docker container ;-) )
-        os.mkdir(kubeconfig_dir)
+        if not os.path.isdir(kubeconfig_dir):
+            os.mkdir(kubeconfig_dir)
+
         with open(os.path.join(kubeconfig_dir, "config"), "w") as f:
             f.write(kubeconfig)
 
