@@ -9,7 +9,7 @@ from typing import Callable, List, Pattern, Union, Tuple
 
 import jinja2
 from git import Repo
-from yaml import load
+from yaml import load, SafeLoader
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +150,7 @@ def has_prefix_match(find_in: str, to_find: str, pattern: Pattern[str]):
 def load_yaml(path: str) -> dict:
     with open(path, "r") as f:
         config_file = f.read()
-    return load(config_file)
+    return load(config_file, Loader=SafeLoader)
 
 
 def current_filename(__fn):
