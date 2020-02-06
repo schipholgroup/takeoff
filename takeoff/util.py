@@ -161,10 +161,10 @@ def inverse_dictionary(d: dict):
     return {v: k for k, v in d.items()}
 
 
-def get_full_yaml_filename(filename: str) -> str:
+def get_full_yaml_filename(filename: str, takeoff_dir: str = ".takeoff") -> str:
     extensions = (".yaml", ".yml")
     for ext in extensions:
-        concat_filename = os.path.join(".takeoff", f"{filename}{ext}")
+        concat_filename = os.path.join(takeoff_dir, f"{filename}{ext}")
         if os.path.isfile(concat_filename):
             return concat_filename
         else:
