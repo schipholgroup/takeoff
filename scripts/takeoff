@@ -1,4 +1,13 @@
 #!/usr/bin/python3 -u
-from takeoff.deploy import main
+import click
+from takeoff.deploy import main as takeoff_main
 
-main()
+
+@click.command()
+@click.option('--takeoff_dir', default=".takeoff", help='')
+def main(takeoff_dir):
+    takeoff_main(takeoff_dir)
+
+
+if __name__ == "__main__":
+    main()

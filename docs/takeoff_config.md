@@ -8,6 +8,11 @@ permalink: takeoff-config
 # Overview
 The `.takeoff/config.yaml` is the place put any variables that should not be hardcoded in python. Then you can use these variables in your component to authenticate against Cloud services.
 
+<p class='note warning'>
+  By default, Takeoff assumes the configuration is available in the `.takeoff` directory. You can configure this with the optional CLI parameter: `--takeoff_dir my_path`. For example: `takeoff --takeoff_dir my_path` will read both 
+  of Takeoff's yaml files from the `my_path` directory
+</p>
+
 The basic setup contains:
 
 ```yaml
@@ -32,6 +37,9 @@ azure:
 | `ci_environment_keys_acp` __[optional]__ | Environment variables for your acceptance environment | [Jump to values](takeoff-config#ci_environment_keys)
 | `ci_environment_keys_prd` __[optional]__ | Environment variables for your production environment | [Jump to values](takeoff-config#ci_environment_keys)
 | `azure` __[optional]__ | Microsoft Azure specific values | [Jump to values](takeoff-config#azure)
+
+
+
 
 ## environment_keys
 

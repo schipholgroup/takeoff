@@ -28,7 +28,7 @@ env = ApplicationVersion("DEV", "abc123githash", 'some-branch')
 conf_ext = {"environment_keys": {"application_name": "CI_PROJECT_NAME"}}
 
 
-def filename(s):
+def filename(s, _):
     return f".takeoff/{s}.yml"
 
 
