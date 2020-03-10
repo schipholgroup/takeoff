@@ -19,7 +19,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "build_docker_image",
         vol.Optional("credentials", default="environment_variables"): vol.All(
-            str, vol.In(["environment_variables", "azure_keyvault", "google_cloud_kms"])
+            str, vol.In(["environment_variables", "azure_keyvault", "google_cloud_secret_manager"])
         ),
         vol.Optional(
             "dockerfiles",

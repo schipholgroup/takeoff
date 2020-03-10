@@ -194,7 +194,7 @@ def get_jar_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     return f"{build_definition_name}/{build_definition_name}-{artifact_tag}{file_ext}"
 
 
-def run_shell_command(command: List[str]) -> Tuple[int, List]:
+def run_shell_command(command: List[str], quiet: bool = False) -> Tuple[int, List]:
     """Runs a shell command using `subprocess.Popen`
 
     In addition to running any bash command, the output of process is streamed directly to the stdout.
@@ -209,7 +209,8 @@ def run_shell_command(command: List[str]) -> Tuple[int, List]:
         if output == "" and process.poll() is not None:
             break
         if output:
-            print(output.strip())
+            if not quiet:
+                print(output.strip())
             output_lines.append(output)
     return process.poll(), output_lines
 
