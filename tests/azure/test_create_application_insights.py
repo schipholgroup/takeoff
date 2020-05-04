@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
+from unittest import mock
 
-import mock
 import pytest
 from voluptuous import MultipleInvalid
 

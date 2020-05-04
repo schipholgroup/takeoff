@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.keyvault import KeyVaultClient as victim

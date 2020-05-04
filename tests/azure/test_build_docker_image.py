@@ -1,7 +1,8 @@
 import base64
 import os
 
-import mock
+from unittest import mock
+
 import pytest
 
 from takeoff.application_version import ApplicationVersion

@@ -1,6 +1,5 @@
 import os
-
-import mock
+from unittest import mock
 
 from takeoff.azure.credentials.service_principal import ServicePrincipalCredentials as victim
 from tests.credentials.base_environment_keys_test import EnvironmentKeyBaseTest, OS_KEYS
