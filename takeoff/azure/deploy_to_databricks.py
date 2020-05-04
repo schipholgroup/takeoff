@@ -29,6 +29,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
                     vol.Optional("config_file", default="databricks.json.j2"): str,
                     vol.Optional("name", default=""): str,
                     vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
+                    vol.Optional("run_immediately", default=True): bool,
                     vol.Optional("arguments", default=[{}]): [{}],
                     vol.Optional("schedule"): {
                         vol.Required("quartz_cron_expression"): str,
@@ -87,13 +88,14 @@ class DeployToDatabricks(Step):
             job_name = f"{app_name}-{self.env.artifact_tag}"
             job_config = self.create_config(job_name, job)
             is_streaming = self._job_is_streaming(job_config)
+            run_immediately = job["run_immediately"]
 
             logger.info("Removing old job")
             self.remove_job(self.env.artifact_tag, job_config=job, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
-            self._submit_job(job_config, is_streaming)
+            self._submit_job(job_config, is_streaming, run_immediately)
 
     def create_config(self, job_name: str, job_config: dict):
         common_arguments = dict(
@@ -190,11 +192,11 @@ class DeployToDatabricks(Step):
             logger.info(f"Canceling active runs {active_run_ids}")
             [self.runs_api.cancel_run(_) for _ in active_run_ids]
 
-    def _submit_job(self, job_config: dict, is_streaming: bool):
+    def _submit_job(self, job_config: dict, is_streaming: bool, run_immediately: bool):
         job_resp = self.jobs_api.create_job(job_config)
         logger.info(f"Created Job with ID {job_resp['job_id']}")
 
-        if is_streaming:
+        if is_streaming or run_immediately:
             resp = self.jobs_api.run_now(
                 job_id=job_resp["job_id"],
                 jar_params=None,
