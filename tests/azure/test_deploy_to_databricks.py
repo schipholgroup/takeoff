@@ -599,12 +599,14 @@ class TestDeployToDatabricks(object):
         victim.runs_api.cancel_run.assert_has_calls(calls)
 
     def test_submit_job_batch(self, victim):
-        victim._submit_job({}, False)
+        victim._submit_job({}, False, True)
 
         victim.jobs_api.create_job.assert_called_with({})
 
+        victim.jobs_api.run_now.assert_not_called()
+
     def test_submit_job_streaming(self, victim):
-        victim._submit_job({}, True)
+        victim._submit_job({}, True, True)
 
         victim.jobs_api.create_job.assert_called_with({})
 
@@ -615,3 +617,10 @@ class TestDeployToDatabricks(object):
             python_params=None,
             spark_submit_params=None,
         )
+
+    def test_submit_job_streaming_without_immediate_run(self, victim):
+        victim._submit_job({}, True, False)
+
+        victim.jobs_api.create_job.assert_called_with({})
+
+        victim.jobs_api.run_now.assert_not_called()
