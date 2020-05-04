@@ -205,7 +205,7 @@ def run_shell_command(command: List[str]) -> Tuple[int, List]:
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd="./", universal_newlines=True)
     output_lines = []
     while True:
-        output = process.stdout.readline()
+        output = process.stdout.readline()  # type: ignore
         if output == "" and process.poll() is not None:
             break
         if output:
