@@ -598,15 +598,15 @@ class TestDeployToDatabricks(object):
         calls = [mock.call("run1"), mock.call("run2")]
         victim.runs_api.cancel_run.assert_has_calls(calls)
 
-    def test_submit_job_batch(self, victim):
-        victim._submit_job({}, False, True)
+    def test_deploy_job_batch(self, victim):
+        victim.deploy_job({}, False, True)
 
         victim.jobs_api.create_job.assert_called_with({})
 
         victim.jobs_api.run_now.assert_not_called()
 
     def test_submit_job_streaming(self, victim):
-        victim._submit_job({}, True, True)
+        victim.deploy_job({}, True, True)
 
         victim.jobs_api.create_job.assert_called_with({})
 
@@ -619,7 +619,7 @@ class TestDeployToDatabricks(object):
         )
 
     def test_submit_job_streaming_without_immediate_run(self, victim):
-        victim._submit_job({}, True, False)
+        victim.deploy_job({}, True, False)
 
         victim.jobs_api.create_job.assert_called_with({})
 

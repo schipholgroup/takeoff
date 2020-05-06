@@ -3,7 +3,7 @@ import logging
 import pprint
 import re
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 import voluptuous as vol
 from databricks_cli.jobs.api import JobsApi
@@ -95,7 +95,7 @@ class DeployToDatabricks(Step):
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
-            self._submit_job(job_config, is_streaming, run_stream_job_immediately)
+            self.deploy_job(job_config, is_streaming, run_stream_job_immediately)
 
     def create_config(self, job_name: str, job_config: dict):
         common_arguments = dict(
@@ -182,7 +182,7 @@ class DeployToDatabricks(Step):
 
         return [_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)]
 
-    def _kill_it_with_fire(self, job_id):
+    def _kill_it_with_fire(self, job_id: int):
         logger.info(f"Finding runs for job_id {job_id}")
         runs = self.runs_api.list_runs(job_id, active_only=True, completed_only=None, offset=None, limit=None)
         # If the runs is empty, there are no jobs at all
@@ -192,16 +192,22 @@ class DeployToDatabricks(Step):
             logger.info(f"Canceling active runs {active_run_ids}")
             [self.runs_api.cancel_run(_) for _ in active_run_ids]
 
-    def _submit_job(self, job_config: dict, is_streaming: bool, run_stream_job_immediately: bool):
+    def deploy_job(self, job_config: Dict, is_streaming: bool, run_stream_job_immediately: bool):
+        job_id = self._submit_job(job_config)
+        if is_streaming and run_stream_job_immediately:
+            self._run_job(job_id)
+
+    def _submit_job(self, job_config: Dict):
         job_resp = self.jobs_api.create_job(job_config)
         logger.info(f"Created Job with ID {job_resp['job_id']}")
+        return job_resp["job_id"]
 
-        if is_streaming and run_stream_job_immediately:
-            resp = self.jobs_api.run_now(
-                job_id=job_resp["job_id"],
-                jar_params=None,
-                notebook_params=None,
-                python_params=None,
-                spark_submit_params=None,
-            )
-            logger.info(f"Created run with ID {resp['run_id']}")
+    def _run_job(self, job_id: str):
+        resp = self.jobs_api.run_now(
+            job_id=job_id,
+            jar_params=None,
+            notebook_params=None,
+            python_params=None,
+            spark_submit_params=None,
+        )
+        logger.info(f"Created run with ID {resp['run_id']}")
