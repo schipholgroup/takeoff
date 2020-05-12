@@ -61,9 +61,9 @@ Other functions you can overwrite are the ones that use naming conventions. Thes
     ```python
     def get_cosmos_name(config: dict, env: ApplicationVersion) -> str
     ```
-- EvenHub namespace 
+- EventHub namespace 
     ```python
-    def get_eventhub_name(config: dict, env: ApplicationVersion) -> sts
+    def get_eventhub_name(config: dict, env: ApplicationVersion) -> str
     ```
 - EventHub entity (equivalent of a kafka topic)
     ```python
