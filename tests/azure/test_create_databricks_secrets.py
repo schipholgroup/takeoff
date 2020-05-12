@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
+from unittest import mock
 
-import mock
 import pytest
 
 from takeoff.application_version import ApplicationVersion

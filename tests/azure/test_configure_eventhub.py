@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
+from unittest import mock
 
-import mock
 import pytest
 import voluptuous as vol
 from azure.mgmt.relay.models import AccessRights

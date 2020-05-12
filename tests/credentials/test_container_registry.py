@@ -1,6 +1,6 @@
 import os
 
-import mock
+from unittest import mock
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.credentials.container_registry import DockerRegistry as victim, DockerCredentials

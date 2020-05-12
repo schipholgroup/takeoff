@@ -1,9 +1,9 @@
 import os
 from dataclasses import dataclass
+from unittest import mock
 
 import pytest
 import voluptuous as vol
-from mock import mock
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.deploy_to_databricks import JobConfig, SCHEMA, DeployToDatabricks

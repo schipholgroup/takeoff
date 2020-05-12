@@ -1,6 +1,5 @@
 import os
-
-import mock
+from unittest import mock
 
 from takeoff.credentials.branch_name import BranchName as victim
 from tests.credentials.base_environment_keys_test import EnvironmentKeyBaseTest, CONFIG, OS_KEYS

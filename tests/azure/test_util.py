@@ -1,7 +1,6 @@
 import os
 import sys
-
-import mock
+from unittest import mock
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure import util as victim

@@ -1,9 +1,9 @@
 import glob
 import os
 import unittest
+from unittest import mock
 
 import azure
-import mock
 import pytest
 import voluptuous as vol
 

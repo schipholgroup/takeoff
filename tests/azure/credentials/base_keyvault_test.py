@@ -1,8 +1,7 @@
 import abc
 import unittest
 from dataclasses import dataclass
-
-import mock
+from unittest import mock
 
 
 @dataclass

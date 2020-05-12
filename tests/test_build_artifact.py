@@ -1,7 +1,8 @@
 import os
 import unittest
 
-import mock
+from unittest import mock
+
 import pytest
 
 from takeoff.application_version import ApplicationVersion
