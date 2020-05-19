@@ -61,7 +61,7 @@ environment_keys:
 
 The optional fields are
 ```yaml
-environment_keys:
+common:
   databricks_fs_libraries_mount_path: "dbfs:/mnt/libraries"
 ```
 
