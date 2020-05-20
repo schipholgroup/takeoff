@@ -196,6 +196,26 @@ class TestDeployToDatabricks(object):
         res = SCHEMA(conf)["jobs"][0]
         assert res["arguments"] == [{"key": "val"}, {"key2": "val2"}]
 
+        conf = {
+            **takeoff_config(),
+            **{
+                "task": "deploy_to_databricks",
+                "jobs": [{"main_name": "foo", "name": "some-name", 'is_unscheduled_batch': True}],
+            },
+        }
+        res = SCHEMA(conf)["jobs"][0]
+        assert res["is_unscheduled_batch"] is True
+
+        conf = {
+            **takeoff_config(),
+            **{
+                "task": "deploy_to_databricks",
+                "jobs": [{"main_name": "foo", "name": "some-name"}],
+            },
+        }
+        res = SCHEMA(conf)["jobs"][0]
+        assert res["is_unscheduled_batch"] is False
+
     def test_yaml_to_databricks_json(self, victim):
         conf = {
             "main_name": "foo.class",
