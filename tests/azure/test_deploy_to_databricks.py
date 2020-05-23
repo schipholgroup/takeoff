@@ -200,11 +200,11 @@ class TestDeployToDatabricks(object):
             **takeoff_config(),
             **{
                 "task": "deploy_to_databricks",
-                "jobs": [{"main_name": "foo", "name": "some-name", 'is_unscheduled_batch': True}],
+                "jobs": [{"main_name": "foo", "name": "some-name", 'is_batch': True}],
             },
         }
         res = SCHEMA(conf)["jobs"][0]
-        assert res["is_unscheduled_batch"] is True
+        assert res["is_batch"] is True
 
         conf = {
             **takeoff_config(),
@@ -214,7 +214,7 @@ class TestDeployToDatabricks(object):
             },
         }
         res = SCHEMA(conf)["jobs"][0]
-        assert res["is_unscheduled_batch"] is False
+        assert res["is_batch"] is False
 
     def test_yaml_to_databricks_json(self, victim):
         conf = {

@@ -30,7 +30,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
                     vol.Optional("name", default=""): str,
                     vol.Optional("lang", default="python"): vol.All(str, vol.In(["python", "scala"])),
                     vol.Optional("run_stream_job_immediately", default=True): bool,
-                    vol.Optional("is_unscheduled_batch", default=False): bool,
+                    vol.Optional("is_batch", default=False): bool,
                     vol.Optional("arguments", default=[{}]): [{}],
                     vol.Optional("schedule"): {
                         vol.Required("quartz_cron_expression"): str,
@@ -88,7 +88,7 @@ class DeployToDatabricks(Step):
             app_name = self._construct_name(job["name"])
             job_name = f"{app_name}-{self.env.artifact_tag}"
             job_config = self.create_config(job_name, job)
-            is_streaming = self._job_is_unscheduled(job_config) and not job["is_unscheduled_batch"]
+            is_streaming = self._job_is_unscheduled(job_config) and not job["is_batch"]
             run_stream_job_immediately = job["run_stream_job_immediately"]
 
             logger.info("Removing old job")
