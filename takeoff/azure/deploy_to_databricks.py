@@ -66,16 +66,6 @@ class DeployToDatabricks(Step):
     def run(self):
         self.deploy_to_databricks()
 
-    @staticmethod
-    def _job_is_unscheduled(job_config: dict):
-        """
-        If there is no schedule, the job would not run periodically, therefore we assume that is a
-        streaming job
-        :param job_config: the configuration of the Databricks job
-        :return: (bool) if it is a streaming job
-        """
-        return "schedule" not in job_config.keys()
-
     def deploy_to_databricks(self):
         """
         The application parameters (cosmos and eventhub) will be removed from this file as they
@@ -88,7 +78,7 @@ class DeployToDatabricks(Step):
             app_name = self._construct_name(job["name"])
             job_name = f"{app_name}-{self.env.artifact_tag}"
             job_config = self.create_config(job_name, job)
-            is_streaming = self._job_is_unscheduled(job_config) and not job["is_batch"]
+            is_streaming = not job["is_batch"] and "schedule" not in job_config.keys()
             run_stream_job_immediately = job["run_stream_job_immediately"]
 
             logger.info("Removing old job")
