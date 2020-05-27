@@ -69,10 +69,9 @@ class DeployToDatabricks(Step):
     @staticmethod
     def _job_is_unscheduled(job_config: dict):
         """
-        If there is no schedule, the job would not run periodically, therefore we assume that is a
-        streaming job
+        Checks if a job is scheduled
         :param job_config: the configuration of the Databricks job
-        :return: (bool) if it is a streaming job
+        :return: (bool) if it is scheduled
         """
         return "schedule" not in job_config.keys()
 
@@ -81,8 +80,7 @@ class DeployToDatabricks(Step):
         The application parameters (cosmos and eventhub) will be removed from this file as they
         will be set as databricks secrets eventually
         If the job is a streaming job this will directly start the new job_run given the new
-        configuration. If the job is batch this will not start it manually, assuming the schedule
-        has been set correctly.
+        configuration. If the job is batch this will not start it manually.
         """
         for job in self.config["jobs"]:
             app_name = self._construct_name(job["name"])
