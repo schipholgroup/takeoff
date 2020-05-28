@@ -24,6 +24,7 @@ Add the following task to ``deployment.yaml``:
     lang: python
     name: foo
     run_stream_job_immediately: False
+    is_batch: False
     arguments:
     - eventhubs.consumer_group: "my-consumer-group"
 ```
@@ -39,10 +40,11 @@ This should be after the [upload_to_blob](upload-to-blob) task if used together
 | `jobs[].lang` (optional) | The language identifier of your project | One of `python`, `scala`, defaults to `python`
 | `jobs[].name` (optional) | A postfix to identify your job on Databricks | A postfix of `foo` will name your job `application-name_foo-version`. Defaults to no postfix. This will name all the jobs (if you have multiple) the same.
 | `jobs[].run_stream_job_immediately` (optional) | Whether or not to run a stream job immediately | `True` or `False`. Defaults to `True`.
+| `jobs[].is_batch` (optional) | Designate job as an unscheduled batch | `True` or `False`. Defaults to `False`.
 | `jobs[].arguments` (optional) | Key value pairs to be passed into your project | defaults to no arguments
 
 
-The `json` file can use any of [supported keys](https://docs.databricks.com/api/latest/jobs.html#request-structure). During deployment the existence of the key `schedule` in the `json` file will determine if the job is streaming or batch. When `schedule` is present it is considered a batch job, otherwise a streaming job. A streaming job will be kicked off immediately upon deployment.
+The `json` file can use any of [supported keys](https://docs.databricks.com/api/latest/jobs.html#request-structure). During deployment the existence of the key `schedule` in the `json` file will determine if the job is streaming or batch. When `schedule` is present or `is_batch` has been set to `True`, it is considered a batch job, otherwise a streaming job. A streaming job will be kicked off immediately upon deployment.
 
 An example of `databricks.json.pyspark.j2` 
 
