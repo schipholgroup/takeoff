@@ -166,6 +166,7 @@ class DeployToKubernetes(BaseKubernetes):
                 "docker_tag": self.env.artifact_tag,
                 "application_name": application_name,
                 "env": self.env.environment,
+                "build_env": {**os.environ},
                 **secrets,
                 **custom_values,
             },
