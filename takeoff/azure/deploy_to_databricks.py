@@ -176,7 +176,7 @@ class DeployToDatabricks(Step):
     @staticmethod
     def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> List[int]:
         snapshot = "SNAPSHOT"
-        tag = "\d+\.\d+\.\d+"
+        tag = "\d+\.\d+\.\d+.*"
         pattern = re.compile(rf"^({application_name})-({snapshot}|{tag}|{branch})$")
 
         return [_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)]
