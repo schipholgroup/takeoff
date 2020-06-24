@@ -17,6 +17,7 @@ jobs = [
     JobConfig("daniel-branch-name", 5),
     JobConfig("tim-postfix-SNAPSHOT", 6),
     JobConfig("tim-postfix-SNAPSHOT", 7),
+    JobConfig("michel-1.2.3--my-version-postfix", 8),
 ]
 
 streaming_job_config = "tests/azure/files/test_job_config.json.j2"
@@ -95,6 +96,9 @@ class TestDeployToDatabricks(object):
 
     def test_find_application_job_id_if_postfix(self, victim):
         assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
+
+    def test_find_application_job_id_if_version_postfix(self, victim):
+        assert victim._application_job_id("michel", "1.2.3--my-version-postfix", jobs) == [8]
 
     def test_construct_name(self, victim):
         assert victim._construct_name("") == "my_app"

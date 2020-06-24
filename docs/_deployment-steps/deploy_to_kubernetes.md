@@ -127,6 +127,17 @@ azure:
       registry: "registry-server"
 ```
 
+## Default fields available for rendering
+The following fields are available while rendering your Kubernetes yaml template:
+{:.table}
+| field | description 
+| ----- | ----------- 
+| `docker_tag` | the tag assigned to the docker image (based on environment configuration)|
+| `application_name` | the application name (used throughout takeoff) |
+| `env` | the deployment environment (used throughout takeoff) |
+| `build_env` | the contents of the build-runner's environment variables |
+
+
 ## Examples
 Minimum Takeoff deployment configuration example to deploy Kubernetes resources. This will not create image pull secrets:
 ```yaml
