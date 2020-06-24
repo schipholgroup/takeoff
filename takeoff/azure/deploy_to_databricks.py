@@ -173,11 +173,10 @@ class DeployToDatabricks(Step):
             logger.info(f"Deleting Job with ID {job_id}")
             self.jobs_api.delete_job(job_id)
 
-    @staticmethod
-    def _application_job_id(application_name: str, branch: str, jobs: List[JobConfig]) -> List[int]:
-        snapshot = "SNAPSHOT"
+    def _application_job_id(self, application_name: str, branch: str, jobs: List[JobConfig]) -> List[int]:
+        env_version = self.env.version
         tag = "\d+\.\d+\.\d+"
-        pattern = re.compile(rf"^({application_name})-({snapshot}|{tag}|{branch})$")
+        pattern = re.compile(rf"^({application_name})-({env_version}|{branch}|{tag})$")
 
         return [_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)]
 

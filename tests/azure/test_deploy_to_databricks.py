@@ -65,7 +65,7 @@ def victim():
          mock.patch("takeoff.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client), \
          mock.patch("takeoff.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client):
         conf = {**takeoff_config(), **BASE_CONF}
-        return DeployToDatabricks(ApplicationVersion('ACP', 'bar', 'foo'), conf)
+        return DeployToDatabricks(ApplicationVersion('ACP', 'SNAPSHOT', 'foo'), conf)
 
 
 class TestDeployToDatabricks(object):
@@ -239,7 +239,7 @@ class TestDeployToDatabricks(object):
                 },
             },
             "some_int": 5,
-            "libraries": [{"jar": "dbfs:/mnt/libraries/my_app/my_app-bar.jar"}],
+            "libraries": [{"jar": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT.jar"}],
             "spark_jar_task": {"main_class_name": "foo.class", "parameters": ["--key", "val", "--key2", "val2"]},
         }
 
@@ -360,7 +360,7 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -368,7 +368,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -404,7 +404,7 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -412,7 +412,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -448,11 +448,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -480,11 +480,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -513,7 +513,7 @@ class TestDeployToDatabricks(object):
             "some_int": 5,
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -521,7 +521,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -583,8 +583,8 @@ class TestDeployToDatabricks(object):
 
         victim.jobs_api.delete_job.assert_has_calls(calls)
 
-    def test_remove_job_batch_with_name(self):
-        res = DeployToDatabricks._application_job_id("tim-postfix", "master", jobs)
+    def test_remove_job_batch_with_name(self, victim):
+        res = victim._application_job_id("tim-postfix", "master", jobs)
 
         assert len(res) == 2
 
