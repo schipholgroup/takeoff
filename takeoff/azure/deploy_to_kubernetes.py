@@ -100,6 +100,10 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         },
         vol.Optional("custom_values", default={}): {},
         vol.Optional("restart_unchanged_resources", default=False): bool,
+        vol.Optional("wait_for", default={}): {
+            vol.Required("resource_name", default=""): str,
+            vol.Required("resource_namespace", default=""): str
+        },
         "azure": {
             vol.Required(
                 "kubernetes_naming",
@@ -225,6 +229,25 @@ class DeployToKubernetes(BaseKubernetes):
         run_shell_command(cmd)
         logger.info("Restarted all possible resources")
 
+    def _await_rollout(self, target: str, target_namespace: str):
+        """
+        NOTE: this may be a bit 'racy', in the sense that if multiple CI pipelines are running simultaneously,
+        the await may not always be correct. There is no real alternative however, as the apply
+        returns the previous revision.
+        Args:
+            target:
+            target_namespace:
+
+        Returns:
+
+        """
+        cmd = ["kubectl", "rollout", "--namespace", target_namespace, "status", target, "--watch=True"]
+        exit_code, _ = run_shell_command(cmd)
+        if exit_code != 0:
+            raise ChildProcessError(f"Specified deployment {target} in namespace {target_namespace} "
+                                    "did not successfully rollout.")
+        logger.info("Rollout successful")
+
     def _apply_kubernetes_config_file(self, file_path: str):
         """
         Create/Update the kubernetes resources based on the provided file_path to the configuration. This
@@ -304,6 +327,10 @@ class DeployToKubernetes(BaseKubernetes):
 
         if self.config["restart_unchanged_resources"]:
             self._restart_unchanged_resources(rendered_kubernetes_config_path)
+
+        if self.config["wait_for"]:
+            self._await_rollout(self.config["wait_for"]["resource_name"],
+                                self.config["wait_for"]["resource_namespace"])
 
     @property
     def kubernetes_namespace(self):
