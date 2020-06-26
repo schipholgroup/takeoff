@@ -102,7 +102,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Optional("restart_unchanged_resources", default=False): bool,
         vol.Optional("wait_for", default={}): {
             vol.Optional("resource_name", default="foo/bar"): vol.All(str, vol.Match("^.*/.*$")),
-            vol.Optional("resource_namespace", default=""): str
+            vol.Optional("resource_namespace", default=""): str,
         },
         "azure": {
             vol.Required(
@@ -232,16 +232,17 @@ class DeployToKubernetes(BaseKubernetes):
     def _await_rollout(self, target: str, target_namespace: str):
         """Await the rollout of a specified target to complete
 
-        This function awaits the completion of the rollout of the target in the target_namespace. If it fails, or
-        if it does not complete successfully within the default kubectl timeout, a ChildProcessorError is thrown.
+        This function awaits the completion of the rollout of the target in the target_namespace. If it
+        fails, or if it does not complete successfully within the default kubectl timeout, a
+        ChildProcessorError is thrown.
 
         NOTE: This may be a bit 'racy', in the sense that if multiple CI pipelines are running simultaneously,
         the await may not always be correct (it may await a different revision than the one that this step had
         just deployed).
 
         Args:
-            target: The resource to target. This resource should be named according to the <resource_type>/name
-                    convention.
+            target: The resource to target. This resource should be named according to the
+                    <resource_type>/name convention.
             target_namespace: The namespace of the resource
 
         Raises:
@@ -250,8 +251,10 @@ class DeployToKubernetes(BaseKubernetes):
         cmd = ["kubectl", "rollout", "--namespace", target_namespace, "status", target, "--watch=True"]
         exit_code, _ = run_shell_command(cmd)
         if exit_code != 0:
-            raise ChildProcessError(f"Specified deployment {target} in namespace {target_namespace} "
-                                    "did not successfully rollout.")
+            raise ChildProcessError(
+                f"Specified deployment {target} in namespace {target_namespace} "
+                "did not successfully rollout."
+            )
         logger.info("Rollout successful")
 
     def _apply_kubernetes_config_file(self, file_path: str):
@@ -335,8 +338,9 @@ class DeployToKubernetes(BaseKubernetes):
             self._restart_unchanged_resources(rendered_kubernetes_config_path)
 
         if self.config["wait_for"]:
-            self._await_rollout(self.config["wait_for"]["resource_name"],
-                                self.config["wait_for"]["resource_namespace"])
+            self._await_rollout(
+                self.config["wait_for"]["resource_name"], self.config["wait_for"]["resource_namespace"]
+            )
 
     @property
     def kubernetes_namespace(self):
