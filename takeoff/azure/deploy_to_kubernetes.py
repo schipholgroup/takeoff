@@ -101,8 +101,8 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Optional("custom_values", default={}): {},
         vol.Optional("restart_unchanged_resources", default=False): bool,
         vol.Optional("wait_for", default={}): {
-            vol.Required("resource_name", default=""): str,
-            vol.Required("resource_namespace", default=""): str
+            vol.Optional("resource_name", default="foo/bar"): vol.All(str, vol.Match("^.*/.*$")),
+            vol.Optional("resource_namespace", default=""): str
         },
         "azure": {
             vol.Required(
@@ -230,16 +230,22 @@ class DeployToKubernetes(BaseKubernetes):
         logger.info("Restarted all possible resources")
 
     def _await_rollout(self, target: str, target_namespace: str):
-        """
-        NOTE: this may be a bit 'racy', in the sense that if multiple CI pipelines are running simultaneously,
-        the await may not always be correct. There is no real alternative however, as the apply
-        returns the previous revision.
+        """Await the rollout of a specified target to complete
+
+        This function awaits the completion of the rollout of the target in the target_namespace. If it fails, or
+        if it does not complete successfully within the default kubectl timeout, a ChildProcessorError is thrown.
+
+        NOTE: This may be a bit 'racy', in the sense that if multiple CI pipelines are running simultaneously,
+        the await may not always be correct (it may await a different revision than the one that this step had
+        just deployed).
+
         Args:
-            target:
-            target_namespace:
+            target: The resource to target. This resource should be named according to the <resource_type>/name
+                    convention.
+            target_namespace: The namespace of the resource
 
-        Returns:
-
+        Raises:
+            ChildProcessError: if the rollout of the specified resource did not complete successfully.
         """
         cmd = ["kubectl", "rollout", "--namespace", target_namespace, "status", target, "--watch=True"]
         exit_code, _ = run_shell_command(cmd)

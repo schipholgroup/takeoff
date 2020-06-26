@@ -5,6 +5,7 @@ from typing import List
 from unittest import mock
 
 import pytest
+import voluptuous
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.deploy_to_kubernetes import DeployToKubernetes, BaseKubernetes
@@ -169,6 +170,32 @@ spec:
 
         with pytest.raises(ValueError):
             res._get_custom_values()
+
+    @mock.patch.dict(os.environ, env_variables)
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_await_rollout_success(self, _, victim):
+        with mock.patch("takeoff.azure.deploy_to_kubernetes.run_shell_command", return_value=(0, ['output_lines'])) as m:
+            victim._await_rollout("target_type/target_name", "target_namespace")
+
+        m.assert_called_once_with(["kubectl", "rollout", "--namespace", "target_namespace", "status", "target_type/target_name", "--watch=True"])
+
+    @mock.patch.dict(os.environ, env_variables)
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_await_rollout_failed(self, _, victim):
+        with mock.patch("takeoff.azure.deploy_to_kubernetes.run_shell_command", return_value=(1, ['output_lines'])) as m:
+            with pytest.raises(ChildProcessError):
+                victim._await_rollout("target_type/target_name", "target_namespace")
+
+        m.assert_called_once_with(["kubectl", "rollout", "--namespace", "target_namespace", "status", "target_type/target_name", "--watch=True"])
+
+    @mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony")
+    @mock.patch("takeoff.azure.deploy_to_kubernetes.KeyVaultClient.vault_and_client", return_value=(None, None))
+    def test_validate_await_invalid_resource_name(self, _, __):
+        custom_conf = {'wait_for': {'resource_name': 'invalid_name', 'resource_namespace': 'my_space'}, **BASE_CONF}
+        conf = {**takeoff_config(), **custom_conf}
+
+        with pytest.raises(voluptuous.error.MultipleInvalid):
+            DeployToKubernetes(ApplicationVersion("dev", "v", "branch"), conf)
 
 
 @dataclass(frozen=True)
