@@ -191,7 +191,7 @@ spec:
     @mock.patch("takeoff.step.ApplicationName.get", return_value="my_little_pony")
     @mock.patch("takeoff.azure.deploy_to_kubernetes.KeyVaultClient.vault_and_client", return_value=(None, None))
     def test_validate_await_invalid_resource_name(self, _, __):
-        custom_conf = {'wait_for': {'resource_name': 'invalid_name', 'resource_namespace': 'my_space'}, **BASE_CONF}
+        custom_conf = {'wait_for_rollout': {'resource_name': 'invalid_name', 'resource_namespace': 'my_space'}, **BASE_CONF}
         conf = {**takeoff_config(), **custom_conf}
 
         with pytest.raises(voluptuous.error.MultipleInvalid):

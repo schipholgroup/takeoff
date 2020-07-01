@@ -100,7 +100,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         },
         vol.Optional("custom_values", default={}): {},
         vol.Optional("restart_unchanged_resources", default=False): bool,
-        vol.Optional("wait_for", default={}): {
+        vol.Optional("wait_for_rollout"): {
             vol.Optional("resource_name", default="foo/bar"): vol.All(str, vol.Match("^.*/.*$")),
             vol.Optional("resource_namespace", default=""): str,
         },
@@ -337,9 +337,10 @@ class DeployToKubernetes(BaseKubernetes):
         if self.config["restart_unchanged_resources"]:
             self._restart_unchanged_resources(rendered_kubernetes_config_path)
 
-        if self.config["wait_for"]:
+        if "wait_for_rollout" in self.config.keys():
             self._await_rollout(
-                self.config["wait_for"]["resource_name"], self.config["wait_for"]["resource_namespace"]
+                self.config["wait_for_rollout"]["resource_name"],
+                self.config["wait_for_rollout"]["resource_namespace"],
             )
 
     @property
