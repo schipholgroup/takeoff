@@ -160,6 +160,9 @@ steps:
   image_pull_secret: 
     create: True
   restart_unchanged_resources: true
+  wait_for_rollout:
+    resource_name: "deployment/my_app"
+    resource_namespace: "my_namespace"
   custom_values:
     dev:
       url: 'dev-url-here-being-buggy'
@@ -168,6 +171,17 @@ steps:
     prd:
       url: 'prd-url-here-being-glorious'
 ```
+
+#### Waiting for successful rollout
+In the extended example above, you can see the `wait_for_rollout` parameter. This tells Takeoff that it should wait until the specified resource is rolled out successfully. If it is not
+rolled out successfully, or is not rolled out successfully quickly enough (e.g. within the default Kubernetes timeout), the task will fail. The failure of this task will trigger 
+Kubernetes to rollback the change and revert to a previous revision that did work.
+
+There are few things to note regarding this option:
+1. It may result in unexpected behaviour if there are several CI jobs running simultaneously that apply changes to the specified Kubernetes resource. It is possible that the wrong
+version is awaited. This is unlikely, but not impossible.
+2. Note that the resource_name __must__ be prefixed with the resource_type. If this is not the case, a schema validation error will be thrown. Also note that not all resources are
+"awaitable". For a full list of resources that can be awaited, we refer you to the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rollout).
 
 ### Takeoff Context
 Eventhub producer policy secrets and consumer group secrets from [`configure_eventhub`](deployment-step/configure-eventhub) are available during this task. This makes it possible for the configuration below to inject the secrets into `my_kubernetes_config.yml.j2`:
