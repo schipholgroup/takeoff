@@ -84,7 +84,7 @@ class DeployToDatabricks(Step):
         """
         for job in self.config["jobs"]:
             app_name = self._construct_name(job["name"])
-            job_name = f"{app_name}-{self.env.artifact_tag}"
+            job_name = self._construct_job_name(app_name)
             job_config = self.create_config(job_name, job)
             is_streaming = self._job_is_unscheduled(job_config) and not job["is_batch"]
             run_stream_job_immediately = job["run_stream_job_immediately"]
@@ -138,6 +138,12 @@ class DeployToDatabricks(Step):
         postfix = f"-{name}" if name else ""
         return f"{self.application_name}{postfix}"
 
+    def _construct_job_name(self, app_name: str) -> str:
+        if app_name == "":
+            return f"{self.env.artifact_tag}"
+        else:
+            return f"{app_name}-{self.env.artifact_tag}"
+
     @staticmethod
     def _construct_arguments(args: List[dict]) -> list:
         params = []
@@ -161,7 +167,7 @@ class DeployToDatabricks(Step):
         job_configs = [
             JobConfig(_["settings"]["name"], _["job_id"]) for _ in self.jobs_api.list_jobs()["jobs"]
         ]
-        job_ids = self._application_job_id(self._construct_name(job_config["name"]), branch, job_configs)
+        job_ids = self._application_job_id(self._construct_name(job_config["name"]), job_configs)
 
         if not job_ids:
             logger.info(f"Could not find jobs in list of {pprint.pformat(job_configs)}")
@@ -173,11 +179,11 @@ class DeployToDatabricks(Step):
             logger.info(f"Deleting Job with ID {job_id}")
             self.jobs_api.delete_job(job_id)
 
-    def _application_job_id(self, application_name: str, branch: str, jobs: List[JobConfig]) -> List[int]:
-        env_version = self.env.version
-        tag = "\d+\.\d+\.\d+"
-        pattern = re.compile(rf"^({application_name})-({env_version}|{branch}|{tag})$")
-
+    def _application_job_id(self, application_name: str, jobs: List[JobConfig]) -> List[int]:
+        if self.env.artifact_tag == "":
+            pattern = re.compile(rf"^({application_name})$")
+        else:
+            pattern = re.compile(rf"^({application_name})-({self.env.artifact_tag})$")
         return [_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)]
 
     def _kill_it_with_fire(self, job_id: int):

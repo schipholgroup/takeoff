@@ -18,6 +18,7 @@ jobs = [
     JobConfig("tim-postfix-SNAPSHOT", 6),
     JobConfig("tim-postfix-SNAPSHOT", 7),
     JobConfig("michel-1.2.3--my-version-postfix", 8),
+    JobConfig("bar", 9),
 ]
 
 streaming_job_config = "tests/azure/files/test_job_config.json.j2"
@@ -80,29 +81,41 @@ class TestDeployToDatabricks(object):
         assert victim.config["jobs"][0]["arguments"] == [{}]
 
     def test_find_application_job_id_if_snapshot(self, victim):
-        assert victim._application_job_id("foo", "master", jobs) == [1]
+        victim.env = ApplicationVersion('ACP', 'SNAPSHOT', 'master')
+        assert victim._application_job_id("foo", jobs) == [1]
 
     def test_find_application_job_id_if_version(self, victim):
-        assert victim._application_job_id("bar", "0.3.1", jobs) == [2]
+        victim.env = ApplicationVersion('PRD', '0.3.1', 'tag')
+        assert victim._application_job_id("bar", jobs) == [2]
 
     def test_find_application_job_id_if_version_not_set(self, victim):
-        assert victim._application_job_id("bar", "", jobs) == [2]
+        victim.env = ApplicationVersion('PRD', '', 'tag')
+        assert victim._application_job_id("bar", jobs) == [9]
 
     def test_find_application_job_id_if_branch(self, victim):
-        assert victim._application_job_id("daniel", "branch-name", jobs) == [5]
+        victim.env = ApplicationVersion('DEV', 'branch-name', 'branch')
+        assert victim._application_job_id("daniel", jobs) == [5]
 
     def test_find_application_job_id_if_branch_if_no_version(self, victim):
-        assert victim._application_job_id("daniel", "", jobs) == []
+        victim.env = ApplicationVersion('DEV', '', 'branch')
+        assert victim._application_job_id("daniel", jobs) == []
 
     def test_find_application_job_id_if_postfix(self, victim):
-        assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
+        victim.env = ApplicationVersion('DEV', 'SNAPSHOT', 'master')
+        assert victim._application_job_id("tim-postfix", jobs) == [6, 7]
 
     def test_find_application_job_id_if_version_postfix(self, victim):
-        assert victim._application_job_id("michel", "1.2.3--my-version-postfix", jobs) == [8]
+        victim.env = ApplicationVersion('PRD', '1.2.3--my-version-postfix', 'branch')
+        assert victim._application_job_id("michel", jobs) == [8]
 
     def test_construct_name(self, victim):
         assert victim._construct_name("") == "my_app"
         assert victim._construct_name("foo") == "my_app-foo"
+
+    def test_construct_job_name(self, victim):
+        assert victim._construct_job_name("") == "SNAPSHOT"
+        assert victim._construct_job_name("foo") == "foo-SNAPSHOT"
+
 
     def test_job_is_unscheduled(self, victim):
         job_config = victim._construct_job_config(config_file=streaming_job_config)
@@ -588,8 +601,9 @@ class TestDeployToDatabricks(object):
         victim.jobs_api.delete_job.assert_has_calls(calls)
 
     def test_remove_job_batch_with_name(self, victim):
-        res = victim._application_job_id("tim-postfix", "master", jobs)
-
+        victim.env = ApplicationVersion("ACP", "SNAPSHOT", "master")
+        res = victim._application_job_id("tim-postfix", jobs)
+        print(res)
         assert len(res) == 2
 
     def test_remove_job_streaming(self, victim):
