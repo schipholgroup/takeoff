@@ -112,10 +112,6 @@ class TestDeployToDatabricks(object):
         assert victim._construct_name("") == "my_app"
         assert victim._construct_name("foo") == "my_app-foo"
 
-    def test_construct_job_name(self, victim):
-        assert victim._construct_job_name("") == "SNAPSHOT"
-        assert victim._construct_job_name("foo") == "foo-SNAPSHOT"
-
 
     def test_job_is_unscheduled(self, victim):
         job_config = victim._construct_job_config(config_file=streaming_job_config)
