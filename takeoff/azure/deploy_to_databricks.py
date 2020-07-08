@@ -151,7 +151,7 @@ class DeployToDatabricks(Step):
     def _construct_job_config(config_file: str, **kwargs) -> dict:
         return util.render_file_with_jinja(config_file, kwargs, json.loads)
 
-    def remove_job(self, branch: str, job_config: dict, is_streaming: bool):
+    def remove_job(self, job_config: dict, is_streaming: bool):
         """
         Removes the existing job and cancels any running job_run if the application is streaming.
         If the application is batch, it'll let the batch job finish but it will remove the job,
