@@ -174,10 +174,7 @@ class DeployToDatabricks(Step):
             self.jobs_api.delete_job(job_id)
 
     def _application_job_id(self, application_name: str, jobs: List[JobConfig]) -> List[int]:
-        if self.env.artifact_tag:
-            pattern = re.compile(rf"^({application_name})-({self.env.artifact_tag})$")
-        else:
-            pattern = re.compile(rf"^({application_name})$")
+        pattern = re.compile(rf"^({application_name})-({self.env.artifact_tag})$")
         return [_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)]
 
     def _kill_it_with_fire(self, job_id: int):
