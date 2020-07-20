@@ -90,7 +90,7 @@ class DeployToDatabricks(Step):
             run_stream_job_immediately = job["run_stream_job_immediately"]
 
             logger.info("Removing old job")
-            self.remove_job(self.env.artifact_tag, job_config=job, is_streaming=is_streaming)
+            self.remove_job(job_config=job, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
