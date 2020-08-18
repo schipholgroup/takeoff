@@ -35,11 +35,13 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | ----- | ----------- 
 | `kubernetes_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) Kubernetes deployment config | Mandatory value, must be a valid path in the repository |
 | `image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True, with `secret_name=registry-auth` and `namespace=default` |
-| `image_pull_secret.create` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True
-| `image_pull_secret.secret_name` | The name of secret | Defaults to `secret_name`
-| `image_pull_secret.namespace` | The namespace where the secret should be created in | Default to `default` 
-| `restart_unchanged_resources` | Whether or not to restart unchanged Kubernetes resources. Takeoff will attempt to restart all unchanged resources, which may result in error messages in the 
- logs, as not all resources are 'restartable' | Boolean, defaults to False. | 
+| `image_pull_secret.create` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True | 
+| `image_pull_secret.secret_name` | The name of secret | Defaults to `secret_name` | 
+| `image_pull_secret.namespace` | The namespace where the secret should be created in | Default to `default` |
+| `restart_unchanged_resources` | Whether or not to restart unchanged Kubernetes resources. Takeoff will attempt to restart all unchanged resources, which may result in error messages in the logs, as not all resources are 'restartable' | Boolean, defaults to False. |
+| `wait_for_rollout` | Whether or not to wait for the successful rollout of a specified resource. Note that only a limited subset of Kubernetes resources are supported (see docs below) | Defaults to not waiting for rollout |
+| `wait_for_rollout.resource_name` | The name of the resource to wait on. Note that it should be specified in the format `<resource_type>/<resource_name>` | No default value |
+| `wait_for_rollout.resource_namespace` | The namespace of the resource to wait on | No default value |
 | `custom_values` | Any custom values you'd like to pass in to be rendered into your Jinja-templates Kubernetes configuration. Should be specified per environment | No custom values are passed by default. Should be a set of key-value pairs per environment |
 
 
