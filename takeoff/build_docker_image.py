@@ -73,11 +73,11 @@ class DockerFile(object):
 class DockerImageBuilder(Step):
     """Builds and pushes one or more docker images.
 
-     Depends on:
-     - Credentials for a docker registry (username, password, registry) must be
-       available in your cloud vault or as environment variables
-     - The docker-cli must be available
-     """
+    Depends on:
+    - Credentials for a docker registry (username, password, registry) must be
+      available in your cloud vault or as environment variables
+    - The docker-cli must be available
+    """
 
     def __init__(self, env: ApplicationVersion, config: dict):
         super().__init__(env, config)

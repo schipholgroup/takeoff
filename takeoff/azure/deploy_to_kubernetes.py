@@ -138,8 +138,7 @@ class DeployToKubernetes(BaseKubernetes):
         self.deploy_to_kubernetes(self.config["kubernetes_config_path"], self.application_name)
 
     def _get_docker_registry_secret(self) -> str:
-        """Create a secret containing credentials for logging into the defined docker registry
-        """
+        """Create a secret containing credentials for logging into the defined docker registry"""
         docker_credentials = DockerRegistry(self.config, self.env).credentials()
         return b64_encode(
             json.dumps(
