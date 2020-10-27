@@ -199,10 +199,6 @@ class DeployToDatabricks(Step):
 
     def _run_job(self, job_id: str):
         resp = self.jobs_api.run_now(
-            job_id=job_id,
-            jar_params=None,
-            notebook_params=None,
-            python_params=None,
-            spark_submit_params=None,
+            job_id=job_id, jar_params=None, notebook_params=None, python_params=None, spark_submit_params=None
         )
         logger.info(f"Created run with ID {resp['run_id']}")

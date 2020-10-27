@@ -89,6 +89,11 @@ def test_get_default_eventhub_entity_name():
     assert res == "Michaeldev"
 
 
+def test_get_default_eventhub_consumer_name():
+    res = victim.get_eventhub_consumer_name("{env}ilish", ENV)
+    assert res == "devilish"
+
+
 @mock.patch("takeoff.util.DEFAULT_TAKEOFF_PLUGIN_PREFIX", "_takeoff_")
 def test_get_custom_eventhub_entity_name():
     paths = [os.path.dirname(os.path.realpath(__file__))]
