@@ -66,7 +66,7 @@ def victim():
          mock.patch("takeoff.azure.deploy_to_databricks.JobsApi", return_value=m_jobs_api_client), \
          mock.patch("takeoff.azure.deploy_to_databricks.RunsApi", return_value=m_runs_api_client):
         conf = {**takeoff_config(), **BASE_CONF}
-        return DeployToDatabricks(ApplicationVersion('ACP', 'bar', 'foo'), conf)
+        return DeployToDatabricks(ApplicationVersion('ACP', 'SNAPSHOT', 'foo'), conf)
 
 
 class TestDeployToDatabricks(object):
@@ -80,29 +80,37 @@ class TestDeployToDatabricks(object):
         assert victim.config["jobs"][0]["arguments"] == [{}]
 
     def test_find_application_job_id_if_snapshot(self, victim):
-        assert victim._application_job_id("foo", "master", jobs) == [1]
+        victim.env = ApplicationVersion('ACP', 'SNAPSHOT', 'master')
+        assert victim._application_job_id("foo", jobs) == [1]
 
     def test_find_application_job_id_if_version(self, victim):
-        assert victim._application_job_id("bar", "0.3.1", jobs) == [2]
+        victim.env = ApplicationVersion('PRD', '0.3.1', 'tag')
+        assert victim._application_job_id("bar", jobs) == [2]
 
     def test_find_application_job_id_if_version_not_set(self, victim):
-        assert victim._application_job_id("bar", "", jobs) == [2]
+        victim.env = ApplicationVersion('PRD', '', 'tag')
+        assert victim._application_job_id("bar", jobs) == []
 
     def test_find_application_job_id_if_branch(self, victim):
-        assert victim._application_job_id("daniel", "branch-name", jobs) == [5]
+        victim.env = ApplicationVersion('DEV', 'branch-name', 'branch')
+        assert victim._application_job_id("daniel", jobs) == [5]
 
     def test_find_application_job_id_if_branch_if_no_version(self, victim):
-        assert victim._application_job_id("daniel", "", jobs) == []
+        victim.env = ApplicationVersion('DEV', '', 'branch')
+        assert victim._application_job_id("daniel", jobs) == []
 
     def test_find_application_job_id_if_postfix(self, victim):
-        assert victim._application_job_id("tim-postfix", "SNAPSHOT", jobs) == [6, 7]
+        victim.env = ApplicationVersion('DEV', 'SNAPSHOT', 'master')
+        assert victim._application_job_id("tim-postfix", jobs) == [6, 7]
 
     def test_find_application_job_id_if_version_postfix(self, victim):
-        assert victim._application_job_id("michel", "1.2.3--my-version-postfix", jobs) == [8]
+        victim.env = ApplicationVersion('PRD', '1.2.3--my-version-postfix', 'branch')
+        assert victim._application_job_id("michel", jobs) == [8]
 
     def test_construct_name(self, victim):
         assert victim._construct_name("") == "my_app"
         assert victim._construct_name("foo") == "my_app-foo"
+
 
     def test_job_is_unscheduled(self, victim):
         job_config = victim._construct_job_config(config_file=streaming_job_config)
@@ -243,7 +251,7 @@ class TestDeployToDatabricks(object):
                 },
             },
             "some_int": 5,
-            "libraries": [{"jar": "dbfs:/mnt/libraries/my_app/my_app-bar.jar"}],
+            "libraries": [{"jar": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT.jar"}],
             "spark_jar_task": {"main_class_name": "foo.class", "parameters": ["--key", "val", "--key2", "val2"]},
         }
 
@@ -364,7 +372,7 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -372,7 +380,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -408,7 +416,7 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -416,7 +424,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -452,11 +460,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -484,11 +492,11 @@ class TestDeployToDatabricks(object):
             },
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -517,7 +525,7 @@ class TestDeployToDatabricks(object):
             "some_int": 5,
             "name": "job_with_schedule",
             "libraries": [
-                {"whl": "dbfs:/mnt/libraries/my_app/my_app-bar-py3-none-any.whl"},
+                {"whl": "dbfs:/mnt/libraries/my_app/my_app-SNAPSHOT-py3-none-any.whl"},
                 {"jar": "some.jar"}
             ],
             "schedule": {
@@ -525,7 +533,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-bar.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -581,15 +589,16 @@ class TestDeployToDatabricks(object):
                 "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
                 return_value=["id1", "id2"],
         ):
-            victim.remove_job("my-branch", {'name': ""}, False)
+            victim.remove_job({'name': ""}, False)
 
         calls = [mock.call("id1"), mock.call("id2")]
 
         victim.jobs_api.delete_job.assert_has_calls(calls)
 
-    def test_remove_job_batch_with_name(self):
-        res = DeployToDatabricks._application_job_id("tim-postfix", "master", jobs)
-
+    def test_remove_job_batch_with_name(self, victim):
+        victim.env = ApplicationVersion("ACP", "SNAPSHOT", "master")
+        res = victim._application_job_id("tim-postfix", jobs)
+        print(res)
         assert len(res) == 2
 
     def test_remove_job_streaming(self, victim):
@@ -600,7 +609,7 @@ class TestDeployToDatabricks(object):
             with mock.patch(
                     "takeoff.azure.deploy_to_databricks.DeployToDatabricks._kill_it_with_fire"
             ) as kill_mock:
-                victim.remove_job("my-branch", {'name': ""}, True)
+                victim.remove_job({'name': ""}, True)
 
         calls = [mock.call("id1"), mock.call("id2")]
 
@@ -612,7 +621,7 @@ class TestDeployToDatabricks(object):
                 "takeoff.azure.deploy_to_databricks.DeployToDatabricks._application_job_id",
                 return_value=[],
         ):
-            victim.remove_job("my-branch", {'name': ""}, False)
+            victim.remove_job({'name': ""}, False)
 
         victim.jobs_api.delete_job.assert_not_called()
 
