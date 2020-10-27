@@ -22,7 +22,7 @@ jobs:
       - image: python:3.7
     steps:
       - checkout
-      - run: pip install black
+      - run: pip install .[lint]
       - run: black -l 110 --check takeoff
 
   typecheck:

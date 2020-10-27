@@ -28,14 +28,18 @@ setup_dependencies = [
 
 test_dependencies = [
     "pytest==5.4.1",
-    "pytest-cov==2.8.1",
-    "black==19.3b0"
+    "pytest-cov==2.8.1"
+]
+
+lint_dependencies = [
+    "flake8==3.5.0",
+    "black==20.8b1"
 ]
 
 if {"pytest", "test"}.intersection(sys.argv):
     setup_dependencies = ["pytest-runner==4.2"]
 elif {"lint", "flake8"}.intersection(sys.argv):
-    setup_dependencies = ["flake8==3.5.0"]
+    setup_dependencies = lint_dependencies
 
 setup(
     name="Takeoff",
@@ -49,5 +53,5 @@ setup(
     setup_requires=setup_dependencies,
     tests_require=test_dependencies,
     scripts=["scripts/takeoff", "scripts/get_version"],
-    extras_require={"test": test_dependencies},
+    extras_require={"test": test_dependencies, "lint": lint_dependencies},
 )
