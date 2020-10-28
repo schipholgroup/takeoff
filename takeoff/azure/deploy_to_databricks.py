@@ -138,12 +138,12 @@ class DeployToDatabricks(Step):
         postfix = f"-{name}" if name else ""
         return f"{self.application_name}{postfix}"
 
-    @staticmethod
-    def _construct_arguments(args: List[dict]) -> list:
+
+    def _construct_arguments(self, args: List[dict]) -> list:
         params = []
         for named_arguments_pair in args:
             for k, v in named_arguments_pair.items():
-                params.extend([f"--{k}", v])
+                params.extend([f"--{k}", v.format(env=self.env.environment_formatted) ])
 
         return params
 

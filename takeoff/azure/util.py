@@ -115,24 +115,6 @@ def get_eventhub_entity_name(eventhub_entity_naming: str, env: ApplicationVersio
     return f(eventhub_entity_naming, env)
 
 
-def get_eventhub_consumer_name(eventhub_consumer_naming: str, env: ApplicationVersion) -> str:
-    """Returns the EventHub entity name
-
-    If no plugin is provided this uses the default naming convention (as specified in
-    the `.takeoff/deployment.yml`) and resolves the `{env}` parameter based on the ApplicationVersion.
-
-    Args:
-        str: The eventhub consumer naming convention
-        env: The application version
-    """
-
-    def _format(naming: str, env: ApplicationVersion) -> str:
-        return naming.format(env=env.environment_formatted)
-
-    f = _get_naming_function("get_eventhub_consumer_name", default=_format)
-    return f(eventhub_consumer_naming, env)
-
-
 def get_kubernetes_name(config: dict, env: ApplicationVersion) -> str:
     """Returns the Kubernetes service name
 

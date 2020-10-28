@@ -17,7 +17,6 @@ from takeoff.azure.util import (
     get_resource_group_name,
     get_eventhub_name,
     get_eventhub_entity_name,
-    get_eventhub_consumer_name,
 )
 from takeoff.context import Context, ContextKey
 from takeoff.credentials.secret import Secret
@@ -121,7 +120,7 @@ class ConfigureEventHub(Step):
                     get_eventhub_name(self.config, self.env),
                     get_eventhub_entity_name(group["eventhub_entity_naming"], self.env),
                 ),
-                get_eventhub_consumer_name(group["consumer_group"], self.env),
+                (group["consumer_group"]).format(env=self.env.environment_formatted),
                 group["create_databricks_secret"],
             )
             for group in self.config["create_consumer_groups"]
