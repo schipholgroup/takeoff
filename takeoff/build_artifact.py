@@ -15,11 +15,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Required("task"): "build_artifact",
         vol.Required("build_tool"): vol.All(str, vol.In(["python", "sbt"])),
         vol.Optional(
-            "python_setup_path",
-            default="setup.py",
-            description=(
-                "The relative path of your setup.py file"
-            ),
+            "python_setup_path", default="setup.py", description="The relative path of your setup.py file"
         ): str
     },
     extra=vol.ALLOW_EXTRA,
@@ -64,7 +60,9 @@ class BuildArtifact(Step):
         """
         self._write_version()
         self._remove_old_artifacts("dist/")
-        cmd = ["python", self.config["python_setup_path"], "bdist_wheel"]
+        setup_py_filepath = self.config["python_setup_path"]
+
+        cmd = ["python", setup_py_filepath, "bdist_wheel"]
         return_code, _ = run_shell_command(cmd)
 
         if return_code != 0:
