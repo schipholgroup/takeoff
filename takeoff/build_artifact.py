@@ -16,7 +16,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Required("build_tool"): vol.All(str, vol.In(["python", "sbt"])),
         vol.Optional(
             "python_setup_path", default="setup.py", description="The relative path of your setup.py file"
-        ): str
+        ): str,
     },
     extra=vol.ALLOW_EXTRA,
 )
