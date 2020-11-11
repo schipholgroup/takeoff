@@ -12,6 +12,7 @@ from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromValue
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from takeoff.azure.credentials.keyvault import KeyVaultClient
+from takeoff.azure.credentials.service_principal_from_keyvault import ServicePrincipalCredentialsFromVault
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_eventhub_name, get_eventhub_entity_name
 from takeoff.context import Context, ContextKey
@@ -24,6 +25,11 @@ logger = logging.getLogger(__name__)
 SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "configure_eventhub",
+        vol.Optional("credentials_type", default="active_directory_user"): vol.All(str, vol.In(
+            ["active_directory_user", "service_principal"])),
+        vol.Optional("credentials", default="environment_variables"): vol.All(
+            str, vol.In(["environment_variables", "azure_keyvault"])
+        ),
         vol.Optional("create_consumer_groups"): vol.All(
             vol.Length(min=1),
             [
@@ -334,15 +340,35 @@ class ConfigureEventHub(Step):
         """
         return set(_.eventhub for _ in eventhubs)
 
+    def _get_credentials(self):
+        """Fetch the credentials object
+
+        This can either use a service principal or an AD user
+
+        Returns:
+
+        """
+        if self.config["credentials_type"] == "active_directory_user":
+            return ActiveDirectoryUserCredentials(
+                vault_name=self.vault_name, vault_client=self.vault_client
+            ).credentials(self.config)
+        elif self.config["credentials_type"] == "service_principal":
+            # TODO: this should come from keyvault, not environment vars
+            return ServicePrincipalCredentialsFromVault(
+                vault_name=self.vault_name, vault_client=self.vault_client
+            ).credentials(self.config)
+            # return ServicePrincipalCredentials().credentials(self.config, self.env.environment_formatted)
+
     def _get_eventhub_client(self) -> EventHubManagementClient:
         """Constructs an EventHub Management client
 
         Returns:
             An EventHub Management client
         """
-        credentials = ActiveDirectoryUserCredentials(
-            vault_name=self.vault_name, vault_client=self.vault_client
-        ).credentials(self.config)
+        # credentials = ActiveDirectoryUserCredentials(
+        #     vault_name=self.vault_name, vault_client=self.vault_client
+        # ).credentials(self.config)
+        credentials = self._get_credentials()
         return EventHubManagementClient(
             credentials, SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
         )

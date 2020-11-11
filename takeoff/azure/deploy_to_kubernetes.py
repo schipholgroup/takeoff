@@ -15,6 +15,8 @@ from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
+from takeoff.azure.credentials.service_principal import ServicePrincipalCredentials
+from takeoff.azure.credentials.service_principal_from_keyvault import ServicePrincipalCredentialsFromVault
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_kubernetes_name
 from takeoff.context import Context, ContextKey
@@ -59,15 +61,29 @@ class BaseKubernetes(Step):
 
         logger.info("Kubeconfig successfully written")
 
+    def _get_credentials(self):
+        """Fetch the credentials object
+
+        This can either use a service principal or an AD user
+
+        Returns:
+
+        """
+        if self.config["credentials_type"] == "active_directory_user":
+            return ActiveDirectoryUserCredentials(
+                vault_name=self.vault_name, vault_client=self.vault_client
+            ).credentials(self.config)
+        elif self.config["credentials_type"] == "service_principal":
+            return ServicePrincipalCredentialsFromVault(
+                vault_name=self.vault_name, vault_client=self.vault_client
+            ).credentials(self.config)
+
     def _authenticate_with_kubernetes(self):
         """Authenticate with the defined AKS cluster and write the configuration to a file"""
         resource_group = get_resource_group_name(self.config, self.env)
         cluster_name = get_kubernetes_name(self.config, self.env)
 
-        # get azure container service client
-        credentials = ActiveDirectoryUserCredentials(
-            vault_name=self.vault_name, vault_client=self.vault_client
-        ).credentials(self.config)
+        credentials = self._get_credentials()
 
         client = ContainerServiceClient(
             credentials=credentials,
@@ -86,6 +102,9 @@ IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
+        vol.Optional("credentials_type", default="active_directory_user"): vol.All(str, vol.In(
+            ["active_directory_user", "service_principal"])
+        ),
         vol.Optional("credentials", default="environment_variables"): vol.All(
             str, vol.In(["environment_variables", "azure_keyvault"])
         ),
@@ -157,11 +176,11 @@ class DeployToKubernetes(BaseKubernetes):
         )
 
     def _render_kubernetes_config(
-        self,
-        kubernetes_config_path: str,
-        application_name: str,
-        secrets: Dict[str, str],
-        custom_values: Dict[str, str],
+            self,
+            kubernetes_config_path: str,
+            application_name: str,
+            secrets: Dict[str, str],
+            custom_values: Dict[str, str],
     ) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
@@ -184,11 +203,11 @@ class DeployToKubernetes(BaseKubernetes):
         return rendered_kubernetes_config_path.name
 
     def _render_and_write_kubernetes_config(
-        self,
-        kubernetes_config_path: str,
-        application_name: str,
-        secrets: List[Secret],
-        custom_values: Dict[str, str],
+            self,
+            kubernetes_config_path: str,
+            application_name: str,
+            secrets: List[Secret],
+            custom_values: Dict[str, str],
     ) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.

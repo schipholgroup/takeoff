@@ -10,3 +10,5 @@ class ServicePrincipalCredentials(EnvironmentCredentialsMixin):
             config[f"ci_environment_keys_{env}"][current_filename(__file__)]
         )
         return SpCredentials(**credential_kwargs)
+
+
