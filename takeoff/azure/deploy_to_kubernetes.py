@@ -12,10 +12,8 @@ from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes.client import CoreV1Api
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.providers.keyvault_credentials_mixin import KeyVaultCredentialsMixin
-from takeoff.azure.credentials.service_principal import ServicePrincipalCredentialsFromVault
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_kubernetes_name, get_azure_credentials_object
 from takeoff.context import Context, ContextKey
@@ -87,7 +85,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Optional("credentials_type", default="active_directory_user"): vol.All(str, vol.In(
             ["active_directory_user", "service_principal"])
         ),
-        vol.Optional("credentials", default="environment_variables"): vol.All(
+        vol.Optional("credentials", default="azure_keyvault"): vol.All(
             str, vol.In(["azure_keyvault"])
         ),
         vol.Required("kubernetes_config_path"): str,

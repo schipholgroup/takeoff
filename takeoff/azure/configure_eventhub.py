@@ -28,7 +28,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Required("task"): "configure_eventhub",
         vol.Optional("credentials_type", default="active_directory_user"): vol.All(str, vol.In(
             ["active_directory_user", "service_principal"])),
-        vol.Optional("credentials", default="environment_variables"): vol.All(
+        vol.Optional("credentials", default="azure_keyvault"): vol.All(
             str, vol.In(["azure_keyvault"])
         ),
         vol.Optional("create_consumer_groups"): vol.All(
