@@ -12,7 +12,7 @@ from takeoff.application_version import ApplicationVersion
 from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromValue
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from takeoff.azure.credentials.keyvault import KeyVaultClient
-from takeoff.azure.credentials.service_principal_from_keyvault import ServicePrincipalCredentialsFromVault
+from takeoff.azure.credentials.service_principal import ServicePrincipalCredentialsFromVault
 from takeoff.azure.credentials.subscription_id import SubscriptionId
 from takeoff.azure.util import get_resource_group_name, get_eventhub_name, get_eventhub_entity_name
 from takeoff.context import Context, ContextKey

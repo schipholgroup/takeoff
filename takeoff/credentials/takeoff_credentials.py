@@ -1,5 +1,5 @@
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.keyvault_credentials_provider import AzureKeyVaultProvider
+from takeoff.azure.credentials.providers.azure_keyvault_provider import AzureKeyVaultProvider
 from takeoff.credentials.credential_provider import BaseProvider
 from takeoff.credentials.environment_credentials_provider import CIEnvironmentCredentials
 

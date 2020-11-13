@@ -9,7 +9,7 @@ from databricks_cli.secrets.api import SecretApi
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.databricks import Databricks
 from takeoff.azure.credentials.keyvault import KeyVaultClient
-from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
+from takeoff.azure.credentials.providers.keyvault_credentials_mixin import KeyVaultCredentialsMixin
 from takeoff.credentials.DeploymentYamlEnvironmentVariablesMixin import (
     DeploymentYamlEnvironmentVariablesMixin,
 )
