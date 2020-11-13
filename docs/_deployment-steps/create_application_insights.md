@@ -24,16 +24,45 @@ Add the following task to `deployment.yaml`
 | `create_databricks_secret` [optional] | Postfix for the image name, will be added before the tag | One of `true`, `false`
 
 ## Takeoff config
-Credentials for an Azure Active Directory (AAD) user (username, password) must be available in your cloud vault. If `create_databricks_secret := true` credentials for Databricks (host, token) must also be available in your cloud vault.
+Takeoff supports 2 authentication types. You can choose either:
+1. Service Principal
+2. Active Directory User
+These credentials must be available in your Azure Keyvault, and the correct mapping with the secret names should be available in your `config.yaml`. 
+If `create_databricks_secret := true` credentials for Databricks (host, token) must also be available in your cloud vault.
 
-Make sure `.takeoff/config.yaml` contains the following keys:
+<p class='note warning'>
+Currently Takeoff only supports Azure Keyvault as the source for credentials for use with `create_application_insights`
+</p>
 
+The default is to use a Service Principal. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
 ```yaml
 azure:
-    keyvault_keys:
-        active_directory_user:
-          username: "aad-username"
-          password: "aad-password"
+  keyvault_keys:
+    service_principal:
+      client_id: "sp-client-id"
+      secret: "sp-secret"
+      tenant: "azure-tenant"
+```
+To use a service principal, you can add the following into your `deployment.yaml`:
+```yaml
+- task: create_application_insights
+  credentials: azure_keyvault
+  credentials_type: service_principal
+```
+
+If you prefer to use an Active Directory User, please ensure the following `keyvault_keys` are defined:
+```yaml
+azure:
+  keyvault_keys:
+    active_directory_user:
+      username: "aad-username"
+      password: "aad-password"
+```
+To use a service principal, you can add the following into your `deployment.yaml`:
+```yaml
+- task: create_application_insights
+  credentials: azure_keyvault
+  credentials_type: active_directory_user
 ```
 
 ## Examples
