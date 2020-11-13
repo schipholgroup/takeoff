@@ -10,7 +10,7 @@ from takeoff.azure.create_databricks_secrets import CreateDatabricksSecretFromVa
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.subscription_id import SubscriptionId
-from takeoff.azure.util import get_resource_group_name
+from takeoff.azure.util import get_resource_group_name, get_azure_credentials_object
 from takeoff.credentials.secret import Secret
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
@@ -84,12 +84,10 @@ class CreateApplicationInsights(Step):
         Returns:
             An Application Insights management client
         """
-        azure_user_credentials = ActiveDirectoryUserCredentials(
-            vault_name=self.vault_name, vault_client=self.vault_client
-        ).credentials(self.config)
+        credentials = get_azure_credentials_object(self.config, self.vault_name, self.vault_client)
 
         return ApplicationInsightsManagementClient(
-            azure_user_credentials,
+            credentials,
             SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
         )
 

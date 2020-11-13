@@ -14,7 +14,8 @@ from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserC
 from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.azure.credentials.service_principal import ServicePrincipalCredentialsFromVault
 from takeoff.azure.credentials.subscription_id import SubscriptionId
-from takeoff.azure.util import get_resource_group_name, get_eventhub_name, get_eventhub_entity_name
+from takeoff.azure.util import get_resource_group_name, get_eventhub_name, get_eventhub_entity_name, \
+    get_azure_credentials_object
 from takeoff.context import Context, ContextKey
 from takeoff.credentials.secret import Secret
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
@@ -340,33 +341,13 @@ class ConfigureEventHub(Step):
         """
         return set(_.eventhub for _ in eventhubs)
 
-    def _get_credentials(self):
-        """Fetch the credentials object
-
-        This can either use a service principal or an AD user
-
-        Returns:
-
-        """
-        if self.config["credentials_type"] == "active_directory_user":
-            return ActiveDirectoryUserCredentials(
-                vault_name=self.vault_name, vault_client=self.vault_client
-            ).credentials(self.config)
-        elif self.config["credentials_type"] == "service_principal":
-            return ServicePrincipalCredentialsFromVault(
-                vault_name=self.vault_name, vault_client=self.vault_client
-            ).credentials(self.config)
-
     def _get_eventhub_client(self) -> EventHubManagementClient:
         """Constructs an EventHub Management client
 
         Returns:
             An EventHub Management client
         """
-        # credentials = ActiveDirectoryUserCredentials(
-        #     vault_name=self.vault_name, vault_client=self.vault_client
-        # ).credentials(self.config)
-        credentials = self._get_credentials()
+        credentials = get_azure_credentials_object(self.config, self.vault_name, self.vault_client)
         return EventHubManagementClient(
             credentials, SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config)
         )
