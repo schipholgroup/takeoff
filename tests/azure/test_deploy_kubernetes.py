@@ -43,7 +43,7 @@ class RegistryCredentials:
     username: str
     password: str
 
-    def credentials(self, config):
+    def credentials(self):
         return self
 
 
@@ -120,11 +120,12 @@ spec:
 
         assert result == expected_result
 
-    @mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry.credentials",
-                return_value=DockerCredentials("myuser", "secretpassword", "registry.io"))
+
+    @mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry",
+                return_value=RegistryCredentials("myuser", "secretpassword", "registry.io"))
     def test_get_docker_registry_secret(self, _, victim):
         result = victim._get_docker_registry_secret()
-        assert result == "eyJhdXRocyI6IHsicmVnaXN0cnkuaW8iOiB7InVzZXJuYW1lIjogIm15dXNlciIsICJwYXNzd29yZCI6ICJzZWNyZXRwYXNzd29yZCIsICJhdXRoIjogImJYbDFjMlZ5T25ObFkzSmxkSEJoYzNOM2IzSmsifX19"
+        assert result == "eyJhdXRocyI6IHsibXl1c2VyIjogeyJ1c2VybmFtZSI6ICJzZWNyZXRwYXNzd29yZCIsICJwYXNzd29yZCI6ICJyZWdpc3RyeS5pbyIsICJhdXRoIjogImMyVmpjbVYwY0dGemMzZHZjbVE2Y21WbmFYTjBjbmt1YVc4PSJ9fX0="
 
     @pytest.mark.skip(reason="kubectl can't work without a valid kube context :(")
     @mock.patch("takeoff.azure.deploy_to_kubernetes.DockerRegistry.credentials",
