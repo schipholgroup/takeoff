@@ -1,18 +1,21 @@
-from typing import Callable
+from typing import Callable, Dict
+
+from azure.keyvault import KeyVaultClient as AzureKeyVaultClient
 
 from takeoff.application_version import ApplicationVersion
 from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from takeoff.azure.credentials.service_principal import ServicePrincipalCredentialsFromVault
 from takeoff.util import load_takeoff_plugins
+from msrestazure.azure_active_directory import AADMixin
 
 
-def get_azure_credentials_object(config, vault_name, vault_client):
+def get_azure_credentials_object(config: Dict, vault_name: str, vault_client: AzureKeyVaultClient) -> AADMixin:
     """Fetch the credentials object
 
-    This can either use a service principal or an AD user
+    This can either use a service principal or an AD user.
 
     Returns:
-
+        Depending on the value of credentials_type, either AAD User credentials, or SP Credentials
     """
     if config["credentials_type"] == "active_directory_user":
         return ActiveDirectoryUserCredentials(

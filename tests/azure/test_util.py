@@ -97,3 +97,29 @@ def test_get_custom_eventhub_entity_name():
     res = victim.get_eventhub_entity_name("", ENV)
     assert res == "Romeo"
     sys.path.remove(paths[0])
+
+
+@mock.patch("takeoff.azure.util.ServicePrincipalCredentialsFromVault")
+@mock.patch("takeoff.azure.util.ActiveDirectoryUserCredentials")
+def test_get_azure_credentials_object_aad_user(mock_ad, mock_sp):
+    config = {
+        "credentials_type": "active_directory_user"
+    }
+    vault_name = "my_vault"
+    keyvault = "vault"
+    victim.get_azure_credentials_object(config, vault_name, keyvault)
+    mock_ad.assert_called_once()
+    mock_sp.assert_not_called()
+
+
+@mock.patch("takeoff.azure.util.ServicePrincipalCredentialsFromVault")
+@mock.patch("takeoff.azure.util.ActiveDirectoryUserCredentials")
+def test_get_azure_credentials_object_sp(mock_ad, mock_sp):
+    config = {
+        "credentials_type": "service_principal"
+    }
+    vault_name = "my_vault"
+    keyvault = "vault"
+    victim.get_azure_credentials_object(config, vault_name, keyvault)
+    mock_sp.assert_called_once()
+    mock_ad.assert_not_called()
