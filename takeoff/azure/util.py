@@ -9,7 +9,9 @@ from takeoff.util import load_takeoff_plugins
 from msrestazure.azure_active_directory import AADMixin
 
 
-def get_azure_credentials_object(config: Dict, vault_name: str, vault_client: AzureKeyVaultClient) -> AADMixin:
+def get_azure_credentials_object(
+    config: Dict, vault_name: str, vault_client: AzureKeyVaultClient
+) -> AADMixin:
     """Fetch the credentials object
 
     This can either use a service principal or an AD user.
@@ -18,9 +20,9 @@ def get_azure_credentials_object(config: Dict, vault_name: str, vault_client: Az
         Depending on the value of credentials_type, either AAD User credentials, or SP Credentials
     """
     if config["credentials_type"] == "active_directory_user":
-        return ActiveDirectoryUserCredentials(
-            vault_name=vault_name, vault_client=vault_client
-        ).credentials(config)
+        return ActiveDirectoryUserCredentials(vault_name=vault_name, vault_client=vault_client).credentials(
+            config
+        )
     elif config["credentials_type"] == "service_principal":
         return ServicePrincipalCredentialsFromVault(
             vault_name=vault_name, vault_client=vault_client

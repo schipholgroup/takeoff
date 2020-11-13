@@ -19,4 +19,3 @@ class ServicePrincipalCredentialsFromVault(KeyVaultCredentialsMixin):
             config["azure"]["keyvault_keys"][current_filename(__file__)]
         )
         return SpCredentials(**credential_kwargs)
-

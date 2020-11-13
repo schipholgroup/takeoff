@@ -82,12 +82,10 @@ IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
-        vol.Optional("credentials_type", default="active_directory_user"): vol.All(str, vol.In(
-            ["active_directory_user", "service_principal"])
+        vol.Optional("credentials_type", default="active_directory_user"): vol.All(
+            str, vol.In(["active_directory_user", "service_principal"])
         ),
-        vol.Optional("credentials", default="azure_keyvault"): vol.All(
-            str, vol.In(["azure_keyvault"])
-        ),
+        vol.Optional("credentials", default="azure_keyvault"): vol.All(str, vol.In(["azure_keyvault"])),
         vol.Required("kubernetes_config_path"): str,
         vol.Optional(
             "image_pull_secret",
@@ -156,11 +154,11 @@ class DeployToKubernetes(BaseKubernetes):
         )
 
     def _render_kubernetes_config(
-            self,
-            kubernetes_config_path: str,
-            application_name: str,
-            secrets: Dict[str, str],
-            custom_values: Dict[str, str],
+        self,
+        kubernetes_config_path: str,
+        application_name: str,
+        secrets: Dict[str, str],
+        custom_values: Dict[str, str],
     ) -> str:
         kubernetes_config = render_string_with_jinja(
             kubernetes_config_path,
@@ -183,11 +181,11 @@ class DeployToKubernetes(BaseKubernetes):
         return rendered_kubernetes_config_path.name
 
     def _render_and_write_kubernetes_config(
-            self,
-            kubernetes_config_path: str,
-            application_name: str,
-            secrets: List[Secret],
-            custom_values: Dict[str, str],
+        self,
+        kubernetes_config_path: str,
+        application_name: str,
+        secrets: List[Secret],
+        custom_values: Dict[str, str],
     ) -> str:
         """
         Render the jinja-templated kubernetes configuration adn write it out to a temporary file.
