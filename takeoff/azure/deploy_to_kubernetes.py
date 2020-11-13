@@ -106,7 +106,7 @@ DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
             ["active_directory_user", "service_principal"])
         ),
         vol.Optional("credentials", default="environment_variables"): vol.All(
-            str, vol.In(["environment_variables", "azure_keyvault"])
+            str, vol.In(["azure_keyvault"])
         ),
         vol.Required("kubernetes_config_path"): str,
         vol.Optional(

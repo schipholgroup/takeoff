@@ -28,7 +28,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Optional("credentials_type", default="active_directory_user"): vol.All(str, vol.In(
             ["active_directory_user", "service_principal"])),
         vol.Optional("credentials", default="environment_variables"): vol.All(
-            str, vol.In(["environment_variables", "azure_keyvault"])
+            str, vol.In(["azure_keyvault"])
         ),
         vol.Optional("create_consumer_groups"): vol.All(
             vol.Length(min=1),
@@ -353,11 +353,9 @@ class ConfigureEventHub(Step):
                 vault_name=self.vault_name, vault_client=self.vault_client
             ).credentials(self.config)
         elif self.config["credentials_type"] == "service_principal":
-            # TODO: this should come from keyvault, not environment vars
             return ServicePrincipalCredentialsFromVault(
                 vault_name=self.vault_name, vault_client=self.vault_client
             ).credentials(self.config)
-            # return ServicePrincipalCredentials().credentials(self.config, self.env.environment_formatted)
 
     def _get_eventhub_client(self) -> EventHubManagementClient:
         """Constructs an EventHub Management client
