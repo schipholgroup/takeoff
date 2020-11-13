@@ -19,6 +19,8 @@ Add the following task to `deployment.yaml`
 | field | description | values
 | ----- | ----------- |
 | `task` | `"create_application_insights"` |
+| `credentials` __[optional]__ | The source of the credentials to use. | Defaults to `azure_keyvault`. One of: `azure_keyvault`
+| `credentials_type` __[optional]__ | The type of the credentials to use. | Defaults to `active_directory_user`. One of: `service_principal`, `active_directory_user`
 | `kind` [optional]| Used to customize the UI | One of `web`, `ios`, `other`, `store`, `java`, `phone`
 | `application_type` [optional] | Type of application being monitored |  One of `web`, `other`
 | `create_databricks_secret` [optional] | Postfix for the image name, will be added before the tag | One of `true`, `false`
@@ -34,7 +36,7 @@ If `create_databricks_secret := true` credentials for Databricks (host, token) m
 Currently Takeoff only supports Azure Keyvault as the source for credentials for use with `create_application_insights`
 </p>
 
-The default is to use a Service Principal. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
+The default is to use a Active Directory User. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
 ```yaml
 azure:
   keyvault_keys:

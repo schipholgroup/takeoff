@@ -35,7 +35,7 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | ----- | ----------- 
 | `kubernetes_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) Kubernetes deployment config | Mandatory value, must be a valid path in the repository |
 | `credentials` __[optional]__ | The source of the credentials to use. | Defaults to `azure_keyvault`. One of: `azure_keyvault` |
-| `credentials_type` __[optional]__ | The type of the credentials to use. | Defaults to `service_prinicipal`. One of: `service_principal`, `active_directory_user` |
+| `credentials_type` __[optional]__ | The type of the credentials to use. | Defaults to `active_directory_user`. One of: `service_principal`, `active_directory_user` |
 | `image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True, with `secret_name=registry-auth` and `namespace=default` |
 | `image_pull_secret.create` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True | 
 | `image_pull_secret.secret_name` | The name of secret | Defaults to `secret_name` | 
@@ -128,7 +128,7 @@ These credentials must be available in your Azure Keyvault, and the correct mapp
 Currently Takeoff only supports Azure Keyvault as the source for credentials for use with `deploy_to_kubernetes`
 </p>
 
-The default is to use a Service Principal. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
+The default is to use a Active Directory User. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
 ```yaml
 azure:
   keyvault_keys:

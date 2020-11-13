@@ -32,7 +32,7 @@ Add the following task to `deployment.yaml`:
 | ----- | ----------- | ------
 | `task` | `"configure_eventhub"`
 | `credentials` __[optional]__ | The source of the credentials to use. | Defaults to `azure_keyvault`. One of: `azure_keyvault`
-| `credentials_type` __[optional]__ | The type of the credentials to use. | Defaults to `service_prinicipal`. One of: `service_principal`, `active_directory_user`
+| `credentials_type` __[optional]__ | The type of the credentials to use. | Defaults to `active_directory_user`. One of: `service_principal`, `active_directory_user`
 | `create_consumer_groups` __[optional]__ | Contains the specification for each consumer group 
 | `create_consumer_groups.eventhub_entity_naming` | The name of the existing EventHub 
 | `create_consumer_groups.consumer_group` __[optional]__ | The name of the consumer group to be created
@@ -56,7 +56,7 @@ be in place in order to allow for Databricks secret creation.
 Currently Takeoff only supports Azure Keyvault as the source for credentials for use with `configure_eventhub`
 </p>
 
-The default is to use a Service Principal. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
+The default is to use a Active Directory User. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
 ```yaml
 azure:
   keyvault_keys:
