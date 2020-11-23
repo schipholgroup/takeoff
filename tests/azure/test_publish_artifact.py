@@ -194,6 +194,18 @@ class TestPublishArtifact(unittest.TestCase):
             victim(env, conf).publish_to_pypi()
         m.assert_called_once_with(upload_settings="foo", dists=["dist/*"])
 
+    @mock.patch("takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None))
+    @mock.patch("takeoff.azure.publish_artifact.ArtifactStore.store_settings", return_value="foo")
+    @mock.patch.dict(os.environ, {"CI_PROJECT_NAME": "my-app"})
+    @mock.patch("takeoff.azure.publish_artifact.get_tag", return_value="a tag")
+    def test_publish_to_pypi_optional_path(self, m1, m2, m3):
+        conf = {**takeoff_config(), **BASE_CONF, "language": "python", "target": ["pypi"],
+                "python_package_root": "src/"}
+        env = ApplicationVersion('prd', '1.0.0', 'branch')
+        with mock.patch("takeoff.azure.publish_artifact.upload") as m:
+            victim(env, conf).publish_to_pypi()
+        m.assert_called_once_with(upload_settings="foo", dists=["src/dist/*"])
+
     @mock.patch("takeoff.azure.publish_artifact.KeyVaultClient.vault_and_client", return_value=(None, None))
     @mock.patch("takeoff.step.ApplicationName.get", return_value="my_app")
     @mock.patch("takeoff.azure.publish_artifact.get_tag", return_value=None)

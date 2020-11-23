@@ -47,6 +47,14 @@ SCHEMA = vol.All(
                         "that serves as entrypoint for a databricks job"
                     ),
                 ): str,
+                vol.Optional(
+                    "python_package_root",
+                    default="",
+                    description=(
+                        "(Optional) relative path to python package root. Default './'"
+                        "Expects python wheel under {python_package_root}dist/*.whl"
+                    ),
+                ): str,
                 "azure": vol.All(
                     {
                         "common": {
@@ -105,7 +113,7 @@ class PublishArtifact(Step):
         return jars[0]
 
     @staticmethod
-    def _get_wheel() -> str:
+    def _get_wheel(cwd="./") -> str:
         """Finds the wheel given default naming conventions for Python setuptools
 
         Returns:
@@ -114,18 +122,19 @@ class PublishArtifact(Step):
         Raises:
             FileNotFoundError if none or more than one jars are present.
         """
-        wheels = glob.glob("dist/*.whl")
+        wheels = glob.glob(f"{cwd}dist/*.whl")
         if len(wheels) != 1:
             raise FileNotFoundError(f"wheels found: {wheels}; There can (and must) be only one!")
         return wheels[0]
 
-    def publish_python_package(self):
+    def publish_python_package(self, package_root="./"):
         """Publishes the Python wheel to all specified targets"""
         for target in self.config["target"]:
             if target == "pypi":
                 self.publish_to_pypi()
             elif target == "cloud_storage":
-                self.upload_to_cloud_storage(file=self._get_wheel(), file_extension=".whl")
+                package_root = self.config["python_package_root"]
+                self.upload_to_cloud_storage(file=self._get_wheel(cwd=package_root), file_extension=".whl")
                 # only upload a py file if the path has been specified
                 if "python_file_path" in self.config.keys():
                     self.upload_to_cloud_storage(
@@ -195,7 +204,8 @@ class PublishArtifact(Step):
             credentials = ArtifactStore(
                 vault_name=self.vault_name, vault_client=self.vault_client
             ).store_settings(self.config)
-            upload(upload_settings=credentials, dists=["dist/*"])
+            package_root = self.config["python_package_root"]
+            upload(upload_settings=credentials, dists=[f"{package_root}dist/*"])
         else:
             logging.info("Not on a release tag, not publishing artifact on PyPi.")
 
