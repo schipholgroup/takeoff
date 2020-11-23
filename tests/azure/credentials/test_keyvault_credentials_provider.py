@@ -2,12 +2,12 @@ from unittest import mock
 
 from azure.keyvault.models import SecretBundle
 
-from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
+from takeoff.azure.credentials.providers.keyvault_credentials_mixin import KeyVaultCredentialsMixin
 
 
 class TestAzureKeyVaultCredentialsMixin(object):
     @mock.patch(
-        "takeoff.azure.credentials.keyvault_credentials_provider.KeyVaultCredentialsMixin._credentials",
+        "takeoff.azure.credentials.providers.keyvault_credentials_mixin.KeyVaultCredentialsMixin._credentials",
         return_value={"key1": "foo", "key2": "bar"},
     )
     def test_transform_key_to_credential_kwargs(self, _):

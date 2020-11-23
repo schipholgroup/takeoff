@@ -1,4 +1,4 @@
-from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
+from takeoff.azure.credentials.providers.keyvault_credentials_mixin import KeyVaultCredentialsMixin
 from takeoff.util import current_filename
 
 

@@ -31,6 +31,8 @@ Add the following task to `deployment.yaml`:
 | field | description | values
 | ----- | ----------- | ------
 | `task` | `"configure_eventhub"`
+| `credentials` __[optional]__ | The source of the credentials to use. | Defaults to `azure_keyvault`. One of: `azure_keyvault`
+| `credentials_type` __[optional]__ | The type of the credentials to use. | Defaults to `active_directory_user`. One of: `service_principal`, `active_directory_user`
 | `create_consumer_groups` __[optional]__ | Contains the specification for each consumer group 
 | `create_consumer_groups.eventhub_entity_naming` | The name of the existing EventHub 
 | `create_consumer_groups.consumer_group` __[optional]__ | The name of the consumer group to be created
@@ -44,21 +46,59 @@ Add the following task to `deployment.yaml`:
 The producer connection string and consumer group secrets are also available during the [`deploy_to_kubernetes`][deployment-step/deploy-to-kubernetes] step. This makes it possible to inject them as templated secret to a kubernetes yaml. See the [`deploy_to_kubernetes`][deployment-step/deploy-to-kubernetes] page for more information.
 
 ## Takeoff config
-Credentials for a Azure Active Directory user (username, password) must be available in your cloud vault. In addition Databricks credentials and your subscription ID must be available in the KeyVault.
+Takeoff supports 2 authentication types. You can choose either:
+1. Service Principal
+2. Active Directory User
+These credentials must be available in your Azure Keyvault, and the correct mapping with the secret names should be available in your `config.yaml`. Moreover, Databricks credentials configuration must also
+be in place in order to allow for Databricks secret creation.
 
-Make sure `.takeoff/config.yaml` contains the following keys:
+<p class='note warning'>
+Currently Takeoff only supports Azure Keyvault as the source for credentials for use with `configure_eventhub`
+</p>
 
+The default is to use a Active Directory User. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
 ```yaml
 azure:
-    eventhub_naming: "eventhub{env}"
-    keyvault_keys:
-        active_directory_user:
-          username: "aad-username"
-          password: "aad-password"
-        databricks:
-          host: "azure-databricks-host"
-          token: "azure-databricks-token"
-        subscription_id: "subscription-id"
+  keyvault_keys:
+    service_principal:
+      client_id: "sp-client-id"
+      secret: "sp-secret"
+      tenant: "azure-tenant"
+```
+To use a service principal, you can add the following into your `deployment.yaml`:
+```yaml
+- task: configure_eventhub
+  credentials: azure_keyvault
+  credentials_type: service_principal
+```
+
+If you prefer to use an Active Directory User, please ensure the following `keyvault_keys` are defined:
+```yaml
+azure:
+  keyvault_keys:
+    active_directory_user:
+      username: "aad-username"
+      password: "aad-password"
+```
+To use a service principal, you can add the following into your `deployment.yaml`:
+```yaml
+- task: configure_eventhub
+  credentials: azure_keyvault
+  credentials_type: active_directory_user
+```
+
+A more complete `config.yaml` example:
+```yaml
+azure:
+  eventhub_naming: "eventhub{env}"
+  keyvault_keys:
+    active_directory_user:
+      username: "aad-username"
+      password: "aad-password"
+    databricks:
+      host: "azure-databricks-host"
+      token: "azure-databricks-token"
+    subscription_id: "subscription-id"
 ```
 
 Here `eventhub_naming` is the naming rule for your EventHub namespace.
@@ -70,6 +110,8 @@ Assume an application name `myapp` and version `1.2.0`. This goes to `prd` envir
 Minimum configuration example for one consumer group. This will create a single consumer group (if it didn't already exists) for `some-eventhubprd` with name `some-eventhubprd-connection-string`
 ```yaml
 - task: configure_eventhub
+  credentials: azure_keyvault
+  credentials_type: active_directory_user
   create_consumer_groups:
     - eventhub_entity_naming: some-eventhub{env}
       consumer_group: some-consumer-group
@@ -80,6 +122,8 @@ Also, this creates two producer policies for `entity2prd` with name `myapp-send-
 
 ```yaml
 - task: configure_eventhub
+  credentials: azure_keyvault
+  credentials_type: active_directory_user
   create_consumer_groups:
     - eventhub_entity_naming: entity1{env}
       consumer_group: consgroup1

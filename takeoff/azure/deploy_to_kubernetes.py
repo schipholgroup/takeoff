@@ -12,11 +12,10 @@ from azure.mgmt.containerservice.models import CredentialResults
 from kubernetes.client import CoreV1Api
 
 from takeoff.application_version import ApplicationVersion
-from takeoff.azure.credentials.active_directory_user import ActiveDirectoryUserCredentials
 from takeoff.azure.credentials.keyvault import KeyVaultClient
-from takeoff.azure.credentials.keyvault_credentials_provider import KeyVaultCredentialsMixin
+from takeoff.azure.credentials.providers.keyvault_credentials_mixin import KeyVaultCredentialsMixin
 from takeoff.azure.credentials.subscription_id import SubscriptionId
-from takeoff.azure.util import get_resource_group_name, get_kubernetes_name
+from takeoff.azure.util import get_resource_group_name, get_kubernetes_name, get_azure_credentials_object
 from takeoff.context import Context, ContextKey
 from takeoff.credentials.container_registry import DockerRegistry
 from takeoff.credentials.secret import Secret
@@ -64,10 +63,7 @@ class BaseKubernetes(Step):
         resource_group = get_resource_group_name(self.config, self.env)
         cluster_name = get_kubernetes_name(self.config, self.env)
 
-        # get azure container service client
-        credentials = ActiveDirectoryUserCredentials(
-            vault_name=self.vault_name, vault_client=self.vault_client
-        ).credentials(self.config)
+        credentials = get_azure_credentials_object(self.config, self.vault_name, self.vault_client)
 
         client = ContainerServiceClient(
             credentials=credentials,
@@ -86,9 +82,10 @@ IP_ADDRESS_MATCH = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
 DEPLOY_SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "deploy_to_kubernetes",
-        vol.Optional("credentials", default="environment_variables"): vol.All(
-            str, vol.In(["environment_variables", "azure_keyvault"])
+        vol.Optional("credentials_type", default="active_directory_user"): vol.All(
+            str, vol.In(["active_directory_user", "service_principal"])
         ),
+        vol.Optional("credentials", default="azure_keyvault"): vol.All(str, vol.In(["azure_keyvault"])),
         vol.Required("kubernetes_config_path"): str,
         vol.Optional(
             "image_pull_secret",

@@ -34,6 +34,8 @@ This should be after the [build_docker_image](build-docker-image) task if used t
 | field | description | value
 | ----- | ----------- 
 | `kubernetes_config_path` | The path to a `yml` [jinja_templated](http://jinja.pocoo.org/) Kubernetes deployment config | Mandatory value, must be a valid path in the repository |
+| `credentials` __[optional]__ | The source of the credentials to use. | Defaults to `azure_keyvault`. One of: `azure_keyvault` |
+| `credentials_type` __[optional]__ | The type of the credentials to use. | Defaults to `active_directory_user`. One of: `service_principal`, `active_directory_user` |
 | `image_pull_secret` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True, with `secret_name=registry-auth` and `namespace=default` |
 | `image_pull_secret.create` | Whether or not to create Kubernetes image pull secret to allow pulling images from your container registry. | Defaults to True | 
 | `image_pull_secret.secret_name` | The name of secret | Defaults to `secret_name` | 
@@ -117,12 +119,56 @@ For the example above, if your application name is `myapp`, then a secret in you
 configuration, the `{{url}}` key is filled by a custom value passed in via `deployment.yml`.
 
 ## Takeoff config
+Takeoff supports 2 authentication types. You can choose either:
+1. Service Principal
+2. Active Directory User
+These credentials must be available in your Azure Keyvault, and the correct mapping with the secret names should be available in your `config.yaml`. 
+
+<p class='note warning'>
+Currently Takeoff only supports Azure Keyvault as the source for credentials for use with `deploy_to_kubernetes`
+</p>
+
+The default is to use a Active Directory User. For a service principal, ensure the following `keyvault_keys` are defined in your `config.yaml`:
+```yaml
+azure:
+  keyvault_keys:
+    service_principal:
+      client_id: "sp-client-id"
+      secret: "sp-secret"
+      tenant: "azure-tenant"
+```
+To use a service principal, you can add the following into your `deployment.yaml`:
+```yaml
+- task: deploy_to_kubernetes
+  credentials: azure_keyvault
+  credentials_type: service_principal
+```
+
+If you prefer to use an Active Directory User, please ensure the following `keyvault_keys` are defined:
+```yaml
+azure:
+  keyvault_keys:
+    active_directory_user:
+      username: "aad-username"
+      password: "aad-password"
+```
+To use a service principal, you can add the following into your `deployment.yaml`:
+```yaml
+- task: deploy_to_kubernetes
+  credentials: azure_keyvault
+  credentials_type: active_directory_user
+```
+
+A more complete `config.yaml` example is shown below
 Make sure `.takeoff/config.yml` contains the following keys:
 
 ```yaml
 azure:
   kubernetes_naming: "my_kubernetes{env}"
   keyvault_keys:
+    active_directory_user:
+      username: "aad-username"
+      password: "aad-password"
     container_registry:
       username: "registry-username"
       password: "registry-password"
@@ -145,6 +191,8 @@ Minimum Takeoff deployment configuration example to deploy Kubernetes resources.
 ```yaml
 steps:
 - task: deploy_to_kubernetes
+  credentials: azure_keyvault
+  credentials_type: active_directory_user
   kubernetes_config_path: my_kubernetes_config.yml.j2
   image_pull_secret: 
     create: False
@@ -158,6 +206,8 @@ the [environment](../environment.md) docs for more information on how to define 
 ```yaml
 steps:
 - task: deploy_to_kubernetes
+  credentials: azure_keyvault
+  credentials_type: active_directory_user
   kubernetes_config_path: my_kubernetes_config.yml.j2
   image_pull_secret: 
     create: True
@@ -190,6 +240,8 @@ Eventhub producer policy secrets and consumer group secrets from [`configure_eve
 ```yaml
 steps:
   - task: configure_eventhub
+    credentials: azure_keyvault
+    credentials_type: active_directory_user
     create_producer_policies:
       - eventhub_entity_naming: entity1
       - eventhub_entity_naming: entity2
