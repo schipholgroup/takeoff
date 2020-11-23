@@ -17,8 +17,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
         vol.Optional(
             "python_package_root",
             default="",
-            description="(Optional) relative path to root of python package, defaults "
-                        "to top-level directory.",
+            description="(Optional) relative path to root of python package, default './'",
         ): str,
     },
     extra=vol.ALLOW_EXTRA,
