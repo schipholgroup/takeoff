@@ -576,9 +576,8 @@ class TestDeployToDatabricks(object):
                 ) as submit_mock:
                     victim.deploy_to_databricks()
 
-        # TODO: make called_with
-        remove_mock.assert_called_once()
-        submit_mock.assert_called_once()
+        remove_mock.assert_called_once_with("my_app-SNAPSHOT", is_streaming=True)
+        submit_mock.assert_called_once_with(job_config)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch(
@@ -587,7 +586,6 @@ class TestDeployToDatabricks(object):
     def test_deploy_to_databricks_custom_name(self, _, victim):
         CUSTOM_CONF = {"task": "deploy_to_databricks", "jobs": [{"main_name": "Dave", "name": "baboon-job"}]}
         victim.config = victim.validate({**takeoff_config(), **CUSTOM_CONF})
-        # victim.validate({**takeoff_config(), **BASE_CONF})# "jobs": []}
 
         job_config = {
             "new_cluster": {
@@ -623,7 +621,7 @@ class TestDeployToDatabricks(object):
                     victim.deploy_to_databricks()
 
         remove_mock.assert_called_once_with("my_app-baboon-job-SNAPSHOT", is_streaming=True)
-        submit_mock.assert_called_once()
+        submit_mock.assert_called_once_with(job_config)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch(
