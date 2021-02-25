@@ -17,7 +17,7 @@ jobs = [
     JobConfig("daniel-branch-name", 5),
     JobConfig("tim-postfix-SNAPSHOT", 6),
     JobConfig("tim-postfix-SNAPSHOT", 7),
-    JobConfig("michel-1.2.3--my-version-postfix", 8),
+    JobConfig("michel-1.2.3--my-version-postfix", 8)
 ]
 
 streaming_job_config = "tests/azure/files/test_job_config.json.j2"
@@ -79,38 +79,38 @@ class TestDeployToDatabricks(object):
         assert victim.config["jobs"][0]["lang"] == "python"
         assert victim.config["jobs"][0]["arguments"] == [{}]
 
-    def test_find_application_job_id_if_snapshot(self, victim):
-        victim.env = ApplicationVersion('ACP', 'SNAPSHOT', 'master')
-        assert victim._application_job_id("foo", jobs) == [1]
+    def test_find_application_id_exact_match(self, victim):
+        assert victim._application_job_id("foo-SNAPSHOT", jobs) == [1]
 
-    def test_find_application_job_id_if_version(self, victim):
-        victim.env = ApplicationVersion('PRD', '0.3.1', 'tag')
-        assert victim._application_job_id("bar", jobs) == [2]
+    def test_find_application_id_no_match(self, victim):
+        assert victim._application_job_id("NO_FIND_ME", jobs) == []
 
-    def test_find_application_job_id_if_version_not_set(self, victim):
-        victim.env = ApplicationVersion('PRD', '', 'tag')
-        assert victim._application_job_id("bar", jobs) == []
-
-    def test_find_application_job_id_if_branch(self, victim):
-        victim.env = ApplicationVersion('DEV', 'branch-name', 'branch')
-        assert victim._application_job_id("daniel", jobs) == [5]
-
-    def test_find_application_job_id_if_branch_if_no_version(self, victim):
-        victim.env = ApplicationVersion('DEV', '', 'branch')
-        assert victim._application_job_id("daniel", jobs) == []
-
-    def test_find_application_job_id_if_postfix(self, victim):
-        victim.env = ApplicationVersion('DEV', 'SNAPSHOT', 'master')
+    def test_find_application_id_multiple_matches(self, victim):
         assert victim._application_job_id("tim-postfix", jobs) == [6, 7]
 
-    def test_find_application_job_id_if_version_postfix(self, victim):
-        victim.env = ApplicationVersion('PRD', '1.2.3--my-version-postfix', 'branch')
-        assert victim._application_job_id("michel", jobs) == [8]
+    def test_construct_name_tag(self, victim):
+        victim.env = ApplicationVersion('PRD', '1.2.3', 'tag')
+        assert victim._construct_name("") == "my_app-1.2.3"
 
-    def test_construct_name(self, victim):
-        assert victim._construct_name("") == "my_app"
-        assert victim._construct_name("foo") == "my_app-foo"
+    def test_construct_name_tag_job_name_set(self, victim):
+        victim.env = ApplicationVersion('PRD', '1.2.3', 'tag')
+        assert victim._construct_name("foo") == "my_app-foo-1.2.3"
 
+    def test_construct_name_snapshot(self, victim):
+        victim.env = ApplicationVersion('ACP', 'SNAPSHOT', 'master')
+        assert victim._construct_name("") == "my_app-SNAPSHOT"
+
+    def test_construct_name_snapshot_job_name_set(self, victim):
+        victim.env = ApplicationVersion('ACP', 'SNAPSHOT', 'master')
+        assert victim._construct_name("foo") == "my_app-foo-SNAPSHOT"
+
+    def test_construct_name_branch(self, victim):
+        victim.env = ApplicationVersion('DEV', 'my-branch', 'my-epic-branch')
+        assert victim._construct_name("") == "my_app-my-branch"
+
+    def test_construct_name_branch_job_name_set(self, victim):
+        victim.env = ApplicationVersion('DEV', 'my-branch', 'my-epic-branch')
+        assert victim._construct_name("foo") == "my_app-foo-my-branch"
 
     def test_job_is_unscheduled(self, victim):
         job_config = victim._construct_job_config(config_file=streaming_job_config)
@@ -576,9 +576,52 @@ class TestDeployToDatabricks(object):
                 ) as submit_mock:
                     victim.deploy_to_databricks()
 
-        # TODO: make called_with
-        remove_mock.assert_called_once()
-        submit_mock.assert_called_once()
+        remove_mock.assert_called_once_with("my_app-SNAPSHOT", is_streaming=True)
+        submit_mock.assert_called_once_with(job_config)
+
+    @mock.patch.dict(os.environ, TEST_ENV_VARS)
+    @mock.patch(
+        "takeoff.step.KeyVaultClient.vault_and_client", return_value=(None, None)
+    )
+    def test_deploy_to_databricks_custom_name(self, _, victim):
+        CUSTOM_CONF = {"task": "deploy_to_databricks", "jobs": [{"main_name": "Dave", "name": "baboon-job"}]}
+        victim.config = victim.validate({**takeoff_config(), **CUSTOM_CONF})
+
+        job_config = {
+            "new_cluster": {
+                "spark_version": "4.1.x-scala2.11",
+                "spark_conf": {
+                    "spark.sql.warehouse.dir": "/some_",
+                    "some.setting": "true",
+                },
+                "cluster_log_conf": {
+                    "dbfs": {"destination": "dbfs:/mnt/sdh/logs/job_with_schedule"}
+                },
+            },
+            "name": "job_with_schedule",
+            "libraries": [
+                {"whl": "dbfs:/mnt/libraries/version/version-bar-py3-none-any.whl"},
+                {"jar": "some.jar"}
+            ],
+            "spark_python_task": {
+                "python_file": "dbfs:/mnt/libraries/version/version-main-bar.py",
+                "parameters": ["--key", "val", "--key2", "val2"]
+            }
+        }
+        with mock.patch(
+                "takeoff.azure.deploy_to_databricks.DeployToDatabricks.create_config",
+                return_value=job_config,
+        ) as config_mock:
+            with mock.patch(
+                    "takeoff.azure.deploy_to_databricks.DeployToDatabricks.remove_job"
+            ) as remove_mock:
+                with mock.patch(
+                        "takeoff.azure.deploy_to_databricks.DeployToDatabricks._submit_job"
+                ) as submit_mock:
+                    victim.deploy_to_databricks()
+
+        remove_mock.assert_called_once_with("my_app-baboon-job-SNAPSHOT", is_streaming=True)
+        submit_mock.assert_called_once_with(job_config)
 
     @mock.patch.dict(os.environ, TEST_ENV_VARS)
     @mock.patch(

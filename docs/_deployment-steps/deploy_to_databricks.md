@@ -156,3 +156,9 @@ and these `takeoff_common` keys:
   artifacts_shared_blob_container_name: libraries
   ```
 
+## Removal of old jobs
+The `deploy_to_databricks` step will try to remove any existing jobs whose name matches with the new one it is deploying. There are few things to note here:
+1. If you change the job name (e.g. add/remove/update the `name` field in the deployment config) Takeoff will not recognise the existing job as being the same. It will therefore not remove it.
+2. When running Takeoff on a git tag, you obviously also will be changing the name of the job. For example, if you had version 1.0.0 running before, you now deployed 1.1.0, Takeoff will look for job 1.1.0 to kill, won't find it, and will leave version 1.0.0 running along with your new job 1.1.0.
+3. Takeoff will **not** remove your Databricks job if/when you close your branch (either by removing the branch or by merging a Pull/Merge Request).
+

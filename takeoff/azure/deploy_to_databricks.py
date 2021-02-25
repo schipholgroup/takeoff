@@ -1,7 +1,6 @@
 import json
 import logging
 import pprint
-import re
 from dataclasses import dataclass
 from typing import List, Optional, Dict
 
@@ -15,7 +14,7 @@ from takeoff.azure.credentials.databricks import Databricks
 from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import has_prefix_match, get_whl_name, get_main_py_name
+from takeoff.util import get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)
 
@@ -84,13 +83,12 @@ class DeployToDatabricks(Step):
         """
         for job in self.config["jobs"]:
             app_name = self._construct_name(job["name"])
-            job_name = f"{app_name}-{self.env.artifact_tag}"
-            job_config = self.create_config(job_name, job)
+            job_config = self.create_config(app_name, job)
             is_streaming = self._job_is_unscheduled(job_config) and not job["is_batch"]
             run_stream_job_immediately = job["run_stream_job_immediately"]
 
             logger.info("Removing old job")
-            self.remove_job(job_config=job, is_streaming=is_streaming)
+            self.remove_job(app_name, is_streaming=is_streaming)
 
             logger.info("Submitting new job with configuration:")
             logger.info(pprint.pformat(job_config))
@@ -136,7 +134,7 @@ class DeployToDatabricks(Step):
 
     def _construct_name(self, name: str) -> str:
         postfix = f"-{name}" if name else ""
-        return f"{self.application_name}{postfix}"
+        return f"{self.application_name}{postfix}-{self.env.artifact_tag}"
 
     @staticmethod
     def _construct_arguments(args: List[dict]) -> list:
@@ -151,7 +149,7 @@ class DeployToDatabricks(Step):
     def _construct_job_config(config_file: str, **kwargs) -> dict:
         return util.render_file_with_jinja(config_file, kwargs, json.loads)
 
-    def remove_job(self, job_config: dict, is_streaming: bool):
+    def remove_job(self, job_name: str, is_streaming: bool):
         """
         Removes the existing job and cancels any running job_run if the application is streaming.
         If the application is batch, it'll let the batch job finish but it will remove the job,
@@ -161,7 +159,7 @@ class DeployToDatabricks(Step):
         job_configs = [
             JobConfig(_["settings"]["name"], _["job_id"]) for _ in self.jobs_api.list_jobs()["jobs"]
         ]
-        job_ids = self._application_job_id(self._construct_name(job_config["name"]), job_configs)
+        job_ids = self._application_job_id(job_name, job_configs)
 
         if not job_ids:
             logger.info(f"Could not find jobs in list of {pprint.pformat(job_configs)}")
@@ -173,9 +171,8 @@ class DeployToDatabricks(Step):
             logger.info(f"Deleting Job with ID {job_id}")
             self.jobs_api.delete_job(job_id)
 
-    def _application_job_id(self, application_name: str, jobs: List[JobConfig]) -> List[int]:
-        pattern = re.compile(rf"^({application_name})-({self.env.artifact_tag})$")
-        return [_.job_id for _ in jobs if has_prefix_match(_.name, application_name, pattern)]
+    def _application_job_id(self, job_name: str, jobs: List[JobConfig]) -> List[int]:
+        return [_.job_id for _ in jobs if job_name in _.name]
 
     def _kill_it_with_fire(self, job_id: int):
         logger.info(f"Finding runs for job_id {job_id}")
