@@ -15,7 +15,6 @@ setup_dependencies = [
     "azure==4.0.0",
     "databricks-cli==0.9.0",
     "docker==4.0.2",
-    "flake8==3.7.2",
     "gitpython==3.1.1",
     "jinja2==2.10.1",
     "kubernetes==10.0.1",
