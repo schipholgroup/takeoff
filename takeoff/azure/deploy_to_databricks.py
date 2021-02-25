@@ -1,7 +1,6 @@
 import json
 import logging
 import pprint
-import re
 from dataclasses import dataclass
 from typing import List, Optional, Dict
 
@@ -15,7 +14,7 @@ from takeoff.azure.credentials.databricks import Databricks
 from takeoff.azure.credentials.keyvault import KeyVaultClient
 from takeoff.schemas import TAKEOFF_BASE_SCHEMA
 from takeoff.step import Step
-from takeoff.util import has_prefix_match, get_whl_name, get_main_py_name
+from takeoff.util import get_whl_name, get_main_py_name
 
 logger = logging.getLogger(__name__)
 
