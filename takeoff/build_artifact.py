@@ -14,6 +14,11 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
     {
         vol.Required("task"): "build_artifact",
         vol.Required("build_tool"): vol.All(str, vol.In(["python", "sbt"])),
+        vol.Optional(
+            "python_package_root",
+            default="",
+            description="(Optional) relative path to root of python package, default './'",
+        ): str,
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -47,7 +52,7 @@ class BuildArtifact(Step):
         """
         shutil.rmtree(path, ignore_errors=True)
 
-    def build_python_wheel(self):
+    def build_python_wheel(self, package_root="./"):
         """Builds Python wheel
 
         This uses bash to run commands directly.
@@ -55,11 +60,13 @@ class BuildArtifact(Step):
         Raises:
            ChildProcessError is the bash command was not successful
         """
+
         self._write_version()
-        self._remove_old_artifacts("dist/")
+        package_root = self.config["python_package_root"]
+        self._remove_old_artifacts(f"{package_root}dist/")
 
         cmd = ["python", "setup.py", "bdist_wheel"]
-        return_code, _ = run_shell_command(cmd)
+        return_code, _ = run_shell_command(cmd, cwd=package_root)
 
         if return_code != 0:
             raise ChildProcessError("Could not build the package for some reason!")

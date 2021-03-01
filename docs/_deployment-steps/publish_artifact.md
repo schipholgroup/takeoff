@@ -32,6 +32,7 @@ Add the following task to ``deployment.yaml``
 | `language` | The language identifier of your project | One of `python`, `scala`
 | `target` | List of targets to push the artifact to. For Python these can be: `cloud_storage`, `pypi`. For Scala artifacts these can be: `cloud_storage`, `ivy`
 | `python_file_path` [optional] | The path relative to the root of your project to the python script that serves as entrypoint for a databricks job 
+| `python_package_root` [optional] | Relative path to the root folder of python package, defaults to top-level directory. Expects a python wheel under `{python_package_root}dist/*.whl` | Default `"./"`
 
 For all languages, the assumption is that the artifact has already been built, for example by the `build_artifact` step that Takeoff offers.
 
