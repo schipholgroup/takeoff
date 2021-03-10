@@ -131,7 +131,7 @@ def get_matching_group(find_in: str, pattern: Pattern[str], group: int):
     match = pattern.search(find_in)
 
     if not match:
-        raise ValueError(f"Couldn't find a match")
+        raise ValueError("Couldn't find a match")
 
     found_groups = len(match.groups())
     if found_groups < group:

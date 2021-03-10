@@ -86,8 +86,7 @@ class CreateApplicationInsights(Step):
         credentials = get_azure_credentials_object(self.config, self.vault_name, self.vault_client)
 
         return ApplicationInsightsManagementClient(
-            credentials,
-            SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
+            credentials, SubscriptionId(self.vault_name, self.vault_client).subscription_id(self.config),
         )
 
     def _find_existing_instance(
