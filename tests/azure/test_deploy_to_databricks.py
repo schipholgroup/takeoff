@@ -380,7 +380,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT-some.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -424,7 +424,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT-some.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -464,7 +464,7 @@ class TestDeployToDatabricks(object):
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT-some.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -496,7 +496,7 @@ class TestDeployToDatabricks(object):
                 {"jar": "some.jar"}
             ],
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT-some.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -533,7 +533,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT-some.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
