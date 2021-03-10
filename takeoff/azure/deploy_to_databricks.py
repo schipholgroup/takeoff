@@ -110,7 +110,7 @@ class DeployToDatabricks(Step):
 
         if job_config["lang"] == "python":
             wheel_name = get_whl_name(self.application_name, self.env.artifact_tag, ".whl")
-            py_main_name = get_main_py_name(self.application_name, self.env.artifact_tag, ".py")
+            py_main_name = get_main_py_name(self.application_name, self.env.artifact_tag, job_config["main_name"])
             run_config = DeployToDatabricks._construct_job_config(
                 **common_arguments,
                 whl_file=f"{root_library_folder}/{wheel_name}",

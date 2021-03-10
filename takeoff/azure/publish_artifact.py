@@ -156,7 +156,7 @@ class PublishArtifact(Step):
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
         if file_extension == ".py":
-            filename = get_main_py_name(self.application_name, self.env.artifact_tag, file_extension)
+            filename = get_main_py_name(self.application_name, self.env.artifact_tag, file)
         elif file_extension == ".whl":
             filename = get_whl_name(self.application_name, self.env.artifact_tag, file_extension)
         elif file_extension == ".jar":
