@@ -47,6 +47,14 @@ SCHEMA = vol.All(
                         "that serves as entrypoint for a databricks job"
                     ),
                 ): str,
+                vol.Optional(
+                    "use_original_python_filename",
+                    description=(
+                        "If you upload multiple python files, they are overwritten by each other."
+                        "Use this flag to use the original filename to create unique python files."
+                    ),
+                    default=False,
+                ): bool,
                 "azure": vol.All(
                     {
                         "common": {
@@ -156,7 +164,12 @@ class PublishArtifact(Step):
         blob_service = BlobStore(self.vault_name, self.vault_client).service_client(self.config)
 
         if file_extension == ".py":
-            filename = get_main_py_name(self.application_name, self.env.artifact_tag, file)
+            filename = get_main_py_name(
+                self.application_name,
+                self.env.artifact_tag,
+                file,
+                self.config["use_original_python_filename"],
+            )
         elif file_extension == ".whl":
             filename = get_whl_name(self.application_name, self.env.artifact_tag, file_extension)
         elif file_extension == ".jar":

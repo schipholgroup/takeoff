@@ -183,10 +183,21 @@ def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     )
 
 
-def get_main_py_name(build_definition_name: str, artifact_tag: str, file_path: str) -> str:
+def get_main_py_name(
+    build_definition_name: str,
+    artifact_tag: str,
+    file_path: str,
+    use_original_python_filename: Optional[bool] = False,
+) -> str:
+    if use_original_python_filename:
+        return (
+            f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
+            f"main-{artifact_tag.replace('-', '_')}-{os.path.basename(file_path)}"
+        )
+
     return (
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
-        f"main-{artifact_tag.replace('-', '_')}-{os.path.basename(file_path)}"
+        f"main-{artifact_tag.replace('-', '_')}.py"
     )
 
 
