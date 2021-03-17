@@ -50,8 +50,8 @@ SCHEMA = vol.All(
                 vol.Optional(
                     "use_original_python_filename",
                     description=(
-                        "If you upload multiple python files, they are overwritten by each other."
-                        "Use this flag to use the original filename to create unique python files."
+                        "If you upload multiple unique Python files use this flag to include the original."
+                        "filename in the result. Only impacts Python files."
                     ),
                     default=False,
                 ): bool,
