@@ -7,8 +7,8 @@ on: push
 
 jobs:
   lint:
-
-    runs-on: ubuntu-latest
+    # TODO: linting fails on 3.8/3.9
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9]
@@ -19,6 +19,23 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Run Linting
       run: |
         python setup.py lint
+
+  typecheck:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run Type Checking
+        run: |
+          pip install mypy
+          python -m mypy --ignore-missing-imports -p takeoff
