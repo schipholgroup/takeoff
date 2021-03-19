@@ -25,6 +25,7 @@ jobs:
 
   typecheck:
     runs-on: ubuntu-20.04
+#    needs: lint
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9]
@@ -39,3 +40,22 @@ jobs:
         run: |
           pip install mypy
           python -m mypy --ignore-missing-imports -p takeoff
+
+  test:
+    runs-on: ubuntu-20.04
+    #    needs: lint
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run tests
+        run: |
+          pip install wheel
+          pip install .[test]
+          python setup.py test
