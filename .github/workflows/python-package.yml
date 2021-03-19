@@ -1,7 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: Python package
+name: Test, Build, Deploy
 
 on: push
 
@@ -64,19 +61,21 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build the image
         run: |
-          docker build -t takeoff:latest -f Dockerfile .
+          docker build -t takeoff:danieldev -f Dockerfile .
+      - name: Save built image
+        if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/master')
+        run: |
           mkdir -p path/to/artifacts
-          docker save takeoff:latest > path/to/artifacts/docker-image.tar
-          echo "takeoff:latest" > path/to/artifacts/docker-tag
+          docker save takeoff:danieldev > path/to/artifacts/docker-image.tar
+          echo "takeoff:danieldev" > path/to/artifacts/docker-tag
       - uses: actions/upload-artifact@v2
         with:
           name: docker-artifact
           path: path/to/artifacts
 
-
-
   deploy:
     runs-on: ubuntu-20.04
+    if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/master')
     needs: [build]
     steps:
       - name: Download Docker Image (Artifact)
@@ -89,9 +88,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: try something
+      - name: Push image to Dockerhub
         run: |
           cd path/to/artifacts
           docker load < docker-image.tar
           export TAG=$(cat docker-tag)
-          docker run --rm "$TAG" /bin/bash -c "echo 'foo'"
+          docker tag $TAG schipholhub/$TAG
+          docker push schipholhub/$TAG
