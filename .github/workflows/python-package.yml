@@ -59,8 +59,32 @@ jobs:
           python setup.py test
   build:
     runs-on: ubuntu-20.04
-    needs: [test, lint, typecheck]
+    needs: [test]
     steps:
       - uses: actions/checkout@v2
       - name: Build the image
-        run: docker build -t takeoff:latest -f Dockerfile .
+        run: |
+          docker build -t takeoff:latest -f Dockerfile .
+          mkdir -p path/to/artifacts
+          docker save takeoff:latest > path/to/artifacts/docker-image.tar
+          echo "takeoff:latest" > path/to/artifacts/docker-tag
+      - uses: actions/upload-artifact@v2
+        with:
+          name: docker-artifact
+          path: path/to/artifacts
+
+  deploy:
+    runs-on: ubuntu-20.04
+    needs: [build]
+    steps:
+      - name: Download Docker Image (Artifact)
+        uses: actions/download-artifact@v2
+        with:
+          name: docker-artifact
+          path: path/to/artifacts
+      - name: try something
+        run: |
+          cd path/to/artifacts
+          docker load < docker-image.tar
+          export TAG=$(cat docker-tag)
+          docker run --rm "$TAG" /bin/bash -c "echo 'foo'"
