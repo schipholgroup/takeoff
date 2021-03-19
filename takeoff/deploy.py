@@ -55,7 +55,7 @@ def add_takeoff_plugin_paths(dirs: List[str]):
 
 
 def main(takeoff_dir: str = ".takeoff"):
-    logger.info(  # noqa: W605
+    logger.info(
         """
   ______      __              ________
  /_  __/___ _/ /_____  ____  / __/ __/
@@ -63,7 +63,7 @@ def main(takeoff_dir: str = ".takeoff"):
  / / / /_/ / ,< /  __/ /_/ / __/ __/
 /_/  \__,_/_/|_|\___/\____/_/ /_/
 
-    """
+    """  # noqa: W605
     )
     logger.info(f"Loading Takeoff configuration from {takeoff_dir}")
     deployment = load_yaml(get_full_yaml_filename("deployment", takeoff_dir))
