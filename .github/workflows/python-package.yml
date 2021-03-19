@@ -73,6 +73,8 @@ jobs:
           name: docker-artifact
           path: path/to/artifacts
 
+
+
   deploy:
     runs-on: ubuntu-20.04
     needs: [build]
@@ -82,6 +84,11 @@ jobs:
         with:
           name: docker-artifact
           path: path/to/artifacts
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: try something
         run: |
           cd path/to/artifacts
