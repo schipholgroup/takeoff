@@ -2,9 +2,8 @@ name: Deploy
 
 on:
   workflow_run:
-    workflows: ["Test, Build"]
-    types:
-      - completed
+    workflows: ["CI Build"]
+    types: [completed]
 jobs:
   deploy:
     runs-on: ubuntu-20.04
