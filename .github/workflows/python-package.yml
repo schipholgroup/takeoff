@@ -7,7 +7,6 @@ on: push
 
 jobs:
   lint:
-    # TODO: linting fails on 3.8/3.9
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -25,7 +24,6 @@ jobs:
 
   typecheck:
     runs-on: ubuntu-20.04
-    needs: lint
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9]
@@ -59,3 +57,10 @@ jobs:
           pip install wheel
           pip install .[test]
           python setup.py test
+  build:
+    runs-on: ubuntu-20.04
+    needs: [test, lint, typecheck]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the image
+        run: docker build -t takeoff:latest -f Dockerfile .
