@@ -74,3 +74,13 @@ def test_ensure_base64_non_encoded():
 def test_ensure_base64_encoded():
     result = victim.ensure_base64("c29tZXRoaW5n")
     assert result == "c29tZXRoaW5n"
+
+
+def test_get_main_py_name():
+    result = victim.get_main_py_name("project-name", "my-branch", "my_app/src/some.py")
+    assert result == "project-name/project_name-main-my_branch.py"
+
+
+def test_get_main_py_name_with_original_filename():
+    result = victim.get_main_py_name("project-name", "my-branch", "my_app/src/some.py", True)
+    assert result == "project-name/project_name-main-my_branch-some.py"
