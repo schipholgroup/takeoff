@@ -1,9 +1,9 @@
-FROM python:3.8
+FROM python:3.8-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl
+RUN apt-get update && apt-get install -y --no-install-recommends curl gnupg2
 
 ## Java
-RUN apt-get install -y openjdk-11-jdk
+RUN mkdir -p /usr/share/man/man1 && apt-get install -y openjdk-11-jre-headless && rm -rf /usr/share/man/man1
 ENV JAVA_HOME=/usr/lib/openjdk-11
 ENV PATH=$PATH:$JAVA_HOME/bin
 
