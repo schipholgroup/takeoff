@@ -1,4 +1,4 @@
-name: Test, Build, Deploy
+name: Test, Build
 
 on: push
 
@@ -54,6 +54,7 @@ jobs:
           pip install wheel
           pip install .[test]
           python setup.py test
+
   build:
     runs-on: ubuntu-20.04
     needs: [test]
@@ -63,7 +64,6 @@ jobs:
         run: |
           docker build -t takeoff:danieldev -f Dockerfile .
       - name: Save built image
-        if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/master')
         run: |
           mkdir -p path/to/artifacts
           docker save takeoff:danieldev > path/to/artifacts/docker-image.tar
@@ -73,25 +73,3 @@ jobs:
           name: docker-artifact
           path: path/to/artifacts
 
-  deploy:
-    runs-on: ubuntu-20.04
-    if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/master')
-    needs: [build]
-    steps:
-      - name: Download Docker Image (Artifact)
-        uses: actions/download-artifact@v2
-        with:
-          name: docker-artifact
-          path: path/to/artifacts
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Push image to Dockerhub
-        run: |
-          cd path/to/artifacts
-          docker load < docker-image.tar
-          export TAG=$(cat docker-tag)
-          docker tag $TAG schipholhub/$TAG
-          docker push schipholhub/$TAG
