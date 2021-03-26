@@ -19,7 +19,7 @@ setup_dependencies = [
     "jinja2==2.11.3",
     "kubernetes==10.0.1",
     "py4j==0.10.7",
-    "pyyaml==5.1.2",
+    "pyyaml==5.4",
     "requests>=2.20.0",
     "twine==1.14.0",
     "voluptuous==0.11.7"
