@@ -31,7 +31,7 @@ test_dependencies = [
 ]
 
 lint_dependencies = [
-    "flake8==3.5.0",
+    "flake8==3.9.0",
     "black==20.8b1"
 ]
 
