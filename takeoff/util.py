@@ -131,7 +131,7 @@ def get_matching_group(find_in: str, pattern: Pattern[str], group: int):
     match = pattern.search(find_in)
 
     if not match:
-        raise ValueError(f"Couldn't find a match")
+        raise ValueError("Couldn't find a match")
 
     found_groups = len(match.groups())
     if found_groups < group:
@@ -183,10 +183,21 @@ def get_whl_name(build_definition_name: str, artifact_tag: str, file_ext: str) -
     )
 
 
-def get_main_py_name(build_definition_name: str, artifact_tag: str, file_ext: str) -> str:
+def get_main_py_name(
+    build_definition_name: str,
+    artifact_tag: str,
+    file_path: str,
+    use_original_python_filename: Optional[bool] = False,
+) -> str:
+    if use_original_python_filename:
+        return (
+            f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
+            f"main-{artifact_tag.replace('-', '_')}-{os.path.basename(file_path)}"
+        )
+
     return (
         f"{build_definition_name}/{build_definition_name.replace('-', '_')}-"
-        f"main-{artifact_tag.replace('-', '_')}{file_ext}"
+        f"main-{artifact_tag.replace('-', '_')}.py"
     )
 
 

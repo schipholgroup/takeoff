@@ -2,8 +2,8 @@ plugins:
   - takeoff_plugins
 
 environment_keys:
-  application_name: CIRCLE_PROJECT_REPONAME
-  branch_name: CIRCLE_BRANCH
+  application_name: REPO_NAME
+  branch_name: BRANCH_NAME
 
 ci_environment_keys_acp:
   container_registry:

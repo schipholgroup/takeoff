@@ -16,10 +16,10 @@ setup_dependencies = [
     "databricks-cli==0.9.0",
     "docker==4.0.2",
     "gitpython==3.1.1",
-    "jinja2==2.10.1",
+    "jinja2==2.11.3",
     "kubernetes==10.0.1",
     "py4j==0.10.7",
-    "pyyaml==5.1.2",
+    "pyyaml==5.4",
     "requests>=2.20.0",
     "twine==1.14.0",
     "voluptuous==0.11.7"
@@ -31,7 +31,7 @@ test_dependencies = [
 ]
 
 lint_dependencies = [
-    "flake8==3.5.0",
+    "flake8==3.9.0",
     "black==20.8b1"
 ]
 

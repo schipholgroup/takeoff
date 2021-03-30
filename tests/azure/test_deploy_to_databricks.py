@@ -347,7 +347,7 @@ class TestDeployToDatabricks(object):
 
     def test_correct_schedule_as_parameter_in_job_config_without_env(self, victim):
         conf = {
-            "main_name": "some.py",
+            "main_name": "my_app/src/some.py",
             "config_file": dynamic_schedule_job_config,
             "lang": "python",
             "arguments": [{"key": "val"}, {"key2": "val2"}],

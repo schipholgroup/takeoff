@@ -11,7 +11,7 @@ category: Artifacts
 # Publish Artifacts
 
 This step allows you to publish artifacts for different languages to different targets:
-- You can publish Python wheels to cloud storage, or to PyPi.
+- You can publish Python files and wheels to cloud storage, or to PyPi.
 - You can publish Scala jars to cloud storage, or to Ivy
 
 <p class='note warning'>
@@ -20,6 +20,11 @@ This step allows you to publish artifacts for different languages to different t
 
 <p class='note warning'>
   Regarding Scala, only SBT is supported as build tool
+</p>
+
+<p class='note warning'>
+  When uploading multiple Python files, make sure to set the `"use_original_python_filename"` flag to differentiate between the different Python files.
+  By default a fixed name for the Python file is used, which in this case will cause files to be overwritten.
 </p>
 
 ## Deployment
@@ -32,6 +37,7 @@ Add the following task to ``deployment.yaml``
 | `language` | The language identifier of your project | One of `python`, `scala`
 | `target` | List of targets to push the artifact to. For Python these can be: `cloud_storage`, `pypi`. For Scala artifacts these can be: `cloud_storage`, `ivy`
 | `python_file_path` [optional] | The path relative to the root of your project to the python script that serves as entrypoint for a databricks job 
+| `use_original_python_filename` [optional] | If you upload multiple unique Python files use this flag to include the original filename in the result. Only impacts Python files.
 
 For all languages, the assumption is that the artifact has already been built, for example by the `build_artifact` step that Takeoff offers.
 

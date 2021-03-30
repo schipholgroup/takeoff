@@ -1,0 +1,105 @@
+name: CI Build and Deploy
+
+on: push
+
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Run Linting
+      run: python setup.py lint
+
+  lint_black:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run Linting
+        run: |
+          pip install wheel
+          pip install .[lint]
+          black -l 110 --check takeoff
+
+  yaml_lint:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Run Linting
+      run: |
+        pip install yamllint
+        yamllint -d relaxed .
+
+  typecheck:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run Type Checking
+        run: |
+          pip install mypy
+          python -m mypy --ignore-missing-imports -p takeoff
+
+  test:
+    runs-on: ubuntu-20.04
+    needs: [lint, lint_black, typecheck, yaml_lint]
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run tests
+        run: |
+          pip install wheel
+          pip install .[test]
+          python setup.py test
+
+  build_and_deploy:
+    runs-on: ubuntu-20.04
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the image
+        run: docker build -t schipholhub/takeoff:latest -f Dockerfile .
+      - name: Login to Docker Hub
+        if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/master')
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push image to Dockerhub
+        if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/master')
+        run: |
+          export REPO_NAME=${GITHUB_REPOSITORY#*/}
+          export BRANCH_NAME=${GITHUB_REF##*/}
+          env > .env
+          version=$(docker run --env-file .env -v `echo $PWD`:/src schipholhub/takeoff:latest get_version)
+          docker tag schipholhub/takeoff:latest schipholhub/takeoff:${version}
+          docker push schipholhub/takeoff:${version}
