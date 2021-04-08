@@ -39,6 +39,15 @@ Add the following task to ``deployment.yaml``
 | `python_file_path` [optional] | The path relative to the root of your project to the python script that serves as entrypoint for a databricks job 
 | `use_original_python_filename` [optional] | If you upload multiple unique Python files use this flag to include the original filename in the result. Only impacts Python files.
 
+The behaviour of the `use_original_python_filename` flag:
+
+{:.table}
+| main_name | True | False
+| ----------- | ----------- | -----------
+| `script.py` | `project-main-1.0.0-script.py` | `project-main-1.0.0.py`
+| `script.py` | `project-main-SNAPSHOT-script.py` | `project-main-SNAPSHOT.py`
+| `script.py` | `project-main-my_branch-script.py` | `project-main-my_branch.py`
+
 For all languages, the assumption is that the artifact has already been built, for example by the `build_artifact` step that Takeoff offers.
 
 You can specify a main file (for Databricks jobs) by using the `python_file_path` key.
