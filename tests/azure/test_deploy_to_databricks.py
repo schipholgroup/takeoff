@@ -350,6 +350,7 @@ class TestDeployToDatabricks(object):
             "main_name": "my_app/src/some.py",
             "config_file": dynamic_schedule_job_config,
             "lang": "python",
+            "use_original_python_filename": True,
             "arguments": [{"key": "val"}, {"key2": "val2"}],
             "schedule": {
                 "quartz_cron_expression": "0 15 22 ? * *",
@@ -380,7 +381,7 @@ class TestDeployToDatabricks(object):
                 "timezone_id": "America/Los_Angeles",
             },
             "spark_python_task": {
-                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT.py",
+                "python_file": "dbfs:/mnt/libraries/my_app/my_app-main-SNAPSHOT-some.py",
                 "parameters": ["--key", "val", "--key2", "val2"]
             }
         }
@@ -392,6 +393,7 @@ class TestDeployToDatabricks(object):
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
             "lang": "python",
+            "use_original_python_filename": False,
             "arguments": [{"key": "val"}, {"key2": "val2"}],
             "schedule": {
                 "acp": {
@@ -436,6 +438,7 @@ class TestDeployToDatabricks(object):
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
             "lang": "python",
+            "use_original_python_filename": False,
             "arguments": [{"key": "val"}, {"key2": "val2"}],
             "schedule": {
                 "dev": {
@@ -474,6 +477,7 @@ class TestDeployToDatabricks(object):
             "main_name": "some.py",
             "config_file": dynamic_schedule_job_config,
             "lang": "python",
+            "use_original_python_filename": False,
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
 
@@ -506,6 +510,7 @@ class TestDeployToDatabricks(object):
             "main_name": "some.py",
             "config_file": batch_job_config,
             "lang": "python",
+            "use_original_python_filename": False,
             "arguments": [{"key": "val"}, {"key2": "val2"}],
         }
 

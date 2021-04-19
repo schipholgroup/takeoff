@@ -42,7 +42,16 @@ This should be after the [upload_to_blob](upload-to-blob) task if used together
 | `jobs[].run_stream_job_immediately` (optional) | Whether or not to run a stream job immediately | `True` or `False`. Defaults to `True`.
 | `jobs[].is_batch` (optional) | Designate job as an unscheduled batch | `True` or `False`. Defaults to `False`.
 | `jobs[].arguments` (optional) | Key value pairs to be passed into your project | defaults to no arguments
+| `jobs[].use_original_python_filename` (optional) | If you uploaded multiple unique Python files using the `use_original_python_filename` in the `publish_artifact` job, use this flag here too. Only impacts Python files.
 
+The behaviour of the `use_original_python_filename` flag:
+
+{:.table}
+| main_name | True | False
+| ----------- | ----------- | -----------
+| `script.py` | `project-main-1.0.0-script.py` | `project-main-1.0.0.py`
+| `script.py` | `project-main-SNAPSHOT-script.py` | `project-main-SNAPSHOT.py`
+| `script.py` | `project-main-my_branch-script.py` | `project-main-my_branch.py`
 
 The `json` file can use any of [supported keys](https://docs.databricks.com/api/latest/jobs.html#request-structure). During deployment the existence of the key `schedule` in the `json` file will determine if the job is streaming or batch. When `schedule` is present or `is_batch` has been set to `True`, it is considered a batch job, otherwise a streaming job. A streaming job will be kicked off immediately upon deployment.
 
