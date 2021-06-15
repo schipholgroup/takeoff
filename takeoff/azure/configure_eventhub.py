@@ -39,6 +39,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
                     vol.Required("eventhub_entity_naming"): str,
                     vol.Required("consumer_group"): str,
                     vol.Optional("create_databricks_secret", default=False): bool,
+                    vol.Optional("databricks_secret_suffix", default=""): str,
                 }
             ],
         ),
@@ -78,6 +79,7 @@ class EventHubConsumerGroup(object):
     eventhub: EventHub
     consumer_group: str
     create_databricks_secret: bool
+    databricks_secret_suffix: str
 
 
 @dataclass(frozen=True)
@@ -297,7 +299,11 @@ class ConfigureEventHub(Step):
             logger.error("Something went wrong during creating consumer group")
             raise e
 
-        secret = Secret(f"{group.eventhub.name}-connection-string", connection_string.connection_string)
+        suffix = ""
+        if group.databricks_secret_suffix:
+            suffix = f"-{group.databricks_secret_suffix}"
+
+        secret = Secret(f"{group.eventhub.name}-connection-string{suffix}", connection_string.connection_string)
 
         if group.create_databricks_secret:
             self.create_databricks_secrets([secret])
