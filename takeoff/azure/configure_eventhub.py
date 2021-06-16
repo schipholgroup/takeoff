@@ -17,6 +17,7 @@ from takeoff.azure.util import (
     get_eventhub_name,
     get_eventhub_entity_name,
     get_azure_credentials_object,
+    get_databricks_secret_name,
 )
 from takeoff.context import Context, ContextKey
 from takeoff.credentials.secret import Secret
@@ -39,7 +40,7 @@ SCHEMA = TAKEOFF_BASE_SCHEMA.extend(
                     vol.Required("eventhub_entity_naming"): str,
                     vol.Required("consumer_group"): str,
                     vol.Optional("create_databricks_secret", default=False): bool,
-                    vol.Optional("databricks_secret_suffix", default=""): str,
+                    vol.Optional("append_env_to_databricks_secret_name", default=False): bool,
                 }
             ],
         ),
@@ -79,7 +80,7 @@ class EventHubConsumerGroup(object):
     eventhub: EventHub
     consumer_group: str
     create_databricks_secret: bool
-    databricks_secret_suffix: str
+    append_env_to_databricks_secret_name: bool
 
 
 @dataclass(frozen=True)
@@ -128,6 +129,7 @@ class ConfigureEventHub(Step):
                 ),
                 group["consumer_group"],
                 group["create_databricks_secret"],
+                group["append_env_to_databricks_secret_name"],
             )
             for group in self.config["create_consumer_groups"]
         ]
@@ -300,10 +302,12 @@ class ConfigureEventHub(Step):
             raise e
 
         suffix = ""
-        if group.databricks_secret_suffix:
-            suffix = f"-{group.databricks_secret_suffix}"
+        if group.append_env_to_databricks_secret_name:
+            suffix = "-{env}"
 
-        secret = Secret(f"{group.eventhub.name}-connection-string{suffix}", connection_string.connection_string)
+        secret_name = get_databricks_secret_name(f"{group.eventhub.name}-connection-string{suffix}", self.env)
+
+        secret = Secret(secret_name, connection_string.connection_string)
 
         if group.create_databricks_secret:
             self.create_databricks_secrets([secret])
