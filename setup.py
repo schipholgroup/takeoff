@@ -13,7 +13,7 @@ https://github.com/schipholgroup/takeoff-base
 """
 setup_dependencies = [
     "azure-mgmt-relay==1.0.0",
-    "azure-mgmt-eventhub==9.0.0",
+    "azure-mgmt-eventhub==2.2.0",
     "azure-mgmt-applicationinsights==1.0.0",
     "azure-mgmt-cosmosdb==0.9.0",
     "azure-keyvault==1.0.0",
