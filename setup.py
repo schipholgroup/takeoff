@@ -19,6 +19,7 @@ setup_dependencies = [
     "azure-keyvault-administration==4.0.0",
     "azure-storage-blob==12.8.1",
     "azure-mgmt-containerservice==16.1.0",
+    "msrestazure==0.6.4",
     "databricks-cli==0.9.0",
     "docker==4.0.2",
     "gitpython==3.1.1",
