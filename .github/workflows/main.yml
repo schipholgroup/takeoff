@@ -61,7 +61,7 @@ jobs:
       - name: Run Type Checking
         run: |
           pip install mypy
-          python -m mypy --ignore-missing-imports -p takeoff
+          python -m mypy --ignore-missing-imports --install-types --non-interactive -p takeoff
 
   test:
     runs-on: ubuntu-20.04
