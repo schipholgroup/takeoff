@@ -12,7 +12,14 @@ Feel free to add missing ones to the dependencies here. As soon as these are sta
 https://github.com/schipholgroup/takeoff-base
 """
 setup_dependencies = [
-    "azure==4.0.0",
+    "azure-mgmt-relay==1.0.0",
+    "azure-mgmt-eventhub==2.2.0",
+    "azure-mgmt-applicationinsights==1.0.0",
+    "azure-mgmt-cosmosdb==0.9.0",
+    "azure-keyvault==1.0.0",
+    "azure-storage-blob==2.1.0",
+    "azure-mgmt-containerservice==5.3.0",
+    "msrestazure==0.6.4",
     "databricks-cli==0.9.0",
     "docker==4.0.2",
     "gitpython==3.1.1",

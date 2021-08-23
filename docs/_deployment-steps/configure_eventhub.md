@@ -37,6 +37,7 @@ Add the following task to `deployment.yaml`:
 | `create_consumer_groups.eventhub_entity_naming` | The name of the existing EventHub 
 | `create_consumer_groups.consumer_group` __[optional]__ | The name of the consumer group to be created
 | `create_consumer_groups.create_databricks_secret` | Whether a Databricks secret should be created for the consumer group | One of `true`, `false`
+| `create_consumer_groups.append_env_to_databricks_secret_name` | Whether to append the Databricks secret name with the env | One of `true`, `false`
 | `create_producer_policies` __[optional]__ | Contains the specification for each producer policy
 | `create_producer_policies.eventhub_entity_naming` | The name of the existing EventHub 
 | `create_producer_policies.producer_policy` | The name of producer policy to be created
