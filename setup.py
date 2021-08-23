@@ -16,7 +16,7 @@ setup_dependencies = [
     "azure-mgmt-eventhub==2.2.0",
     "azure-mgmt-applicationinsights==1.0.0",
     "azure-mgmt-cosmosdb==0.9.0",
-    "azure-keyvault==1.0.0",
+    "azure-keyvault==1.1.0",
     "azure-storage-blob==2.1.0",
     "azure-mgmt-containerservice==5.3.0",
     "msrestazure==0.6.4",
