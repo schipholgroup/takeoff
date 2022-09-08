@@ -127,7 +127,7 @@ class ConfigureEventHub(Step):
                     get_eventhub_name(self.config, self.env),
                     get_eventhub_entity_name(group["eventhub_entity_naming"], self.env),
                 ),
-                group["consumer_group"],
+                (group["consumer_group"]).format(env=self.env.environment_formatted),
                 group["create_databricks_secret"],
                 group["append_env_to_databricks_secret_name"],
             )
