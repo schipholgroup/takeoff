@@ -22,7 +22,7 @@ setup_dependencies = [
     "msrestazure==0.6.4",
     "databricks-cli==0.9.0",
     "docker==4.0.2",
-    "gitpython==3.1.1",
+    "gitpython==3.1.37",
     "jinja2==2.11.3",
     "kubernetes==10.0.1",
     "py4j==0.10.7",
